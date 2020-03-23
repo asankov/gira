@@ -7,6 +7,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type server struct {
+	log     log.Logger
+	handler http.Handler
+}
+
 func main() {
 	r := mux.NewRouter()
 
