@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
 )
 
 type server struct {
@@ -13,14 +11,10 @@ type server struct {
 }
 
 func main() {
-	r := mux.NewRouter()
-
-	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("{}"))
-	})
+	s := &server{}
 
 	log.Println("listening on port 4000")
-	if err := http.ListenAndServe(":4000", r); err != nil {
+	if err := http.ListenAndServe(":4000", s.routes()); err != nil {
 		log.Fatalf("error while serving: %v", err)
 	}
 }
