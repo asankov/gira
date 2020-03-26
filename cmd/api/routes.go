@@ -14,7 +14,6 @@ func (s *server) routes() http.Handler {
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("{}"))
-
 	}).Methods(http.MethodPost)
 
 	return r
