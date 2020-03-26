@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/asankov/gira/pkg/models"
 )
@@ -14,7 +15,15 @@ type GameModel struct {
 // Insert inserts the passed Game into the database.
 // It returns the ID of the created game, or error if such occurred.
 func (m *GameModel) Insert(game *models.Game) (string, error) {
-	return "", nil
+	res, err := m.DB.Exec(`INSERT INTO GAMES (name) VALUES ($1)`, game.Name)
+	if err != nil {
+		return "", fmt.Errorf("error while inserting record into the database: %w", err)
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return "", fmt.Errorf("error while inserting record into the database: %w", err)
+	}
+	return string(id), nil
 }
 
 // Get fetches a Game by ID and returns that or an error if such occurred.
