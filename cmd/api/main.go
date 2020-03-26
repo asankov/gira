@@ -31,6 +31,7 @@ func run() error {
 	if err := db.Ping(); err != nil {
 		return fmt.Errorf("error while pinging db: %w", err)
 	}
+	defer db.Close()
 
 	log.Println("listening on port 4000")
 	if err := http.ListenAndServe(":4000", s.routes()); err != nil {
