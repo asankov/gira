@@ -2,9 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
+)
+
+var (
+	errNameRequired = errors.New("'name' is required parameter")
+	errIDNotAllowed = errors.New("'id' is not allowed parameter")
 )
 
 func (s *server) createGameHandler() http.HandlerFunc {
@@ -16,6 +22,11 @@ func (s *server) createGameHandler() http.HandlerFunc {
 			return
 		}
 
+		if err := validateGame(&game); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		resp, err := json.Marshal(game)
 		if err != nil {
 			http.Error(w, "error encoding response", http.StatusInternalServerError)
@@ -24,4 +35,16 @@ func (s *server) createGameHandler() http.HandlerFunc {
 
 		w.Write(resp)
 	}
+}
+
+func validateGame(game *models.Game) error {
+	if game.Name == "" {
+		return errNameRequired
+	}
+
+	if game.ID != "" {
+		return errIDNotAllowed
+	}
+
+	return nil
 }
