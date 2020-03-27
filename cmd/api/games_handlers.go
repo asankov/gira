@@ -27,7 +27,19 @@ func (s *server) createGameHandler() http.HandlerFunc {
 			return
 		}
 
-		resp, err := json.Marshal(game)
+		id, err := s.gameModel.Insert(&game)
+		if err != nil {
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+
+		insertedGame, err := s.gameModel.Get(id)
+		if err != nil {
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+
+		resp, err := json.Marshal(insertedGame)
 		if err != nil {
 			http.Error(w, "error encoding response", http.StatusInternalServerError)
 			return
