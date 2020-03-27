@@ -12,9 +12,7 @@ func (s *server) routes() http.Handler {
 	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("{}"))
 	}).Methods(http.MethodGet)
-	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("{}"))
-	}).Methods(http.MethodPost)
+	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
 
 	return r
 }
