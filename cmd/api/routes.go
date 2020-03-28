@@ -10,6 +10,7 @@ func (s *server) routes() http.Handler {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/games", s.getGamesHandler()).Methods(http.MethodGet)
+	r.HandleFunc("/games/{id}", s.getGameByIDHandler()).Methods(http.MethodGet)
 	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
 
 	return r

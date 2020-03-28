@@ -12,6 +12,8 @@ import (
 var (
 	// ErrNameAlreadyExists is the error that is returned, when a game with that name already exists in the database
 	ErrNameAlreadyExists = errors.New("game with that name already exists in the database")
+	// ErrNoRecord is returned when a game with that criteria does not exist in the database
+	ErrNoRecord = errors.New("such game does not exist in the database")
 )
 
 // GameModel wraps an sql.DB connection pool.
@@ -39,8 +41,18 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 }
 
 // Get fetches a Game by ID and returns that or an error if such occurred.
+// If game with that ID is not present in the database, an ErrNoRecord is returned.
 func (m *GameModel) Get(id string) (*models.Game, error) {
-	return nil, nil
+	var g models.Game
+
+	if err := m.DB.QueryRow(`SELECT id, name FROM GAMES g WHERE g.id = $1`, id).Scan(&g.ID, &g.Name); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrNoRecord
+		}
+		return nil, fmt.Errorf("error while fetching game from the database: %w", err)
+	}
+
+	return &g, nil
 }
 
 // All fetches all games from the database and returns them, or an error if such occurred.

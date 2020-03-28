@@ -7,6 +7,7 @@ import (
 
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -67,6 +68,33 @@ func (s *server) getGamesHandler() http.HandlerFunc {
 	}
 }
 
+func (s *server) getGameByIDHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		args := mux.Vars(r)
+		id := args["id"]
+		if id == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		game, err := s.gameModel.Get(id)
+		if err != nil {
+			if errors.Is(err, postgres.ErrNoRecord) {
+				http.NotFound(w, r)
+				return
+			}
+			s.log.Printf("error while fetching game from the database: %v", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(game); err != nil {
+			s.log.Printf("error while encoding response: %v", err)
+			http.Error(w, "internal error", http.StatusInternalServerError)
+			return
+		}
+	}
+}
 func validateGame(game *models.Game) error {
 	if game.Name == "" {
 		return errNameRequired
