@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
+	"github.com/asankov/gira/pkg/models/postgres"
 )
 
 var (
@@ -27,20 +28,20 @@ func (s *server) createGameHandler() http.HandlerFunc {
 			return
 		}
 
-		id, err := s.gameModel.Insert(&game)
+		g, err := s.gameModel.Insert(&game)
 		if err != nil {
+			if errors.Is(err, postgres.ErrNameAlreadyExists) {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			s.log.Printf("error while inserting game into database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
 
-		insertedGame, err := s.gameModel.Get(id)
+		resp, err := json.Marshal(g)
 		if err != nil {
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
-
-		resp, err := json.Marshal(insertedGame)
-		if err != nil {
+			s.log.Printf("error while encoding response: %v", err)
 			http.Error(w, "error encoding response", http.StatusInternalServerError)
 			return
 		}
