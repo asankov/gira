@@ -9,9 +9,7 @@ import (
 func (s *server) routes() http.Handler {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("{}"))
-	}).Methods(http.MethodGet)
+	r.HandleFunc("/games", s.getGamesHandler()).Methods(http.MethodGet)
 	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
 
 	return r

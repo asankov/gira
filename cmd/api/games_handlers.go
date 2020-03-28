@@ -50,6 +50,23 @@ func (s *server) createGameHandler() http.HandlerFunc {
 	}
 }
 
+func (s *server) getGamesHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		all, err := s.gameModel.All()
+		if err != nil {
+			s.log.Printf("error while fetching games from the database: %v", err)
+			http.Error(w, "error fetching games", http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(w).Encode(all); err != nil {
+			s.log.Printf("error while encoding response: %v", err)
+			http.Error(w, "error encoding response", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 func validateGame(game *models.Game) error {
 	if game.Name == "" {
 		return errNameRequired

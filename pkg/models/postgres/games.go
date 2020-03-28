@@ -45,5 +45,26 @@ func (m *GameModel) Get(id string) (*models.Game, error) {
 
 // All fetches all games from the database and returns them, or an error if such occurred.
 func (m *GameModel) All() ([]*models.Game, error) {
-	return nil, nil
+	rows, err := m.DB.Query(`SELECT id, name FROM GAMES`)
+	if err != nil {
+		return nil, fmt.Errorf("error while fetching games from the database: %w", err)
+	}
+	defer rows.Close()
+
+	var games []*models.Game
+	for rows.Next() {
+		var game models.Game
+
+		if err = rows.Scan(&game.ID, &game.Name); err != nil {
+			return nil, fmt.Errorf("error while reading games from the database: %w", err)
+		}
+
+		games = append(games, &game)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error while reading games from the database: %w", err)
+	}
+
+	return games, nil
 }
