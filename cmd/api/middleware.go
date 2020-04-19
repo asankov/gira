@@ -19,3 +19,18 @@ func (s *server) secureHeaders(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (s *server) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				w.Header().Set("Connection", "Close")
+
+				s.log.Printf("panic: %v\n", err)
+				http.Error(w, "internal error", http.StatusInternalServerError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	})
+}
