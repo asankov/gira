@@ -39,7 +39,7 @@ func run() error {
 	}
 
 	log.Println("listening on port 4000")
-	if err := http.ListenAndServe(":4000", s.loggingMiddleware(s.routes())); err != nil {
+	if err := http.ListenAndServe(":4000", s.routes()); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}
 

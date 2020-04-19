@@ -13,5 +13,5 @@ func (s *server) routes() http.Handler {
 	r.HandleFunc("/games/{id}", s.getGameByIDHandler()).Methods(http.MethodGet)
 	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
 
-	return s.secureHeaders(r)
+	return s.loggingMiddleware(s.secureHeaders(r))
 }
