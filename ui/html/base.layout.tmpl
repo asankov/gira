@@ -1,0 +1,38 @@
+{{define "base"}}
+<!doctype html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8'>
+    <title>{{template "title" .}} - Gira</title>
+    <link rel='stylesheet' href='/static/css/main.css'>
+    <link rel='shortcut icon' href='/static/img/favicon.ico' type='image/x-icon'>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700'>
+</head>
+
+<body>
+    <header>
+        <h1><a href='/'>Gira</a></h1>
+    </header>
+    <nav>
+        <div>
+            <a href='/'>Home</a>
+        </div>
+        <div>
+            {{ if .User }}
+            <span> Hello, {{.User.Username}}</span>
+            {{ else }}
+            <a href='/users/create'>Signup</a>
+            <a href='/users/login'>Login</a>
+            {{ end }}
+        </div>
+    </nav>
+    <main>
+        {{template "main" .}}
+    </main>
+
+    <script src="/static/js/main.js" type="text/javascript"></script>
+</body>
+
+</html>
+{{end}}
