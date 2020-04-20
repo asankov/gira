@@ -1,0 +1,9 @@
+{{template "base" .}}
+{{define "title"}}Create a Game{{end}}
+{{define "main"}}
+<form action="/games" method="POST">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+    <input type="submit" value="Create">
+</form>
+{{end}}

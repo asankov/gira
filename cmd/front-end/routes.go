@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 	"text/template"
 
 	"github.com/gorilla/mux"
@@ -15,7 +18,7 @@ type game struct {
 type gamesData struct {
 	Games []game
 	// TODO: proper data type
-	User  string
+	User string
 }
 
 func (s *server) routes() http.Handler {
@@ -37,6 +40,33 @@ func (s *server) routes() http.Handler {
 	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, data, "./ui/html/list.page.tmpl", "./ui/html/base.layout.tmpl")
 	}).Methods(http.MethodGet)
+
+	r.HandleFunc("/games/new", func(w http.ResponseWriter, r *http.Request) {
+		s.renderTemplate(w, r, nil, "./ui/html/create.page.tmpl", "./ui/html/base.layout.tmpl")
+	}).Methods(http.MethodGet)
+
+	r.HandleFunc("/games", func(w http.ResponseWriter, r *http.Request) {
+		name := r.PostFormValue("name")
+		if name == "" {
+			http.Error(w, "'name' is required", http.StatusBadRequest)
+			return
+		}
+
+		resp, err := http.Post(fmt.Sprintf("%s/games", s.backEndAddr), "application/json", strings.NewReader(fmt.Sprintf(`{"name": "%s"}`, name)))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write(b)
+	}).Methods(http.MethodPost)
 
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static", fileServer))
