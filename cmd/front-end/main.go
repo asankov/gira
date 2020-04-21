@@ -14,10 +14,9 @@ import (
 )
 
 type server struct {
-	log         *log.Logger
-	backEndAddr string
-	session     *sessions.Session
-	client      *client.Client
+	log     *log.Logger
+	session *sessions.Session
+	client  *client.Client
 }
 
 func main() {
