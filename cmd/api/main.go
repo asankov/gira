@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,8 +27,15 @@ func main() {
 }
 
 func run() error {
+	port := *flag.Int("port", 4000, "port on which the application is exposed")
+	dbHost := *flag.String("db_host", "localhost", "the address of the database")
+	dbPort := *flag.Int("db_port", 5432, "the port of the database")
+	dbUser := *flag.String("db_user", "antonsankov", "the user of the database")
+	dbPass := *flag.String("db_pass", "", "the password for the database")
+	dbName := *flag.String("db_name", "gira", "the name of the database")
+	flag.Parse()
 
-	db, err := openDB("localhost", 5432, "antonsankov", "gira")
+	db, err := openDB(dbHost, dbPort, dbUser, dbName, dbPass)
 	if err != nil {
 		return fmt.Errorf("error while opening DB: %w", err)
 	}
@@ -38,16 +46,23 @@ func run() error {
 		gameModel: &postgres.GameModel{DB: db},
 	}
 
-	log.Println("listening on port 4000")
-	if err := http.ListenAndServe(":4000", s.routes()); err != nil {
+	log.Println(fmt.Sprintf("listening on port %d", port))
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), s.routes()); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}
 
 	return nil
 }
 
-func openDB(host string, port int, user string, dbName string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s dbname=%s sslmode=disable", host, port, user, dbName))
+func openDB(host string, port int, user string, dbName string, dbPass string) (*sql.DB, error) {
+	connString := fmt.Sprintf("host=%s port=%d user=%s dbname=%s", host, port, user, dbName)
+	if dbPass != "" {
+		connString += fmt.Sprintf(" password=%s", dbPass)
+	}
+	connString += " sslmode=disable"
+	fmt.Println("connString")
+	fmt.Println(connString)
+	db, err := sql.Open("postgres", connString)
 	if err != nil {
 		return nil, fmt.Errorf("error while opening connection to db: %w", err)
 	}
