@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"strings"
 	"text/template"
+
+	"github.com/asankov/gira/pkg/models"
 )
 
 func (s *server) homeHandler() http.HandlerFunc {
@@ -46,14 +46,8 @@ func (s *server) createGameHandler() http.HandlerFunc {
 			return
 		}
 
-		resp, err := http.Post(fmt.Sprintf("%s/games", s.backEndAddr), "application/json", strings.NewReader(fmt.Sprintf(`{"name": "%s"}`, name)))
-		if err != nil {
+		if _, err := s.client.CreateGame(&models.Game{Name: name}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if resp.StatusCode != http.StatusOK {
-			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 

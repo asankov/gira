@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,8 @@ import (
 var (
 	// ErrFetchingGames is a generic error
 	ErrFetchingGames = errors.New("error while fetching games")
+	// ErrCreatingGame is a generic error
+	ErrCreatingGame = errors.New("error while creating game")
 )
 
 // Client is the struct that is used to communicate
@@ -50,6 +53,22 @@ func (c *Client) GetGameByID(id string) (*models.Game, error) {
 }
 
 // CreateGame creates a new game from the passed model.
-func (c *Client) CreateGame(game models.Game) (*models.Game, error) {
-	return nil, nil
+func (c *Client) CreateGame(game *models.Game) (*models.Game, error) {
+	body, err := json.Marshal(game)
+	if err != nil {
+		return nil, ErrCreatingGame
+	}
+	res, err := http.Post(fmt.Sprintf("%s/games", c.addr), "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, ErrCreatingGame
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, ErrCreatingGame
+	}
+
+	var gameResponse models.Game
+	json.NewDecoder(res.Body).Decode(&gameResponse)
+
+	return &gameResponse, nil
 }
