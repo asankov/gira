@@ -1,24 +1,22 @@
 {{template "base" .}}
 {{define "title"}}Games{{end}}
 {{define "main"}}
-<ul>
-    {{if .Games}}
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-        </tr>
-        {{range .Games}}
-        <tr>
-            <td>{{.ID}}</td>
-            <td>{{.Name}}</td>
-        </tr>
-        {{end}}
-    </table>
-    {{else}}
-    <p>Currently there are no games.</p>
+{{if .Games}}
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+    </tr>
+    {{range .Games}}
+    <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Name}}</td>
+    </tr>
     {{end}}
-</ul>
+</table>
+{{else}}
+<p>Currently there are no games.</p>
+{{end}}
 <a href="games/new">
     <input type="submit" value="+" style="float: right;"></button>
 </a>
