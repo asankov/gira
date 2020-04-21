@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"text/template"
@@ -63,9 +62,8 @@ func (s *server) createGameHandler() http.HandlerFunc {
 			return
 		}
 
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if resp.StatusCode != http.StatusOK {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
 			return
 		}
 
