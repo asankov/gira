@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"text/template"
+
+	"github.com/asankov/gira/pkg/models"
 )
 
 func (s *server) homeHandler() http.HandlerFunc {
@@ -19,14 +22,21 @@ func (s *server) getGamesHandler() http.HandlerFunc {
 		flash := s.session.PopString(r, "flash")
 
 		// TODO: fetch this from the back-end, instead of hardcoding them
+		res, err := http.Get(fmt.Sprintf("%s/games", s.backEndAddr))
+		if err != nil {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+		if res.StatusCode != 200 {
+			http.Error(w, "internal server error", http.StatusInternalServerError)
+		}
+
+		var games []models.Game
+		json.NewDecoder(res.Body).Decode(&games)
+
 		data := &gamesData{
 			Flash: flash,
-			Games: []game{
-				{ID: "1", Name: "AC"},
-				{ID: "2", Name: "ACII"},
-				{ID: "3", Name: "ACII: Brotherhood"},
-				{ID: "4", Name: "ACII: Liberation"},
-			},
+			Games: games,
 		}
 
 		s.renderTemplate(w, r, data, "./ui/html/list.page.tmpl", "./ui/html/base.layout.tmpl")

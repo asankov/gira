@@ -3,18 +3,14 @@ package main
 import (
 	"net/http"
 
+	"github.com/asankov/gira/pkg/models"
 	"github.com/justinas/alice"
 
 	"github.com/gorilla/mux"
 )
 
-type game struct {
-	ID   string
-	Name string
-}
-
 type gamesData struct {
-	Games []game
+	Games []models.Game
 	// TODO: proper data type
 	User  string
 	Flash string
