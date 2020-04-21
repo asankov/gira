@@ -71,8 +71,8 @@ func (s *server) createGameHandler() http.HandlerFunc {
 
 		s.session.Put(r, "flash", "Game successfully created.")
 
-		w.WriteHeader(http.StatusOK)
-		w.Write(b)
+		w.Header().Add("Location", "/games")
+		w.WriteHeader(http.StatusSeeOther)
 	}
 }
 
