@@ -18,6 +18,7 @@ type server struct {
 	log       *log.Logger
 	handler   http.Handler
 	gameModel *postgres.GameModel
+	userModel *postgres.UserModel
 }
 
 func main() {
@@ -44,6 +45,7 @@ func run() error {
 	s := &server{
 		log:       log.New(os.Stdout, "", log.Ldate|log.Ltime),
 		gameModel: &postgres.GameModel{DB: db},
+		userModel: &postgres.UserModel{DB: db},
 	}
 
 	log.Println(fmt.Sprintf("listening on port %d", port))

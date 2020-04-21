@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/justinas/alice"
 	"net/http"
+
+	"github.com/justinas/alice"
 
 	"github.com/gorilla/mux"
 )
@@ -15,6 +16,9 @@ func (s *server) routes() http.Handler {
 	r.HandleFunc("/games", s.getGamesHandler()).Methods(http.MethodGet)
 	r.HandleFunc("/games/{id}", s.getGameByIDHandler()).Methods(http.MethodGet)
 	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
+
+	r.HandleFunc("/users", s.createUserHandler()).Methods(http.MethodPost)
+	r.HandleFunc("/users/login", nil).Methods(http.MethodPost)
 
 	return standartMiddleware.Then(r)
 }
