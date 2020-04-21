@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/asankov/gira/pkg/models/client"
+
 	"github.com/golangcollege/sessions"
 )
 
@@ -15,6 +17,7 @@ type server struct {
 	log         *log.Logger
 	backEndAddr string
 	session     *sessions.Session
+	client      *client.Client
 }
 
 func main() {
@@ -26,11 +29,15 @@ func main() {
 	session := sessions.New([]byte(sessionSecret))
 	session.Lifetime = 12 * time.Hour
 
+	cl, err := client.New(backEndAddr)
+	if err != nil {
+		log.Fatalf("error while creating back-end client: %v", err)
+	}
+
 	s := &server{
-		log: log.New(os.Stdout, "", log.Ldate|log.Ltime),
-		// TODO: replace this with full-fledged client
-		backEndAddr: backEndAddr,
-		session:     session,
+		log:     log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		client:  cl,
+		session: session,
 	}
 
 	s.log.Println(fmt.Sprintf("Front-end listening on port %d", port))

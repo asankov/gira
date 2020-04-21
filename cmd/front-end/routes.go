@@ -10,7 +10,7 @@ import (
 )
 
 type gamesData struct {
-	Games []models.Game
+	Games []*models.Game
 	// TODO: proper data type
 	User  string
 	Flash string
