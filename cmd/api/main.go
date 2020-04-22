@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/models/postgres"
 
 	// to register PostreSQL driver
@@ -19,6 +20,7 @@ type server struct {
 	handler   http.Handler
 	gameModel *postgres.GameModel
 	userModel *postgres.UserModel
+	auth      *auth.Authenticator
 }
 
 func main() {
@@ -34,6 +36,7 @@ func run() error {
 	dbUser := *flag.String("db_user", "antonsankov", "the user of the database")
 	dbPass := *flag.String("db_pass", "", "the password for the database")
 	dbName := *flag.String("db_name", "gira", "the name of the database")
+	secret := *flag.String("token_string", "9^ahslgndb&ahas2ey*hasdh732rbusd", "secret to be used for encoding and decoding JWT tokens")
 	flag.Parse()
 
 	db, err := openDB(dbHost, dbPort, dbUser, dbName, dbPass)
@@ -46,6 +49,7 @@ func run() error {
 		log:       log.New(os.Stdout, "", log.Ldate|log.Ltime),
 		gameModel: &postgres.GameModel{DB: db},
 		userModel: &postgres.UserModel{DB: db},
+		auth:      auth.NewAutheniticator(secret),
 	}
 
 	log.Println(fmt.Sprintf("listening on port %d", port))

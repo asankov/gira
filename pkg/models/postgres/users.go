@@ -15,6 +15,8 @@ var (
 	ErrEmailAlreadyExists = errors.New("user with the same email already exists")
 	// ErrUsernameAlreadyExists is returned when a user with the same username already exists in the database
 	ErrUsernameAlreadyExists = errors.New("user with the same username already")
+	// ErrWrongPassword is returned when the given password does not match the user password
+	ErrWrongPassword = errors.New("the given password does not match the user password")
 )
 
 // UserModel wraps a DB connection pool.
@@ -56,7 +58,14 @@ func handleInsertError(err error) error {
 // Authenticate authenticates a use with these credentials
 // and returns the user or an error if such occurred.
 func (m *UserModel) Authenticate(email, password string) (*models.User, error) {
-	return nil, nil
+	usr := models.User{}
+	if err := m.DB.QueryRow("SELECT id, username, email, hashed_password FROM USERS U WHERE U.EMAIL = $1", email).Scan(&usr.ID, &usr.Username, &usr.Email, &usr.HashedPassword); err != nil {
+		return nil, fmt.Errorf("error while fetching user from the database: %w", err)
+	}
+	if err := bcrypt.CompareHashAndPassword(usr.HashedPassword, []byte(password)); err != nil {
+		return nil, ErrWrongPassword
+	}
+	return &usr, nil
 }
 
 // Get fetches the user with the given ID from the database

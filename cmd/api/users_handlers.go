@@ -16,6 +16,10 @@ var (
 	errHashedPasswordNotAllowed = errors.New("'hashedPassword' is not allowed field")
 )
 
+type userResponse struct {
+	Token string `json:"token"`
+}
+
 func (s *server) createUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
@@ -64,4 +68,44 @@ func validateUser(user *models.User) error {
 	}
 
 	return nil
+}
+
+func (s *server) loginHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := models.User{}
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if user.Email == "" {
+			http.Error(w, "'email' is required on login", http.StatusBadRequest)
+			return
+		}
+
+		if user.Password == "" {
+			http.Error(w, "'password' is required on login", http.StatusBadRequest)
+			return
+		}
+
+		_, err := s.userModel.Authenticate(user.Email, user.Password)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		token, err := s.auth.NewTokenForUser(user.Username)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// TODO: persist the token, so we can invalidate it
+
+		response, err := json.Marshal(userResponse{Token: token})
+		if err != nil {
+
+		}
+		w.Write(response)
+	}
 }

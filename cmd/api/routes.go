@@ -18,7 +18,7 @@ func (s *server) routes() http.Handler {
 	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
 
 	r.HandleFunc("/users", s.createUserHandler()).Methods(http.MethodPost)
-	r.HandleFunc("/users/login", nil).Methods(http.MethodPost)
+	r.HandleFunc("/users/login", s.loginHandler()).Methods(http.MethodPost)
 
 	return standartMiddleware.Then(r)
 }
