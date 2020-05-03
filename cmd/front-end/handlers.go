@@ -58,6 +58,12 @@ func (s *server) createGameHandler() http.HandlerFunc {
 	}
 }
 
+func (s *server) getSignupFormHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s.renderTemplate(w, r, nil, "./ui/html/signup.page.tmpl", "./ui/html/base.layout.tmpl")
+	}
+}
+
 func (s *server) renderTemplate(w http.ResponseWriter, r *http.Request, data interface{}, templates ...string) {
 	t, err := template.ParseFiles(templates...)
 	if err != nil {

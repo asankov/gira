@@ -27,6 +27,8 @@ func (s *server) routes() http.Handler {
 	r.Handle("/games/new", dynamicMiddleware.Then(s.createGameViewHandler())).Methods(http.MethodGet)
 	r.Handle("/games", dynamicMiddleware.Then(s.createGameHandler())).Methods(http.MethodPost)
 
+	r.Handle("/users/signup", standartMiddleware.Then(s.getSignupFormHandler())).Methods(http.MethodGet)
+
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static", fileServer))
 
