@@ -47,7 +47,9 @@ func (s *server) createGameHandler() http.HandlerFunc {
 			return
 		}
 
-		w.Write(resp)
+		if _, err := w.Write(resp); err != nil {
+			s.log.Printf("error while writing response: %v", err)
+		}
 	}
 }
 

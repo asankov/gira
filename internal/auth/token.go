@@ -65,7 +65,9 @@ func (a *Authenticator) NewTokenForUser(username string) (string, error) {
 func (a *Authenticator) hash(src string) string {
 	key := []byte(a.secret)
 	h := hmac.New(sha256.New, key)
-	h.Write([]byte(src))
+	if _, err := h.Write([]byte(src)); err != nil {
+		return ""
+	}
 	return base64.StdEncoding.EncodeToString(h.Sum(nil))
 }
 

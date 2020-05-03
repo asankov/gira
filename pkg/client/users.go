@@ -25,7 +25,9 @@ func (c *Client) CreateUser(user *models.User) (*models.User, error) {
 	}
 
 	var userResponse *models.User
-	json.NewDecoder(res.Body).Decode(&userResponse)
+	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
+		return nil, fmt.Errorf("error while decoidng body: %w", err)
+	}
 
 	return userResponse, nil
 }
@@ -45,7 +47,9 @@ func (c *Client) LoginUser(user *models.User) (*models.UserResponse, error) {
 	}
 
 	var userResponse *models.UserResponse
-	json.NewDecoder(res.Body).Decode(&userResponse)
+	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
+		return nil, fmt.Errorf("error while decoidng body: %w", err)
+	}
 
 	return userResponse, nil
 }

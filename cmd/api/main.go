@@ -17,7 +17,6 @@ import (
 
 type server struct {
 	log       *log.Logger
-	handler   http.Handler
 	gameModel *postgres.GameModel
 	userModel *postgres.UserModel
 	auth      *auth.Authenticator
