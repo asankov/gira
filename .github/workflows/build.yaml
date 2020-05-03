@@ -1,0 +1,25 @@
+name: Build
+on:
+  push:
+    branches: 
+    - master
+  pull_request:
+
+jobs:
+  api:
+    name: Build ${{ matrix.service }} with Go ${{ matrix.go-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.14, 1.13]
+        service: ['api', 'front-end']
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Build ${{ matrix.service }} service
+      run: |
+        go build ./cmd/${{ matrix.service }}
