@@ -104,8 +104,12 @@ func (s *server) loginHandler() http.HandlerFunc {
 
 		response, err := json.Marshal(userResponse{Token: token})
 		if err != nil {
-
+			s.log.Printf("error while marshalling response: %v", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
 		}
-		w.Write(response)
+		if _, err := w.Write(response); err != nil {
+			s.log.Printf("error while writing response: %v", err)
+		}
 	}
 }
