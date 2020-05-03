@@ -15,7 +15,7 @@ var (
 	errIDNotAllowed = errors.New("'id' is not allowed parameter")
 )
 
-func (s *server) createGameHandler() http.HandlerFunc {
+func (s *server) handleGamesCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var game models.Game
 
@@ -53,7 +53,7 @@ func (s *server) createGameHandler() http.HandlerFunc {
 	}
 }
 
-func (s *server) getGamesHandler() http.HandlerFunc {
+func (s *server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		all, err := s.gameModel.All()
 		if err != nil {
@@ -70,7 +70,7 @@ func (s *server) getGamesHandler() http.HandlerFunc {
 	}
 }
 
-func (s *server) getGameByIDHandler() http.HandlerFunc {
+func (s *server) handleGamesGetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		args := mux.Vars(r)
 		id := args["id"]

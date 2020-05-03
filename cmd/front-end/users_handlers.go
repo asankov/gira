@@ -6,19 +6,19 @@ import (
 	"github.com/asankov/gira/pkg/models"
 )
 
-func (s *server) getSignupFormHandler() http.HandlerFunc {
+func (s *server) handleUserSignupForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, nil, "./ui/html/signup.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
 
-func (s *server) getLoginFormHandler() http.HandlerFunc {
+func (s *server) handleUserLoginForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, nil, "./ui/html/login.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
 
-func (s *server) loginHandler() http.HandlerFunc {
+func (s *server) handleUserLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		email, password := r.PostFormValue("email"), r.PostFormValue("password")
 		res, err := s.client.LoginUser(&models.User{
@@ -41,7 +41,7 @@ func (s *server) loginHandler() http.HandlerFunc {
 	}
 }
 
-func (s *server) createUserHandler() http.HandlerFunc {
+func (s *server) handleUserSignup() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, email, password := r.PostFormValue("username"), r.PostFormValue("email"), r.PostFormValue("password")
 

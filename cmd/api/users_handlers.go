@@ -20,7 +20,7 @@ type userResponse struct {
 	Token string `json:"token"`
 }
 
-func (s *server) createUserHandler() http.HandlerFunc {
+func (s *server) handleUserCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 
@@ -70,7 +70,7 @@ func validateUser(user *models.User) error {
 	return nil
 }
 
-func (s *server) loginHandler() http.HandlerFunc {
+func (s *server) handleUserLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := models.User{}
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
