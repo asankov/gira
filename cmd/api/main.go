@@ -22,6 +22,10 @@ type server struct {
 	auth      *auth.Authenticator
 }
 
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.routes().ServeHTTP(w, r)
+}
+
 func main() {
 	if err := run(); err != nil {
 		log.Panic("error while running server: " + err.Error())
@@ -52,7 +56,7 @@ func run() error {
 	}
 
 	log.Println(fmt.Sprintf("listening on port %d", port))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), s.routes()); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), s); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}
 
