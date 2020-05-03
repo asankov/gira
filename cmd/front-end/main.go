@@ -19,6 +19,10 @@ type server struct {
 	client  *client.Client
 }
 
+func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.routes().ServeHTTP(w, r)
+}
+
 func main() {
 	if err := run(); err != nil {
 		log.Panic("error while running front-end service: " + err.Error())
@@ -46,7 +50,7 @@ func run() error {
 	}
 
 	s.log.Println(fmt.Sprintf("Front-end listening on port %d", port))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), s.routes()); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), s); err != nil {
 		return fmt.Errorf("error while listening: %w", err)
 	}
 
