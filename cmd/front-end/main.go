@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/asankov/gira/pkg/models/client"
+	"github.com/asankov/gira/pkg/client"
 
 	"github.com/golangcollege/sessions"
 )
