@@ -13,12 +13,12 @@ func (s *server) routes() http.Handler {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/games", s.getGamesHandler()).Methods(http.MethodGet)
-	r.HandleFunc("/games/{id}", s.getGameByIDHandler()).Methods(http.MethodGet)
-	r.HandleFunc("/games", s.createGameHandler()).Methods(http.MethodPost)
+	r.HandleFunc("/games", s.handleGamesGet()).Methods(http.MethodGet)
+	r.HandleFunc("/games/{id}", s.handleGamesGetByID()).Methods(http.MethodGet)
+	r.HandleFunc("/games", s.handleGamesCreate()).Methods(http.MethodPost)
 
-	r.HandleFunc("/users", s.createUserHandler()).Methods(http.MethodPost)
-	r.HandleFunc("/users/login", s.loginHandler()).Methods(http.MethodPost)
+	r.HandleFunc("/users", s.handleUserCreate()).Methods(http.MethodPost)
+	r.HandleFunc("/users/login", s.handleUserLogin()).Methods(http.MethodPost)
 
 	return standartMiddleware.Then(r)
 }

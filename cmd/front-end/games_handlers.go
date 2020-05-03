@@ -7,12 +7,12 @@ import (
 	"github.com/asankov/gira/pkg/models"
 )
 
-func (s *server) homeHandler() http.HandlerFunc {
+func (s *server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, nil, "./ui/html/home.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
-func (s *server) getGamesHandler() http.HandlerFunc {
+func (s *server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		flash := s.session.PopString(r, "flash")
@@ -32,13 +32,13 @@ func (s *server) getGamesHandler() http.HandlerFunc {
 	}
 }
 
-func (s *server) createGameViewHandler() http.HandlerFunc {
+func (s *server) handleGameCreateView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, nil, "./ui/html/create.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
 
-func (s *server) createGameHandler() http.HandlerFunc {
+func (s *server) handleGameCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.PostFormValue("name")
 		if name == "" {
