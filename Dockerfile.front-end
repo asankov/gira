@@ -1,0 +1,12 @@
+FROM golang:alpine
+
+RUN mkdir /app
+
+ADD . /app/
+
+WORKDIR /app
+
+RUN go build -o front-end ./cmd/front-end
+
+# TODO: configuration
+CMD ["./front-end"]
