@@ -12,6 +12,35 @@ func (s *server) getSignupFormHandler() http.HandlerFunc {
 	}
 }
 
+func (s *server) getLoginFormHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		s.renderTemplate(w, r, nil, "./ui/html/login.page.tmpl", "./ui/html/base.layout.tmpl")
+	}
+}
+
+func (s *server) loginHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		email, password := r.PostFormValue("email"), r.PostFormValue("password")
+		res, err := s.client.LoginUser(&models.User{
+			Email:    email,
+			Password: password,
+		})
+		if err != nil {
+			s.log.Printf("error while logging in user: %v", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "token",
+			Value: res.Token,
+			Path:  "/",
+		})
+		w.Header().Add("Location", "/")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
 func (s *server) createUserHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, email, password := r.PostFormValue("username"), r.PostFormValue("email"), r.PostFormValue("password")
