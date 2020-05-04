@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func (s *server) routes() http.Handler {
+func (s *Server) routes() http.Handler {
 	standartMiddleware := alice.New(s.recoverPanic, s.logRequest, s.secureHeaders)
 
 	r := mux.NewRouter()
