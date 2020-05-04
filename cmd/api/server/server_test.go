@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"log"
@@ -42,9 +43,7 @@ func TestGetGames(t *testing.T) {
 	}
 
 	var res []*models.Game
-	if err := json.NewDecoder(w.Body).Decode(&res); err != nil {
-		t.Fatalf("Got unexpected error while decoding response - %v", err)
-	}
+	decode(t, w, &res)
 
 	if len(res) != 2 {
 		t.Fatalf("Got (%d) for length of result, expected %d", len(res), 2)
@@ -82,5 +81,51 @@ func TestGetGamesErr(t *testing.T) {
 	got, expected := w.Result().StatusCode, http.StatusInternalServerError
 	if got != expected {
 		t.Fatalf("Got status code - (%d), expected (%d)", got, expected)
+	}
+}
+
+func TestCreateGame(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	gameModel := fixtures.NewGameModelMock(ctrl)
+	srv := Server{
+		Log:       log.New(os.Stdout, "", 0),
+		GameModel: gameModel,
+	}
+
+	actualName := "ACIII"
+	actualGame := &models.Game{Name: actualName}
+	gameModel.
+		EXPECT().
+		Insert(actualGame).
+		Return(actualGame, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+	srv.ServeHTTP(w, r)
+
+	statusCode := w.Result().StatusCode
+	if statusCode != http.StatusOK {
+		t.Fatalf("Got (%d) for status code, expected (%d)", statusCode, http.StatusOK)
+	}
+
+	var game *models.Game
+	decode(t, w, &game)
+	if game.Name != actualName {
+		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
+	}
+}
+
+func marshall(t *testing.T, payload interface{}) *bytes.Buffer {
+	body, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("Got unexpected error while marshalling payload - %v", err)
+	}
+	return bytes.NewBuffer(body)
+}
+
+func decode(t *testing.T, w *httptest.ResponseRecorder, into interface{}) {
+	if err := json.NewDecoder(w.Body).Decode(&into); err != nil {
+		t.Fatalf("Got unexpected error while decoding response - %v", err)
 	}
 }
