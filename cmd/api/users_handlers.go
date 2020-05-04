@@ -34,7 +34,8 @@ func (s *server) handleUserCreate() http.HandlerFunc {
 			return
 		}
 
-		if _, err := s.userModel.Insert(&user); err != nil {
+		userResponse, err := s.userModel.Insert(&user)
+		if err != nil {
 			if err == postgres.ErrEmailAlreadyExists || err == postgres.ErrUsernameAlreadyExists {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -43,6 +44,8 @@ func (s *server) handleUserCreate() http.HandlerFunc {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
+
+		s.respond(w, r, userResponse, http.StatusOK)
 	}
 }
 
@@ -102,14 +105,19 @@ func (s *server) handleUserLogin() http.HandlerFunc {
 
 		// TODO: persist the token, so we can invalidate it
 
-		response, err := json.Marshal(userResponse{Token: token})
+		s.respond(w, r, &userResponse{Token: token}, http.StatusOK)
+	}
+}
+
+func (s *server) respond(w http.ResponseWriter, r *http.Request, data interface{}, statusCode int) {
+	w.WriteHeader(statusCode)
+
+	if data != nil {
+		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
-			s.log.Printf("error while marshalling response: %v", err)
+			s.log.Printf("error while encoding response: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
-		}
-		if _, err := w.Write(response); err != nil {
-			s.log.Printf("error while writing response: %v", err)
 		}
 	}
 }
