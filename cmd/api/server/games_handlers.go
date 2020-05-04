@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"encoding/json"
@@ -15,7 +15,7 @@ var (
 	errIDNotAllowed = errors.New("'id' is not allowed parameter")
 )
 
-func (s *server) handleGamesCreate() http.HandlerFunc {
+func (s *Server) handleGamesCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var game models.Game
 
@@ -29,13 +29,13 @@ func (s *server) handleGamesCreate() http.HandlerFunc {
 			return
 		}
 
-		g, err := s.gameModel.Insert(&game)
+		g, err := s.GameModel.Insert(&game)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNameAlreadyExists) {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			s.log.Printf("error while inserting game into database: %v", err)
+			s.Log.Printf("error while inserting game into database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
@@ -44,11 +44,11 @@ func (s *server) handleGamesCreate() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleGamesGet() http.HandlerFunc {
+func (s *Server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		all, err := s.gameModel.All()
+		all, err := s.GameModel.All()
 		if err != nil {
-			s.log.Printf("error while fetching games from the database: %v", err)
+			s.Log.Printf("error while fetching games from the database: %v", err)
 			http.Error(w, "error fetching games", http.StatusInternalServerError)
 			return
 		}
@@ -57,7 +57,7 @@ func (s *server) handleGamesGet() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleGamesGetByID() http.HandlerFunc {
+func (s *Server) handleGamesGetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		args := mux.Vars(r)
 		id := args["id"]
@@ -66,13 +66,13 @@ func (s *server) handleGamesGetByID() http.HandlerFunc {
 			return
 		}
 
-		game, err := s.gameModel.Get(id)
+		game, err := s.GameModel.Get(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNoRecord) {
 				http.NotFound(w, r)
 				return
 			}
-			s.log.Printf("error while fetching game from the database: %v", err)
+			s.Log.Printf("error while fetching game from the database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}

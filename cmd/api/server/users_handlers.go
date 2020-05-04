@@ -1,12 +1,12 @@
-package main
+package server
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
-	"gopkg.in/square/go-jose.v2/json"
 )
 
 var (
@@ -20,7 +20,7 @@ type userResponse struct {
 	Token string `json:"token"`
 }
 
-func (s *server) handleUserCreate() http.HandlerFunc {
+func (s *Server) handleUserCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 
@@ -34,13 +34,13 @@ func (s *server) handleUserCreate() http.HandlerFunc {
 			return
 		}
 
-		userResponse, err := s.userModel.Insert(&user)
+		userResponse, err := s.UserModel.Insert(&user)
 		if err != nil {
 			if err == postgres.ErrEmailAlreadyExists || err == postgres.ErrUsernameAlreadyExists {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			s.log.Printf("error while inserting user into the DB: %v", err)
+			s.Log.Printf("error while inserting user into the DB: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -73,7 +73,7 @@ func validateUser(user *models.User) error {
 	return nil
 }
 
-func (s *server) handleUserLogin() http.HandlerFunc {
+func (s *Server) handleUserLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := models.User{}
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -91,13 +91,13 @@ func (s *server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
-		_, err := s.userModel.Authenticate(user.Email, user.Password)
+		_, err := s.UserModel.Authenticate(user.Email, user.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		token, err := s.auth.NewTokenForUser(user.Username)
+		token, err := s.Auth.NewTokenForUser(user.Username)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -109,13 +109,13 @@ func (s *server) handleUserLogin() http.HandlerFunc {
 	}
 }
 
-func (s *server) respond(w http.ResponseWriter, r *http.Request, data interface{}, statusCode int) {
+func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{}, statusCode int) {
 	w.WriteHeader(statusCode)
 
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
-			s.log.Printf("error while encoding response: %v", err)
+			s.Log.Printf("error while encoding response: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
