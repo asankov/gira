@@ -68,6 +68,7 @@ func (m *UserModel) Authenticate(email, password string) (*models.User, error) {
 	return &usr, nil
 }
 
+// TODO: marked for deletion
 // Get fetches the user with the given ID from the database
 // and returns the user or an error if such occurred.
 func (m *UserModel) Get(id string) (*models.User, error) {
