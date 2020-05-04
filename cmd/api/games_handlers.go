@@ -40,16 +40,7 @@ func (s *server) handleGamesCreate() http.HandlerFunc {
 			return
 		}
 
-		resp, err := json.Marshal(g)
-		if err != nil {
-			s.log.Printf("error while encoding response: %v", err)
-			http.Error(w, "error encoding response", http.StatusInternalServerError)
-			return
-		}
-
-		if _, err := w.Write(resp); err != nil {
-			s.log.Printf("error while writing response: %v", err)
-		}
+		s.respond(w, r, g, http.StatusOK)
 	}
 }
 
@@ -62,11 +53,7 @@ func (s *server) handleGamesGet() http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(all); err != nil {
-			s.log.Printf("error while encoding response: %v", err)
-			http.Error(w, "error encoding response", http.StatusInternalServerError)
-			return
-		}
+		s.respond(w, r, all, http.StatusOK)
 	}
 }
 
@@ -90,11 +77,7 @@ func (s *server) handleGamesGetByID() http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(w).Encode(game); err != nil {
-			s.log.Printf("error while encoding response: %v", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
-			return
-		}
+		s.respond(w, r, game, http.StatusOK)
 	}
 }
 func validateGame(game *models.Game) error {
