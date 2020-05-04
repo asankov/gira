@@ -21,4 +21,9 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Run the tests with Go ${{ matrix.go-version }}
       run: |
-        go test ./...
+        go test -coverprofile=./coverage.info ./...
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./coverage.info
