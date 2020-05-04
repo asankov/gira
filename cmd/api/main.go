@@ -15,17 +15,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type server struct {
-	log       *log.Logger
-	gameModel *postgres.GameModel
-	userModel *postgres.UserModel
-	auth      *auth.Authenticator
-}
-
-func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.routes().ServeHTTP(w, r)
-}
-
 func main() {
 	if err := run(); err != nil {
 		log.Panic("error while running server: " + err.Error())

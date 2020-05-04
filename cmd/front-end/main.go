@@ -13,16 +13,6 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
-type server struct {
-	log     *log.Logger
-	session *sessions.Session
-	client  *client.Client
-}
-
-func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.routes().ServeHTTP(w, r)
-}
-
 func main() {
 	if err := run(); err != nil {
 		log.Panic("error while running front-end service: " + err.Error())
