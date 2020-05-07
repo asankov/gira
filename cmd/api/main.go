@@ -24,16 +24,16 @@ func main() {
 }
 
 func run() error {
-	port := *flag.Int("port", 4000, "port on which the application is exposed")
-	dbHost := *flag.String("db_host", "localhost", "the address of the database")
-	dbPort := *flag.Int("db_port", 5432, "the port of the database")
-	dbUser := *flag.String("db_user", "antonsankov", "the user of the database")
-	dbPass := *flag.String("db_pass", "", "the password for the database")
-	dbName := *flag.String("db_name", "gira", "the name of the database")
-	secret := *flag.String("token_string", "9^ahslgndb&ahas2ey*hasdh732rbusd", "secret to be used for encoding and decoding JWT tokens")
+	port := flag.Int("port", 4000, "port on which the application is exposed")
+	dbHost := flag.String("db_host", "localhost", "the address of the database")
+	dbPort := flag.Int("db_port", 5432, "the port of the database")
+	dbUser := flag.String("db_user", "antonsankov", "the user of the database")
+	dbPass := flag.String("db_pass", "", "the password for the database")
+	dbName := flag.String("db_name", "gira", "the name of the database")
+	secret := flag.String("token_string", "9^ahslgndb&ahas2ey*hasdh732rbusd", "secret to be used for encoding and decoding JWT tokens")
 	flag.Parse()
 
-	db, err := openDB(dbHost, dbPort, dbUser, dbName, dbPass)
+	db, err := openDB(*dbHost, *dbPort, *dbUser, *dbName, *dbPass)
 	if err != nil {
 		return fmt.Errorf("error while opening DB: %w", err)
 	}
@@ -43,7 +43,7 @@ func run() error {
 		Log:       log.New(os.Stdout, "", log.Ldate|log.Ltime),
 		GameModel: &postgres.GameModel{DB: db},
 		UserModel: &postgres.UserModel{DB: db},
-		Auth:      auth.NewAutheniticator(secret),
+		Auth:      auth.NewAutheniticator(*secret),
 	}
 
 	log.Println(fmt.Sprintf("listening on port %d", port))
