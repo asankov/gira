@@ -8,5 +8,11 @@ WORKDIR /app
 
 RUN go build -o api ./cmd/api
 
-# TODO: configuration
-CMD ["./api"]
+ENV PORT ""
+ENV DB_HOST ""
+ENV DB_PORT ""
+ENV DB_USER ""
+ENV DB_PASS ""
+ENV DB_NAME ""
+ENV TOKEN_SECRET ""
+CMD ./api -port=${PORT} -db_host=${DB_HOST} -db_port=${DB_PORT} -db_user=${DB_USER} -db_pass=${DB_PASS} -db_name=${DB_NAME} -token_string=${TOKEN_SECRET}
