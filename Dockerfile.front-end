@@ -8,5 +8,8 @@ WORKDIR /app
 
 RUN go build -o front-end ./cmd/front-end
 
-# TODO: configuration
-CMD ["./front-end"]
+ENV PORT ""
+ENV BACK_END_ADDR ""
+ENV SESSION_SECRET ""
+
+CMD ./front-end -port=${PORT} -api_addr=${BACK_END_ADDR} -session_secret=${SESSION_SECRET}
