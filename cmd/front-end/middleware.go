@@ -37,3 +37,18 @@ func (s *server) recoverPanic(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (s *server) requireLogin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if _, err := r.Cookie("token"); err != nil {
+			w.Header().Add("Location", "/users/login")
+			w.WriteHeader(http.StatusSeeOther)
+			return
+		}
+
+		// at this point we don't care whether the cookie is valid or not, just that is exists
+		// if the token inside the cookie is not valid the back-end would return 401 Unathorized
+
+		next.ServeHTTP(w, r)
+	})
+}

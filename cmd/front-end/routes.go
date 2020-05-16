@@ -21,11 +21,12 @@ func (s *server) routes() http.Handler {
 
 	standartMiddleware := alice.New(s.recoverPanic, s.logRequest, s.secureHeaders)
 	dynamicMiddleware := alice.New(s.session.Enable)
+	requireLogin := alice.New(s.requireLogin)
 
 	r.HandleFunc("/", s.handleHome()).Methods(http.MethodGet)
-	r.Handle("/games", dynamicMiddleware.Then(s.handleGamesGet())).Methods(http.MethodGet)
-	r.Handle("/games/new", dynamicMiddleware.Then(s.handleGameCreateView())).Methods(http.MethodGet)
-	r.Handle("/games", dynamicMiddleware.Then(s.handleGameCreate())).Methods(http.MethodPost)
+	r.Handle("/games", requireLogin.Then(dynamicMiddleware.Then(s.handleGamesGet()))).Methods(http.MethodGet)
+	r.Handle("/games/new", requireLogin.Then(dynamicMiddleware.Then(s.handleGameCreateView()))).Methods(http.MethodGet)
+	r.Handle("/games", requireLogin.Then(dynamicMiddleware.Then(s.handleGameCreate()))).Methods(http.MethodPost)
 
 	r.Handle("/users/signup", standartMiddleware.Then(s.handleUserSignupForm())).Methods(http.MethodGet)
 	r.Handle("/users/create", dynamicMiddleware.Then(s.handleUserSignup())).Methods(http.MethodPost)
