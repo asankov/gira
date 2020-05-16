@@ -46,8 +46,8 @@ func run() error {
 		Auth:      auth.NewAutheniticator(*secret),
 	}
 
-	log.Println(fmt.Sprintf("listening on port %d", port))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), s); err != nil {
+	log.Println(fmt.Sprintf("listening on port %d", *port))
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}
 
