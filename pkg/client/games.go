@@ -15,6 +15,8 @@ var (
 	ErrFetchingGames = errors.New("error while fetching games")
 	// ErrCreatingGame is a generic error
 	ErrCreatingGame = errors.New("error while creating game")
+	// ErrNoAuthorization is returned when no authorization is sent for a authorized routes
+	ErrNoAuthorization = errors.New("no authorization is present")
 )
 
 // Client is the struct that is used to communicate
@@ -36,7 +38,10 @@ func (c *Client) GetGames() ([]*models.Game, error) {
 	if err != nil {
 		return nil, ErrFetchingGames
 	}
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.StatusOK {
+		if res.StatusCode == http.StatusUnauthorized {
+			return nil, ErrNoAuthorization
+		}
 		return nil, ErrFetchingGames
 	}
 
@@ -66,6 +71,9 @@ func (c *Client) CreateGame(game *models.Game) (*models.Game, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
+		if res.StatusCode == http.StatusUnauthorized {
+			return nil, ErrNoAuthorization
+		}
 		return nil, ErrCreatingGame
 	}
 

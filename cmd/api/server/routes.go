@@ -10,12 +10,13 @@ import (
 
 func (s *Server) routes() http.Handler {
 	standartMiddleware := alice.New(s.recoverPanic, s.logRequest, s.secureHeaders)
+	requireLogin := alice.New(s.requireLogin)
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/games", s.handleGamesGet()).Methods(http.MethodGet)
-	r.HandleFunc("/games/{id}", s.handleGamesGetByID()).Methods(http.MethodGet)
-	r.HandleFunc("/games", s.handleGamesCreate()).Methods(http.MethodPost)
+	r.Handle("/games", requireLogin.Then(s.handleGamesGet())).Methods(http.MethodGet)
+	r.Handle("/games/{id}", requireLogin.Then(s.handleGamesGetByID())).Methods(http.MethodGet)
+	r.Handle("/games", requireLogin.Then(s.handleGamesCreate())).Methods(http.MethodPost)
 
 	r.HandleFunc("/users", s.handleUserCreate()).Methods(http.MethodPost)
 	r.HandleFunc("/users/login", s.handleUserLogin()).Methods(http.MethodPost)

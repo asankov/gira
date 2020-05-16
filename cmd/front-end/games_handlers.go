@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"text/template"
 
+	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
 )
 
@@ -19,6 +21,11 @@ func (s *server) handleGamesGet() http.HandlerFunc {
 
 		games, err := s.client.GetGames()
 		if err != nil {
+			if errors.Is(err, client.ErrNoAuthorization) {
+				w.Header().Add("Location", "/users/login")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
