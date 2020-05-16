@@ -18,6 +18,7 @@ func (s *Server) routes() http.Handler {
 	r.Handle("/games/{id}", requireLogin.Then(s.handleGamesGetByID())).Methods(http.MethodGet)
 	r.Handle("/games", requireLogin.Then(s.handleGamesCreate())).Methods(http.MethodPost)
 
+	r.HandleFunc("/users", s.handleUserGet()).Methods(http.MethodGet)
 	r.HandleFunc("/users", s.handleUserCreate()).Methods(http.MethodPost)
 	r.HandleFunc("/users/login", s.handleUserLogin()).Methods(http.MethodPost)
 

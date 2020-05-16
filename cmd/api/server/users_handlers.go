@@ -3,8 +3,10 @@ package server
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
 )
@@ -17,7 +19,8 @@ var (
 )
 
 type userResponse struct {
-	Token string `json:"token"`
+	Token    string `json:"token"`
+	Username string `json:"username"`
 }
 
 func (s *Server) handleUserCreate() http.HandlerFunc {
@@ -47,6 +50,36 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 
 		s.respond(w, r, userResponse, http.StatusOK)
 	}
+}
+
+func (s *Server) handleUserGet() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token, err := getFromQuery(r, "token")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		username, err := s.Auth.DecodeToken(token)
+		if err != nil {
+			if errors.Is(err, auth.ErrInvalidSignature) || errors.Is(err, auth.ErrTokenExpired) {
+				http.Error(w, "invalid token", http.StatusUnauthorized)
+				return
+			}
+			http.Error(w, "error while authenticating user: "+err.Error(), http.StatusInternalServerError)
+		}
+
+		s.respond(w, r, &userResponse{Username: username}, http.StatusOK)
+	}
+}
+
+func getFromQuery(r *http.Request, key string) (string, error) {
+	vals, ok := r.URL.Query()[key]
+	if !ok || len(vals) != 1 {
+		return "", fmt.Errorf(`expected "%s" query param`, key)
+	}
+
+	return vals[0], nil
 }
 
 func validateUser(user *models.User) error {
@@ -91,13 +124,13 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
-		_, err := s.UserModel.Authenticate(user.Email, user.Password)
+		usr, err := s.UserModel.Authenticate(user.Email, user.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		token, err := s.Auth.NewTokenForUser(user.Username)
+		token, err := s.Auth.NewTokenForUser(usr.Username)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

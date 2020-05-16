@@ -3,15 +3,25 @@ package main
 import (
 	"errors"
 	"net/http"
-	"text/template"
 
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
 )
 
+type gamesData struct {
+	Games []*models.Game
+	User  *models.User
+	Flash string
+}
+
+// SetUser implements the Data interface
+func (g *gamesData) SetUser(usr *models.User) {
+	g.User = usr
+}
+
 func (s *server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, nil, "./ui/html/home.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.renderTemplate(w, r, &gamesData{}, "./ui/html/home.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
 func (s *server) handleGamesGet() http.HandlerFunc {
@@ -41,7 +51,7 @@ func (s *server) handleGamesGet() http.HandlerFunc {
 
 func (s *server) handleGameCreateView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, nil, "./ui/html/create.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.renderTemplate(w, r, &gamesData{}, "./ui/html/create.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
 
@@ -62,19 +72,5 @@ func (s *server) handleGameCreate() http.HandlerFunc {
 
 		w.Header().Add("Location", "/games")
 		w.WriteHeader(http.StatusSeeOther)
-	}
-}
-
-func (s *server) renderTemplate(w http.ResponseWriter, r *http.Request, data interface{}, templates ...string) {
-	t, err := template.ParseFiles(templates...)
-	if err != nil {
-		s.log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-
-	if err := t.Execute(w, data); err != nil {
-		s.log.Println(err.Error())
-		http.Error(w, "Internal Server Error", 500)
 	}
 }

@@ -3,18 +3,10 @@ package main
 import (
 	"net/http"
 
-	"github.com/asankov/gira/pkg/models"
 	"github.com/justinas/alice"
 
 	"github.com/gorilla/mux"
 )
-
-type gamesData struct {
-	Games []*models.Game
-	// TODO: proper data type
-	User  string
-	Flash string
-}
 
 func (s *server) routes() http.Handler {
 	r := mux.NewRouter()

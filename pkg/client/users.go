@@ -10,6 +10,23 @@ import (
 	"github.com/asankov/gira/pkg/models"
 )
 
+func (c *Client) GetUser(token string) (*models.User, error) {
+	url := fmt.Sprintf("%s/users?token=%s", c.addr, token)
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error while calling %s: %w", url, err)
+	}
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
+	}
+	var userResponse *models.User
+	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
+		return nil, fmt.Errorf("error while decoding body: %w", err)
+	}
+
+	return userResponse, nil
+}
+
 func (c *Client) CreateUser(user *models.User) (*models.User, error) {
 	body, err := json.Marshal(user)
 	if err != nil {
