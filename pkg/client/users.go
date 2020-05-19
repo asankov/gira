@@ -11,8 +11,13 @@ import (
 )
 
 func (c *Client) GetUser(token string) (*models.User, error) {
-	url := fmt.Sprintf("%s/users?token=%s", c.addr, token)
-	res, err := http.Get(url)
+	url := fmt.Sprintf("%s/users", c.addr)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("error while building request")
+	}
+	req.Header.Set("x-auth-token", token)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error while calling %s: %w", url, err)
 	}

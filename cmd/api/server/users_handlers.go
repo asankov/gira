@@ -54,9 +54,9 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 
 func (s *Server) handleUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, err := getFromQuery(r, "token")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		token := r.Header.Get("x-auth-token")
+		if token == "" {
+			http.Error(w, "expected token in header", http.StatusBadRequest)
 			return
 		}
 

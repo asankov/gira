@@ -15,17 +15,7 @@ type Data interface {
 }
 
 func (s *server) renderTemplate(w http.ResponseWriter, r *http.Request, data Data, templates ...string) {
-	cookie, err := r.Cookie("token")
-	if err != nil {
-
-	} else {
-		usr, err := s.client.GetUser(cookie.Value)
-		if err != nil {
-
-		} else {
-			data.SetUser(usr)
-		}
-	}
+	s.setUserData(data, r)
 	t, err := template.ParseFiles(templates...)
 	if err != nil {
 		s.log.Println(err.Error())
@@ -37,4 +27,20 @@ func (s *server) renderTemplate(w http.ResponseWriter, r *http.Request, data Dat
 		s.log.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 	}
+}
+
+func (s *server) setUserData(data Data, r *http.Request) {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		return
+	}
+	usr, err := s.client.GetUser(cookie.Value)
+	if err != nil {
+		return
+	}
+	if data == nil {
+		return
+	}
+
+	data.SetUser(usr)
 }
