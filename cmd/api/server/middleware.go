@@ -37,13 +37,13 @@ func (s *Server) logRequest(next http.Handler) http.Handler {
 
 func (s *Server) requireLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie("token")
-		if err != nil {
+		token := r.Header.Get("x-auth-token")
+		if token == "" {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 
-		username, err := s.Auth.DecodeToken(cookie.Value)
+		username, err := s.Auth.DecodeToken(token)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
