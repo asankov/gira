@@ -29,7 +29,8 @@ func (s *server) handleGamesGet() http.HandlerFunc {
 
 		flash := s.session.PopString(r, "flash")
 
-		games, err := s.client.GetGames()
+		token := getToken(r)
+		games, err := s.client.GetGames(token)
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")
@@ -73,4 +74,13 @@ func (s *server) handleGameCreate() http.HandlerFunc {
 		w.Header().Add("Location", "/games")
 		w.WriteHeader(http.StatusSeeOther)
 	}
+}
+
+func getToken(r *http.Request) string {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		// let it panic, the middleware should not allow this to happen
+		panic("token not present in cookie")
+	}
+	return cookie.Value
 }

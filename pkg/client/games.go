@@ -22,19 +22,26 @@ var (
 // Client is the struct that is used to communicate
 // with the games service.
 type Client struct {
-	addr string
+	addr       string
+	httpClient *http.Client
 }
 
 // New returns a new client with the given address.
 func New(addr string) (*Client, error) {
 	return &Client{
-		addr: addr,
+		addr:       addr,
+		httpClient: &http.Client{},
 	}, nil
 }
 
 // GetGames returns all the games.
-func (c *Client) GetGames() ([]*models.Game, error) {
-	res, err := http.Get(fmt.Sprintf("%s/games", c.addr))
+func (c *Client) GetGames(token string) ([]*models.Game, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/games", c.addr), nil)
+	if err != nil {
+		return nil, fmt.Errorf("error while building HTTP request")
+	}
+	req.Header.Add("x-auth-token", token)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, ErrFetchingGames
 	}
