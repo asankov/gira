@@ -135,7 +135,7 @@ func TestCreateGame(t *testing.T) {
 	}
 }
 
-func TestCreateGameError(t *testing.T) {
+func TestCreateGameValidationError(t *testing.T) {
 
 	cases := []struct {
 		name string
