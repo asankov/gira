@@ -33,7 +33,7 @@ func TestUserCreate(t *testing.T) {
 		Return(&expectedUser, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users", marshall(t, expectedUser))
+	r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, expectedUser))
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Code, http.StatusOK
@@ -42,7 +42,7 @@ func TestUserCreate(t *testing.T) {
 	}
 
 	var user models.User
-	decode(t, w, &user)
+	fixtures.Decode(t, w.Body, &user)
 	if user.Username != expectedUser.Username {
 		t.Errorf("Got (%s) for username, expected (%s)", user.Username, expectedUser.Username)
 	}
@@ -101,7 +101,7 @@ func TestUserCreateValidationError(t *testing.T) {
 			srv := newServer(nil, nil, nil)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/users", marshall(t, c.user))
+			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, c.user))
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Code, http.StatusBadRequest
@@ -147,7 +147,7 @@ func TestUserCreateDBError(t *testing.T) {
 				Return(nil, c.dbError)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/users", marshall(t, expectedUser))
+			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, expectedUser))
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Code, c.expectedCode

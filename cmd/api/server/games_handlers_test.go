@@ -1,8 +1,6 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -60,7 +58,7 @@ func TestGetGames(t *testing.T) {
 	}
 
 	var res []*models.Game
-	decode(t, w, &res)
+	fixtures.Decode(t, w.Body, &res)
 
 	if len(res) != 2 {
 		t.Fatalf("Got (%d) for length of result, expected %d", len(res), 2)
@@ -131,7 +129,7 @@ func TestGetGameByID(t *testing.T) {
 	}
 
 	var game *models.Game
-	decode(t, w, &game)
+	fixtures.Decode(t, w.Body, &game)
 	if game.Name != actualName {
 		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
 	}
@@ -198,7 +196,7 @@ func TestCreateGame(t *testing.T) {
 		Return(actualGame, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
 	token, err := srv.Authenticator.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
@@ -212,7 +210,7 @@ func TestCreateGame(t *testing.T) {
 	}
 
 	var game *models.Game
-	decode(t, w, &game)
+	fixtures.Decode(t, w.Body, &game)
 	if game.Name != actualName {
 		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
 	}
@@ -248,7 +246,7 @@ func TestCreateGameValidationError(t *testing.T) {
 				Return(actualGame, nil)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
 			token, err := srv.Authenticator.NewTokenForUser(user)
 			if err != nil {
 				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
@@ -296,7 +294,7 @@ func TestCreateGameDBError(t *testing.T) {
 				Return(nil, c.dbError)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
 			token, err := srv.Auth.NewTokenForUser(user)
 			if err != nil {
 				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
@@ -309,19 +307,5 @@ func TestCreateGameDBError(t *testing.T) {
 				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
 			}
 		})
-	}
-}
-
-func marshall(t *testing.T, payload interface{}) *bytes.Buffer {
-	body, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("Got unexpected error while marshalling payload - %v", err)
-	}
-	return bytes.NewBuffer(body)
-}
-
-func decode(t *testing.T, w *httptest.ResponseRecorder, into interface{}) {
-	if err := json.NewDecoder(w.Body).Decode(&into); err != nil {
-		t.Fatalf("Got unexpected error while decoding response - %v", err)
 	}
 }
