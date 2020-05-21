@@ -22,10 +22,11 @@ var (
 	user          = &models.User{Username: "anton"}
 )
 
-func newServer(g GameModel, a *auth.Authenticator) *Server {
+func newServer(g GameModel, u UserModel, a *auth.Authenticator) *Server {
 	return &Server{
 		Log:           log.New(os.Stdout, "", 0),
 		GameModel:     g,
+		UserModel:     u,
 		Authenticator: a,
 	}
 }
@@ -33,7 +34,7 @@ func TestGetGames(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	gamesResponse := []*models.Game{
 		{ID: "1", Name: "AC"},
@@ -80,7 +81,7 @@ func TestGetGamesErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	gameModel.
 		EXPECT().
@@ -106,7 +107,7 @@ func TestGetGameByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -159,7 +160,7 @@ func TestGetGameByIDDBError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, authenticator)
+			srv := newServer(gameModel, nil, authenticator)
 
 			gameModel.
 				EXPECT().
@@ -187,7 +188,7 @@ func TestCreateGame(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -238,7 +239,7 @@ func TestCreateGameValidationError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, authenticator)
+			srv := newServer(gameModel, nil, authenticator)
 
 			actualGame := c.game
 			gameModel.
@@ -286,7 +287,7 @@ func TestCreateGameDBError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, authenticator)
+			srv := newServer(gameModel, nil, authenticator)
 
 			actualGame := &models.Game{Name: "ACIII"}
 			gameModel.

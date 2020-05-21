@@ -2,10 +2,8 @@ package server
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/auth"
@@ -28,11 +26,7 @@ func TestUserCreate(t *testing.T) {
 
 	userModel := fixtures.NewUserModelMock(ctrl)
 
-	srv := &Server{
-		Log:       log.New(os.Stdout, "", 0),
-		Auth:      auth.NewAutheniticator("some_secret"),
-		UserModel: userModel,
-	}
+	srv := newServer(nil, userModel, auth.NewAutheniticator("some_secret"))
 
 	userModel.EXPECT().
 		Insert(&expectedUser).
@@ -104,9 +98,7 @@ func TestUserCreateValidationError(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			srv := &Server{
-				Log: log.New(os.Stdout, "", 0),
-			}
+			srv := newServer(nil, nil, nil)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/users", marshall(t, c.user))
@@ -148,10 +140,7 @@ func TestUserCreateDBError(t *testing.T) {
 
 			userModel := fixtures.NewUserModelMock(ctrl)
 
-			srv := &Server{
-				Log:       log.New(os.Stdout, "", 0),
-				UserModel: userModel,
-			}
+			srv := newServer(nil, userModel, nil)
 
 			userModel.EXPECT().
 				Insert(&expectedUser).
