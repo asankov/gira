@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/models"
 )
 
@@ -27,12 +26,18 @@ type UserGameModel interface {
 	GetUserGames(userID string) ([]*models.Game, error)
 }
 
+// Authenticator is the interface to interact with the Authenticator (DB, OIDC provider, etc.)
+type Authenticator interface {
+	DecodeToken(token string) (*models.User, error)
+	NewTokenForUser(user *models.User) (string, error)
+}
+
 // Server is the struct that holds all the dependencies
 // needed to run the application
 type Server struct {
-	Log  *log.Logger
-	Auth *auth.Authenticator
+	Log *log.Logger
 
+	Authenticator
 	GameModel
 	UserModel
 	UserGameModel
