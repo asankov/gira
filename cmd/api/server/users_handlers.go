@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/asankov/gira/internal/auth"
@@ -71,15 +70,6 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 
 		s.respond(w, r, &userResponse{Username: username}, http.StatusOK)
 	}
-}
-
-func getFromQuery(r *http.Request, key string) (string, error) {
-	vals, ok := r.URL.Query()[key]
-	if !ok || len(vals) != 1 {
-		return "", fmt.Errorf(`expected "%s" query param`, key)
-	}
-
-	return vals[0], nil
 }
 
 func validateUser(user *models.User) error {
