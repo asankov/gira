@@ -23,9 +23,9 @@ var (
 
 func newServer(g GameModel, a *auth.Authenticator) *Server {
 	return &Server{
-		Log:       log.New(os.Stdout, "", 0),
-		GameModel: g,
-		Auth:      a,
+		Log:           log.New(os.Stdout, "", 0),
+		GameModel:     g,
+		Authenticator: a,
 	}
 }
 func TestGetGames(t *testing.T) {
@@ -45,7 +45,7 @@ func TestGetGames(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	token, err := srv.Auth.NewTokenForUser(user)
+	token, err := srv.Authenticator.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 	}
@@ -88,7 +88,7 @@ func TestGetGamesErr(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	token, err := srv.Auth.NewTokenForUser(user)
+	token, err := srv.Authenticator.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 	}
@@ -116,7 +116,7 @@ func TestCreateGame(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
-	token, err := srv.Auth.NewTokenForUser(user)
+	token, err := srv.Authenticator.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 	}
@@ -166,7 +166,7 @@ func TestCreateGameError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
-			token, err := srv.Auth.NewTokenForUser(user)
+			token, err := srv.Authenticator.NewTokenForUser(user)
 			if err != nil {
 				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 			}

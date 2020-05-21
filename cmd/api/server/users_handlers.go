@@ -59,7 +59,7 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 			return
 		}
 
-		user, err := s.Auth.DecodeToken(token)
+		user, err := s.Authenticator.DecodeToken(token)
 		if err != nil {
 			if errors.Is(err, auth.ErrInvalidSignature) || errors.Is(err, auth.ErrTokenExpired) {
 				http.Error(w, "invalid token", http.StatusUnauthorized)
@@ -120,7 +120,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
-		token, err := s.Auth.NewTokenForUser(usr)
+		token, err := s.Authenticator.NewTokenForUser(usr)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
