@@ -9,4 +9,5 @@ require (
 	github.com/justinas/alice v1.2.0
 	github.com/lib/pq v1.3.0
 	golang.org/x/crypto v0.0.0-20200317142112-1b76d66859c6
+	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
 )
