@@ -43,13 +43,10 @@ func (s *Server) requireLogin(next http.Handler) http.Handler {
 			return
 		}
 
-		username, err := s.Auth.DecodeToken(token)
-		if err != nil {
+		if _, err := s.Auth.DecodeToken(token); err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
-
-		r.Header.Add("user", username)
 
 		next.ServeHTTP(w, r)
 	})

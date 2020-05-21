@@ -17,6 +17,7 @@ import (
 
 var (
 	authenticator = auth.NewAutheniticator("test_secret")
+	user          = &models.User{Username: "anton"}
 )
 
 func TestGetGames(t *testing.T) {
@@ -40,7 +41,7 @@ func TestGetGames(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	token, err := srv.Auth.NewTokenForUser("anton")
+	token, err := srv.Auth.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 	}
@@ -89,7 +90,7 @@ func TestGetGamesErr(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	token, err := srv.Auth.NewTokenForUser("anton")
+	token, err := srv.Auth.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 	}

@@ -21,13 +21,21 @@ type UserModel interface {
 	Authenticate(email, password string) (*models.User, error)
 }
 
+// UserGameModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
+type UserGameModel interface {
+	LinkGameToUser(userID, gameID string) error
+	GetUserGames(userID string) ([]*models.Game, error)
+}
+
 // Server is the struct that holds all the dependencies
 // needed to run the application
 type Server struct {
-	Log       *log.Logger
-	GameModel GameModel
-	UserModel UserModel
-	Auth      *auth.Authenticator
+	Log  *log.Logger
+	Auth *auth.Authenticator
+
+	GameModel
+	UserModel
+	UserGameModel
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
