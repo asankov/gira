@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/asankov/gira/pkg/models"
 )
 
 var (
@@ -29,8 +31,8 @@ type header struct {
 }
 
 type payload struct {
-	Username  string `json:"usr"`
-	ExpiresAt int64  `json:"exp"`
+	User      *models.User
+	ExpiresAt int64 `json:"exp"`
 }
 
 // Authenticator handles the logic around generating
@@ -48,9 +50,9 @@ func NewAutheniticator(secret string) *Authenticator {
 
 // NewTokenForUser generates a new JWT for the given username,
 // signs it with a secret and returns it.
-func (a *Authenticator) NewTokenForUser(username string) (string, error) {
+func (a *Authenticator) NewTokenForUser(user *models.User) (string, error) {
 	p := &payload{
-		Username:  username,
+		User:      user,
 		ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
 	}
 
@@ -76,35 +78,35 @@ func (a *Authenticator) hash(src string) string {
 // the token belongs to, otherwise it returns an error.
 // If the token is expired, a ErrTokenExpired is returned.
 // If the JWT has been tampered with, a ErrInvalidSignature is returned.
-func (a *Authenticator) DecodeToken(token string) (string, error) {
+func (a *Authenticator) DecodeToken(token string) (*models.User, error) {
 	components := strings.Split(token, ".")
 	if len(components) != 3 {
-		return "", fmt.Errorf("invalid token format")
+		return nil, fmt.Errorf("invalid token format")
 	}
 
 	pDec, err := base64.StdEncoding.DecodeString(components[1])
 	if err != nil {
-		return "", fmt.Errorf("error decoding payload: %w", err)
+		return nil, fmt.Errorf("error decoding payload: %w", err)
 	}
 	var p payload
 	if err := json.Unmarshal(pDec, &p); err != nil {
-		return "", fmt.Errorf("error unmarshaling payload: %w", err)
+		return nil, fmt.Errorf("error unmarshaling payload: %w", err)
 	}
 
 	if time.Now().Unix() > p.ExpiresAt {
-		return "", ErrTokenExpired
+		return nil, ErrTokenExpired
 	}
 
 	base, err := tokenBase(standartHeader, &p)
 	if err != nil {
-		return "", fmt.Errorf("error building token base: %w", err)
+		return nil, fmt.Errorf("error building token base: %w", err)
 	}
 
 	if components[2] != a.hash(base) {
-		return "", ErrInvalidSignature
+		return nil, ErrInvalidSignature
 	}
 
-	return p.Username, nil
+	return p.User, nil
 }
 
 func tokenBase(header *header, payload *payload) (string, error) {
