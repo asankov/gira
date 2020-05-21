@@ -109,6 +109,7 @@ func TestCreateGame(t *testing.T) {
 	srv := Server{
 		Log:       log.New(os.Stdout, "", 0),
 		GameModel: gameModel,
+		Auth:      authenticator,
 	}
 
 	actualName := "ACIII"
@@ -120,6 +121,11 @@ func TestCreateGame(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+	token, err := srv.Auth.NewTokenForUser(user)
+	if err != nil {
+		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
+	}
+	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
 	statusCode := w.Result().StatusCode
