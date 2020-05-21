@@ -9,9 +9,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golang/mock/gomock"
+)
+
+var (
+	authenticator = auth.NewAutheniticator("test_secret")
 )
 
 func TestGetGames(t *testing.T) {
@@ -21,6 +26,7 @@ func TestGetGames(t *testing.T) {
 	srv := Server{
 		Log:       log.New(os.Stdout, "", 0),
 		GameModel: gameModel,
+		Auth:      authenticator,
 	}
 
 	gamesResponse := []*models.Game{
@@ -34,6 +40,11 @@ func TestGetGames(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
+	token, err := srv.Auth.NewTokenForUser("anton")
+	if err != nil {
+		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
+	}
+	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Result().StatusCode, http.StatusOK
@@ -68,6 +79,7 @@ func TestGetGamesErr(t *testing.T) {
 	srv := Server{
 		Log:       log.New(os.Stdout, "", 0),
 		GameModel: gameModel,
+		Auth:      authenticator,
 	}
 
 	gameModel.
@@ -77,6 +89,11 @@ func TestGetGamesErr(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
+	token, err := srv.Auth.NewTokenForUser("anton")
+	if err != nil {
+		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
+	}
+	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Result().StatusCode, http.StatusInternalServerError
