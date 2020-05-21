@@ -22,5 +22,8 @@ func (s *Server) routes() http.Handler {
 	r.HandleFunc("/users", s.handleUserCreate()).Methods(http.MethodPost)
 	r.HandleFunc("/users/login", s.handleUserLogin()).Methods(http.MethodPost)
 
+	r.HandleFunc("/users/{id}/games", nil).Methods(http.MethodGet)
+	r.HandleFunc("/users/{id}/games", nil).Methods(http.MethodPost)
+
 	return standartMiddleware.Then(r)
 }
