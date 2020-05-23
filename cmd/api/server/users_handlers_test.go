@@ -157,3 +157,125 @@ func TestUserCreateDBError(t *testing.T) {
 		})
 	}
 }
+
+func TestUserLogin(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	userModel := fixtures.NewUserModelMock(ctrl)
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+
+	srv := newServer(nil, userModel, authenticatorMock)
+
+	userModel.EXPECT().
+		Authenticate(expectedUser.Email, expectedUser.Password).
+		Return(&expectedUser, nil)
+
+	token := "my_test_token"
+	authenticatorMock.EXPECT().
+		NewTokenForUser(&expectedUser).
+		Return(token, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, expectedUser))
+	srv.ServeHTTP(w, r)
+
+	got, expected := w.Code, http.StatusOK
+	if got != expected {
+		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+	}
+	var userResponse models.UserResponse
+	fixtures.Decode(t, w.Body, &userResponse)
+	if userResponse.Token != token {
+		t.Fatalf(`Got ("%s") for token, expected ("%s")`, userResponse.Token, token)
+	}
+}
+
+func TestUserLoginValidationError(t *testing.T) {
+	testCases := []struct {
+		name string
+		user *models.User
+	}{
+		{
+			name: "No email",
+			user: &models.User{
+				Email:    "",
+				Password: "T3$T",
+			},
+		},
+		{
+			name: "No password",
+			user: &models.User{
+				Email:    "test@mail.com",
+				Password: "",
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			userModel := fixtures.NewUserModelMock(ctrl)
+
+			srv := newServer(nil, userModel, nil)
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, testCase.user))
+			srv.ServeHTTP(w, r)
+
+			got, expected := w.Code, http.StatusBadRequest
+			if got != expected {
+				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+			}
+			// TODO: assert body, once we start returning proper errors
+		})
+	}
+}
+
+func TestUserLoginServiceError(t *testing.T) {
+	testCases := []struct {
+		name  string
+		setup func(u *fixtures.UserModelMock, a *fixtures.AuthenticatorMock)
+	}{
+		{
+			name: "UserModel.Authenticate fails",
+			setup: func(u *fixtures.UserModelMock, a *fixtures.AuthenticatorMock) {
+				u.EXPECT().
+					Authenticate(expectedUser.Email, expectedUser.Password).
+					Return(nil, errors.New("user not found"))
+			},
+		},
+		{
+			name: "Authenticator.NewTokenForUser fails",
+			setup: func(u *fixtures.UserModelMock, a *fixtures.AuthenticatorMock) {
+				u.EXPECT().
+					Authenticate(expectedUser.Email, expectedUser.Password).
+					Return(&expectedUser, nil)
+
+				a.EXPECT().
+					NewTokenForUser(&expectedUser).
+					Return("", errors.New("intentional error"))
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			userModel := fixtures.NewUserModelMock(ctrl)
+			authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+
+			testCase.setup(userModel, authenticatorMock)
+
+			srv := newServer(nil, userModel, authenticatorMock)
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, expectedUser))
+			srv.ServeHTTP(w, r)
+
+			got, expected := w.Code, http.StatusInternalServerError
+			if got != expected {
+				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+			}
+		})
+	}
+}
