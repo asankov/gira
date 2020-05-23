@@ -116,7 +116,7 @@ func TestGetGameByID(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
-	token, err := srv.Auth.NewTokenForUser(user)
+	token, err := srv.Authenticator.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 	}
@@ -167,7 +167,7 @@ func TestGetGameByIDDBError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
-			token, err := srv.Auth.NewTokenForUser(user)
+			token, err := srv.Authenticator.NewTokenForUser(user)
 			if err != nil {
 				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 			}
@@ -295,7 +295,7 @@ func TestCreateGameDBError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
-			token, err := srv.Auth.NewTokenForUser(user)
+			token, err := srv.Authenticator.NewTokenForUser(user)
 			if err != nil {
 				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
 			}
