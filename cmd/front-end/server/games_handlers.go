@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"errors"
@@ -19,18 +19,18 @@ func (g *gamesData) SetUser(usr *models.User) {
 	g.User = usr
 }
 
-func (s *server) handleHome() http.HandlerFunc {
+func (s *Server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, &gamesData{}, "./ui/html/home.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
-func (s *server) handleGamesGet() http.HandlerFunc {
+func (s *Server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		flash := s.session.PopString(r, "flash")
+		flash := s.Session.PopString(r, "flash")
 
 		token := getToken(r)
-		games, err := s.client.GetGames(token)
+		games, err := s.Client.GetGames(token)
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")
@@ -50,13 +50,13 @@ func (s *server) handleGamesGet() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleGameCreateView() http.HandlerFunc {
+func (s *Server) handleGameCreateView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.renderTemplate(w, r, &gamesData{}, "./ui/html/create.page.tmpl", "./ui/html/base.layout.tmpl")
 	}
 }
 
-func (s *server) handleGameCreate() http.HandlerFunc {
+func (s *Server) handleGameCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.PostFormValue("name")
 		if name == "" {
@@ -64,12 +64,12 @@ func (s *server) handleGameCreate() http.HandlerFunc {
 			return
 		}
 
-		if _, err := s.client.CreateGame(&models.Game{Name: name}); err != nil {
+		if _, err := s.Client.CreateGame(&models.Game{Name: name}); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		s.session.Put(r, "flash", "Game successfully created.")
+		s.Session.Put(r, "flash", "Game successfully created.")
 
 		w.Header().Add("Location", "/games")
 		w.WriteHeader(http.StatusSeeOther)
