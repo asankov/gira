@@ -20,7 +20,7 @@ var (
 	user          = &models.User{Username: "anton"}
 )
 
-func newServer(g GameModel, u UserModel, a *auth.Authenticator) *Server {
+func newServer(g GameModel, u UserModel, a Authenticator) *Server {
 	return &Server{
 		Log:           log.New(os.Stdout, "", 0),
 		GameModel:     g,
