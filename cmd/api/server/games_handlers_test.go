@@ -1,8 +1,6 @@
 package server
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -13,6 +11,7 @@ import (
 	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
+	"github.com/asankov/gira/pkg/models/postgres"
 	"github.com/golang/mock/gomock"
 )
 
@@ -21,10 +20,11 @@ var (
 	user          = &models.User{Username: "anton"}
 )
 
-func newServer(g GameModel, a *auth.Authenticator) *Server {
+func newServer(g GameModel, u UserModel, a *auth.Authenticator) *Server {
 	return &Server{
 		Log:           log.New(os.Stdout, "", 0),
 		GameModel:     g,
+		UserModel:     u,
 		Authenticator: a,
 	}
 }
@@ -32,7 +32,7 @@ func TestGetGames(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	gamesResponse := []*models.Game{
 		{ID: "1", Name: "AC"},
@@ -58,7 +58,7 @@ func TestGetGames(t *testing.T) {
 	}
 
 	var res []*models.Game
-	decode(t, w, &res)
+	fixtures.Decode(t, w.Body, &res)
 
 	if len(res) != 2 {
 		t.Fatalf("Got (%d) for length of result, expected %d", len(res), 2)
@@ -79,7 +79,7 @@ func TestGetGamesErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	gameModel.
 		EXPECT().
@@ -101,21 +101,21 @@ func TestGetGamesErr(t *testing.T) {
 	}
 }
 
-func TestCreateGame(t *testing.T) {
+func TestGetGameByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, authenticator)
+	srv := newServer(gameModel, nil, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
 	gameModel.
 		EXPECT().
-		Insert(actualGame).
+		Get("1").
 		Return(actualGame, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+	r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
 	token, err := srv.Authenticator.NewTokenForUser(user)
 	if err != nil {
 		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
@@ -129,13 +129,94 @@ func TestCreateGame(t *testing.T) {
 	}
 
 	var game *models.Game
-	decode(t, w, &game)
+	fixtures.Decode(t, w.Body, &game)
 	if game.Name != actualName {
 		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
 	}
 }
 
-func TestCreateGameError(t *testing.T) {
+func TestGetGameByIDDBError(t *testing.T) {
+	cases := []struct {
+		name         string
+		dbError      error
+		expectedCode int
+	}{
+		{
+			name:         "Error no record",
+			dbError:      postgres.ErrNoRecord,
+			expectedCode: http.StatusNotFound,
+		},
+		{
+			name:         "Other error",
+			dbError:      errors.New("some unknown error"),
+			expectedCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			gameModel := fixtures.NewGameModelMock(ctrl)
+			srv := newServer(gameModel, nil, authenticator)
+
+			gameModel.
+				EXPECT().
+				Get("1").
+				Return(nil, c.dbError)
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
+			token, err := srv.Authenticator.NewTokenForUser(user)
+			if err != nil {
+				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
+			}
+			r.Header.Set("x-auth-token", token)
+			srv.ServeHTTP(w, r)
+
+			got, expected := w.Result().StatusCode, c.expectedCode
+			if got != expected {
+				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+			}
+		})
+	}
+
+}
+func TestCreateGame(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	gameModel := fixtures.NewGameModelMock(ctrl)
+	srv := newServer(gameModel, nil, authenticator)
+
+	actualName := "ACIII"
+	actualGame := &models.Game{Name: actualName}
+	gameModel.
+		EXPECT().
+		Insert(actualGame).
+		Return(actualGame, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
+	token, err := srv.Authenticator.NewTokenForUser(user)
+	if err != nil {
+		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
+	}
+	r.Header.Set("x-auth-token", token)
+	srv.ServeHTTP(w, r)
+
+	statusCode := w.Result().StatusCode
+	if statusCode != http.StatusOK {
+		t.Fatalf("Got (%d) for status code, expected (%d)", statusCode, http.StatusOK)
+	}
+
+	var game *models.Game
+	fixtures.Decode(t, w.Body, &game)
+	if game.Name != actualName {
+		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
+	}
+}
+
+func TestCreateGameValidationError(t *testing.T) {
 
 	cases := []struct {
 		name string
@@ -156,7 +237,7 @@ func TestCreateGameError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, authenticator)
+			srv := newServer(gameModel, nil, authenticator)
 
 			actualGame := c.game
 			gameModel.
@@ -165,7 +246,7 @@ func TestCreateGameError(t *testing.T) {
 				Return(actualGame, nil)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/games", marshall(t, actualGame))
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
 			token, err := srv.Authenticator.NewTokenForUser(user)
 			if err != nil {
 				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
@@ -181,16 +262,50 @@ func TestCreateGameError(t *testing.T) {
 	}
 }
 
-func marshall(t *testing.T, payload interface{}) *bytes.Buffer {
-	body, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("Got unexpected error while marshalling payload - %v", err)
+func TestCreateGameDBError(t *testing.T) {
+	cases := []struct {
+		name         string
+		dbError      error
+		expectedCode int
+	}{
+		{
+			name:         "Name already exists",
+			dbError:      postgres.ErrNameAlreadyExists,
+			expectedCode: http.StatusBadRequest,
+		},
+		{
+			name:         "Other error",
+			dbError:      errors.New("some unknown error"),
+			expectedCode: http.StatusInternalServerError,
+		},
 	}
-	return bytes.NewBuffer(body)
-}
 
-func decode(t *testing.T, w *httptest.ResponseRecorder, into interface{}) {
-	if err := json.NewDecoder(w.Body).Decode(&into); err != nil {
-		t.Fatalf("Got unexpected error while decoding response - %v", err)
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+
+			gameModel := fixtures.NewGameModelMock(ctrl)
+			srv := newServer(gameModel, nil, authenticator)
+
+			actualGame := &models.Game{Name: "ACIII"}
+			gameModel.
+				EXPECT().
+				Insert(actualGame).
+				Return(nil, c.dbError)
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
+			token, err := srv.Authenticator.NewTokenForUser(user)
+			if err != nil {
+				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
+			}
+			r.Header.Set("x-auth-token", token)
+			srv.ServeHTTP(w, r)
+
+			got, expected := w.Result().StatusCode, c.expectedCode
+			if got != expected {
+				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+			}
+		})
 	}
 }
