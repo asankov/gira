@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
@@ -16,23 +15,27 @@ import (
 )
 
 var (
-	authenticator = auth.NewAutheniticator("test_secret")
-	user          = &models.User{Username: "anton"}
+	user = &models.User{Username: "anton"}
 )
 
-func newServer(g GameModel, u UserModel, a Authenticator) *Server {
+func setupGamesServer(g GameModel, a *fixtures.AuthenticatorMock) *Server {
+	a.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(user, nil)
+
 	return &Server{
 		Log:           log.New(os.Stdout, "", 0),
 		GameModel:     g,
-		UserModel:     u,
 		Authenticator: a,
 	}
 }
+
 func TestGetGames(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, nil, authenticator)
+	authenticator := fixtures.NewAuthenticatorMock(ctrl)
+	srv := setupGamesServer(gameModel, authenticator)
 
 	gamesResponse := []*models.Game{
 		{ID: "1", Name: "AC"},
@@ -45,10 +48,6 @@ func TestGetGames(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	token, err := srv.Authenticator.NewTokenForUser(user)
-	if err != nil {
-		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-	}
 	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
@@ -79,7 +78,8 @@ func TestGetGamesErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, nil, authenticator)
+	authenticator := fixtures.NewAuthenticatorMock(ctrl)
+	srv := setupGamesServer(gameModel, authenticator)
 
 	gameModel.
 		EXPECT().
@@ -88,10 +88,6 @@ func TestGetGamesErr(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	token, err := srv.Authenticator.NewTokenForUser(user)
-	if err != nil {
-		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-	}
 	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
@@ -105,7 +101,8 @@ func TestGetGameByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, nil, authenticator)
+	authenticator := fixtures.NewAuthenticatorMock(ctrl)
+	srv := setupGamesServer(gameModel, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -116,10 +113,6 @@ func TestGetGameByID(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
-	token, err := srv.Authenticator.NewTokenForUser(user)
-	if err != nil {
-		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-	}
 	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
@@ -158,7 +151,8 @@ func TestGetGameByIDDBError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, nil, authenticator)
+			authenticator := fixtures.NewAuthenticatorMock(ctrl)
+			srv := setupGamesServer(gameModel, authenticator)
 
 			gameModel.
 				EXPECT().
@@ -167,10 +161,6 @@ func TestGetGameByIDDBError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
-			token, err := srv.Authenticator.NewTokenForUser(user)
-			if err != nil {
-				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-			}
 			r.Header.Set("x-auth-token", token)
 			srv.ServeHTTP(w, r)
 
@@ -186,7 +176,9 @@ func TestCreateGame(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
-	srv := newServer(gameModel, nil, authenticator)
+	authenticator := fixtures.NewAuthenticatorMock(ctrl)
+
+	srv := setupGamesServer(gameModel, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -197,10 +189,6 @@ func TestCreateGame(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
-	token, err := srv.Authenticator.NewTokenForUser(user)
-	if err != nil {
-		t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-	}
 	r.Header.Set("x-auth-token", token)
 	srv.ServeHTTP(w, r)
 
@@ -237,7 +225,9 @@ func TestCreateGameValidationError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, nil, authenticator)
+			authenticator := fixtures.NewAuthenticatorMock(ctrl)
+
+			srv := setupGamesServer(gameModel, authenticator)
 
 			actualGame := c.game
 			gameModel.
@@ -247,10 +237,6 @@ func TestCreateGameValidationError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
-			token, err := srv.Authenticator.NewTokenForUser(user)
-			if err != nil {
-				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-			}
 			r.Header.Set("x-auth-token", token)
 			srv.ServeHTTP(w, r)
 
@@ -285,7 +271,8 @@ func TestCreateGameDBError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
-			srv := newServer(gameModel, nil, authenticator)
+			authenticator := fixtures.NewAuthenticatorMock(ctrl)
+			srv := setupGamesServer(gameModel, authenticator)
 
 			actualGame := &models.Game{Name: "ACIII"}
 			gameModel.
@@ -295,10 +282,6 @@ func TestCreateGameDBError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
-			token, err := srv.Authenticator.NewTokenForUser(user)
-			if err != nil {
-				t.Fatalf("Got unexpected error while trying to generate token for user - %v", err)
-			}
 			r.Header.Set("x-auth-token", token)
 			srv.ServeHTTP(w, r)
 
