@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/pkg/client"
 
 	"github.com/golangcollege/sessions"
@@ -33,13 +34,13 @@ func run() error {
 		return fmt.Errorf("error while creating back-end client: %w", err)
 	}
 
-	s := &server{
-		log:     log.New(os.Stdout, "", log.Ldate|log.Ltime),
-		client:  cl,
-		session: session,
+	s := &server.Server{
+		Log:     log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Client:  cl,
+		Session: session,
 	}
 
-	s.log.Println(fmt.Sprintf("Front-end listening on port %d", *port))
+	s.Log.Println(fmt.Sprintf("Front-end listening on port %d", *port))
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
 		return fmt.Errorf("error while listening: %w", err)
 	}

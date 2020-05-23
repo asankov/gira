@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"net/http"
@@ -14,27 +14,27 @@ type Data interface {
 	SetUser(*models.User)
 }
 
-func (s *server) renderTemplate(w http.ResponseWriter, r *http.Request, data Data, templates ...string) {
+func (s *Server) renderTemplate(w http.ResponseWriter, r *http.Request, data Data, templates ...string) {
 	s.setUserData(data, r)
 	t, err := template.ParseFiles(templates...)
 	if err != nil {
-		s.log.Println(err.Error())
+		s.Log.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 		return
 	}
 
 	if err := t.Execute(w, data); err != nil {
-		s.log.Println(err.Error())
+		s.Log.Println(err.Error())
 		http.Error(w, "Internal Server Error", 500)
 	}
 }
 
-func (s *server) setUserData(data Data, r *http.Request) {
+func (s *Server) setUserData(data Data, r *http.Request) {
 	cookie, err := r.Cookie("token")
 	if err != nil {
 		return
 	}
-	usr, err := s.client.GetUser(cookie.Value)
+	usr, err := s.Client.GetUser(cookie.Value)
 	if err != nil {
 		return
 	}
