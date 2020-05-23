@@ -22,7 +22,7 @@ jobs:
     - name: Run the tests with Go ${{ matrix.go-version }}
       run: |
         go test -coverprofile=./coverage.info -covermode=atomic ./...
-    - name: Coveralls Parallel
+    - name: Send coverage results to Coveralls
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
