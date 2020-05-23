@@ -21,14 +21,18 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Run the tests with Go ${{ matrix.go-version }}
       run: |
-        # go test -coverprofile=./coverage.info -covermode=count ./...
+        # go test -coverprofile=coverage.info -covermode=count ./...
         go test -v -covermode=count -coverprofile=coverage.info ./...
-    - name: Send coverage results to Coveralls
-      env:
-        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        go get github.com/mattn/goveralls
-        goveralls -coverprofile=coverage.out -service=github -repotoken $COVERALLS_TOKEN
+    - name: Send coverage
+      uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: coverage.info
+    # - name: Send coverage results to Coveralls
+    #   env:
+    #     COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   run: |
+    #     go get github.com/mattn/goveralls
+    #     goveralls -coverprofile=coverage.out -service=github -repotoken $COVERALLS_TOKEN
 
     # - name: Send coverage results to Coveralls
     #   uses: coverallsapp/github-action@master
