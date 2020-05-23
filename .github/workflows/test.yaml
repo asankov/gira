@@ -27,7 +27,7 @@ jobs:
       env:
         COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        go install github.com/mattn/goveralls
+        go get github.com/mattn/goveralls
         $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=github -repotoken $COVERALLS_TOKEN
 
     # - name: Send coverage results to Coveralls
