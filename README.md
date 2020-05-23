@@ -1,5 +1,7 @@
 ## Gira
 
+[![Coverage Status](https://coveralls.io/repos/github/asankov/gira/badge.svg?branch=master)](https://coveralls.io/github/asankov/gira?branch=master)
+
 Gira is like Jira, but for tracking your video games progress
 
 ### License 
