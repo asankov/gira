@@ -2,8 +2,10 @@ package server
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
@@ -14,8 +16,14 @@ var (
 	token = "my_test_token"
 )
 
+func setupMiddlewareServer(a Authenticator) *Server {
+	return &Server{
+		Log:           log.New(os.Stdout, "", 0),
+		Authenticator: a,
+	}
+}
 func TestSecureHeaders(t *testing.T) {
-	srv := newServer(nil, nil, nil)
+	srv := setupMiddlewareServer(nil)
 
 	h := srv.secureHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		got, expected := w.Header().Get("X-XSS-Protection"), "1; mode-block"
@@ -35,7 +43,7 @@ func TestSecureHeaders(t *testing.T) {
 
 func TestRecoverPanic(t *testing.T) {
 	// TODO: mock logger and assert output, once server.Log is made an interface
-	srv := newServer(nil, nil, nil)
+	srv := setupMiddlewareServer(nil)
 
 	h := srv.recoverPanic(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic("don't panic")
@@ -58,7 +66,7 @@ func TestRecoverPanic(t *testing.T) {
 func TestRequireLogin(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := newServer(nil, nil, authenticator)
+	srv := setupMiddlewareServer(authenticator)
 
 	authenticator.EXPECT().
 		DecodeToken(gomock.Eq(token)).
@@ -108,7 +116,7 @@ func TestRequireLoginError(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := newServer(nil, nil, authenticator)
+			srv := Server{Authenticator: authenticator}
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
