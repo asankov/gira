@@ -3,6 +3,8 @@ package server
 import (
 	"net/http"
 
+	"github.com/asankov/gira/internal/middleware"
+
 	"github.com/justinas/alice"
 
 	"github.com/gorilla/mux"
@@ -11,7 +13,7 @@ import (
 func (s *Server) routes() http.Handler {
 	r := mux.NewRouter()
 
-	standartMiddleware := alice.New(s.recoverPanic, s.logRequest, s.secureHeaders)
+	standartMiddleware := alice.New(s.recoverPanic, middleware.LogRequest(s.Log), s.secureHeaders)
 	dynamicMiddleware := alice.New(s.Session.Enable)
 	requireLogin := alice.New(s.requireLogin)
 
