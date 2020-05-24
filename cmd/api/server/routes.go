@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Server) routes() http.Handler {
-	standartMiddleware := alice.New(s.recoverPanic, s.logRequest, s.secureHeaders)
+	standartMiddleware := alice.New(s.recoverPanic, s.logRequest)
 	requireLogin := alice.New(s.requireLogin)
 
 	r := mux.NewRouter()
