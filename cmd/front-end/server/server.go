@@ -8,10 +8,20 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
+type Page string
+
+var (
+	homePage Page = "home.page.tmpl"
+)
+
+type Renderer interface {
+	Render(w http.ResponseWriter, r *http.Request, d Data, p Page) error
+}
 type Server struct {
-	Log     *log.Logger
-	Session *sessions.Session
-	Client  *client.Client
+	Log      *log.Logger
+	Session  *sessions.Session
+	Client   *client.Client
+	Renderer Renderer
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

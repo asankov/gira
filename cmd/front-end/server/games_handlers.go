@@ -21,7 +21,9 @@ func (g *gamesData) SetUser(usr *models.User) {
 
 func (s *Server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, &gamesData{}, "./ui/html/home.page.tmpl", "./ui/html/base.layout.tmpl")
+		if err := s.Renderer.Render(w, r, &gamesData{}, homePage); err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
 	}
 }
 func (s *Server) handleGamesGet() http.HandlerFunc {

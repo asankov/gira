@@ -35,9 +35,10 @@ func run() error {
 	}
 
 	s := &server.Server{
-		Log:     log.New(os.Stdout, "", log.Ldate|log.Ltime),
-		Client:  cl,
-		Session: session,
+		Log:      log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Client:   cl,
+		Session:  session,
+		Renderer: &server.TemplateRenderer{},
 	}
 
 	s.Log.Println(fmt.Sprintf("Front-end listening on port %d", *port))
