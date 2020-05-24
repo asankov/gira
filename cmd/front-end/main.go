@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/asankov/gira/cmd/front-end/templates"
+
 	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/pkg/client"
 
@@ -38,7 +40,7 @@ func run() error {
 		Log:      log.New(os.Stdout, "", log.Ldate|log.Ltime),
 		Client:   cl,
 		Session:  session,
-		Renderer: &server.TemplateRenderer{},
+		Renderer: templates.NewRenderer(),
 	}
 
 	s.Log.Println(fmt.Sprintf("Front-end listening on port %d", *port))
