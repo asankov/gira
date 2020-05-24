@@ -24,12 +24,15 @@ func TestHandleHome(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	renderer.EXPECT().
+		Render(gomock.Eq(w), gomock.Any(), gomock.Any(), gomock.Eq(homePage)).
+		Return(nil)
+
 	srv.ServeHTTP(w, r)
 
-	// fix template not found error
-
-	got, expected := r.Response.StatusCode, http.StatusOK
-	if r.Response.StatusCode != expected {
+	got, expected := w.Code, http.StatusOK
+	if got != expected {
 		t.Errorf("Got (%d) for status code, expected (%d)", got, expected)
 	}
 }
