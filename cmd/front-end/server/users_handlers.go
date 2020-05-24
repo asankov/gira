@@ -8,13 +8,13 @@ import (
 
 func (s *Server) handleUserSignupForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, &gamesData{}, "./ui/html/signup.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.render(w, r, &gamesData{}, signupUserPage)
 	}
 }
 
 func (s *Server) handleUserLoginForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, &gamesData{}, "./ui/html/login.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.render(w, r, &gamesData{}, loginUserPage)
 	}
 }
 

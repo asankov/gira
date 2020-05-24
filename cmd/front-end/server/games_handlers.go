@@ -14,14 +14,9 @@ type gamesData struct {
 	Flash string
 }
 
-// SetUser implements the Data interface
-func (g *gamesData) SetUser(usr *models.User) {
-	g.User = usr
-}
-
 func (s *Server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, &gamesData{}, "./ui/html/home.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.render(w, r, &gamesData{}, homePage)
 	}
 }
 func (s *Server) handleGamesGet() http.HandlerFunc {
@@ -46,13 +41,13 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 			Games: games,
 		}
 
-		s.renderTemplate(w, r, data, "./ui/html/list.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.render(w, r, data, listGamesPage)
 	}
 }
 
 func (s *Server) handleGameCreateView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.renderTemplate(w, r, &gamesData{}, "./ui/html/create.page.tmpl", "./ui/html/base.layout.tmpl")
+		s.render(w, r, &gamesData{}, createGamePage)
 	}
 }
 
@@ -83,4 +78,10 @@ func getToken(r *http.Request) string {
 		panic("token not present in cookie")
 	}
 	return cookie.Value
+}
+
+func (s *Server) render(w http.ResponseWriter, r *http.Request, data interface{}, p Page) {
+	if err := s.Renderer.Render(w, r, data, p); err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	}
 }
