@@ -80,7 +80,7 @@ func getToken(r *http.Request) string {
 	return cookie.Value
 }
 
-func (s *Server) render(w http.ResponseWriter, r *http.Request, data interface{}, p Page) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, data interface{}, p string) {
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}

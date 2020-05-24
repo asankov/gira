@@ -8,21 +8,18 @@ import (
 	"github.com/golangcollege/sessions"
 )
 
-// Page represents a Page to be rendered
-type Page string
-
 var (
-	homePage       Page = "home.page.tmpl"
-	listGamesPage  Page = "list.page.tmpl"
-	createGamePage Page = "create.page.tmpl"
-	signupUserPage Page = "signup.page.tmpl"
-	loginUserPage  Page = "login.page.tmpl"
+	homePage       = "home.page.tmpl"
+	listGamesPage  = "list.page.tmpl"
+	createGamePage = "create.page.tmpl"
+	signupUserPage = "signup.page.tmpl"
+	loginUserPage  = "login.page.tmpl"
 )
 
 // Renderer is the interface that will be used to interact with the part of the program
 // that is responsible for rendering the web pages
 type Renderer interface {
-	Render(w http.ResponseWriter, r *http.Request, d interface{}, p Page) error
+	Render(w http.ResponseWriter, r *http.Request, d interface{}, p string) error
 }
 
 // Server is the struct that holds all the dependencies
