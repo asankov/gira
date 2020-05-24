@@ -14,11 +14,6 @@ type gamesData struct {
 	Flash string
 }
 
-// SetUser implements the Data interface
-func (g *gamesData) SetUser(usr *models.User) {
-	g.User = usr
-}
-
 func (s *Server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		s.render(w, r, &gamesData{}, homePage)
