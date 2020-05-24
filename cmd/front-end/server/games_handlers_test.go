@@ -6,12 +6,20 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/asankov/gira/internal/fixtures"
+
+	"github.com/golang/mock/gomock"
 )
 
 func TestHandleHome(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	renderer := fixtures.NewRendererMock(ctrl)
 
 	srv := &Server{
-		Log: log.New(os.Stdout, "", 0),
+		Log:      log.New(os.Stdout, "", 0),
+		Renderer: renderer,
 	}
 
 	w := httptest.NewRecorder()
