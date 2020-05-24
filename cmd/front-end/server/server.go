@@ -11,11 +11,13 @@ import (
 type Page string
 
 var (
-	homePage Page = "home.page.tmpl"
+	homePage       Page = "home.page.tmpl"
+	listGamesPage  Page = "list.page.tmpl"
+	createGamePage Page = "create.page.tmpl"
 )
 
 type Renderer interface {
-	Render(w http.ResponseWriter, r *http.Request, d Data, p Page) error
+	Render(w http.ResponseWriter, r *http.Request, d interface{}, p Page) error
 }
 type Server struct {
 	Log      *log.Logger
