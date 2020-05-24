@@ -11,7 +11,7 @@ import (
 )
 
 func (s *Server) routes() http.Handler {
-	standartMiddleware := alice.New(s.recoverPanic, middleware.LogRequest(s.Log))
+	standartMiddleware := alice.New(middleware.RecoverPanic(s.Log), middleware.LogRequest(s.Log))
 	requireLogin := alice.New(s.requireLogin)
 
 	r := mux.NewRouter()

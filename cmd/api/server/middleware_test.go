@@ -23,28 +23,6 @@ func setupMiddlewareServer(a Authenticator) *Server {
 	}
 }
 
-func TestRecoverPanic(t *testing.T) {
-	// TODO: mock logger and assert output, once server.Log is made an interface
-	srv := setupMiddlewareServer(nil)
-
-	h := srv.recoverPanic(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		panic("don't panic")
-	}))
-
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	h.ServeHTTP(w, r)
-
-	got, expected := w.Header().Get("Connection"), "Close"
-	if got != expected {
-		t.Errorf(`Got ("%s") for "Connection" Header, expected ("%s")`, got, expected)
-	}
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf(`Got ("%d") for StatusCode, expected ("%d")`, w.Code, http.StatusInternalServerError)
-	}
-}
-
 func TestRequireLogin(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)

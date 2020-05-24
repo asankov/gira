@@ -18,3 +18,22 @@ func LogRequest(log *log.Logger) func(next http.Handler) http.Handler {
 		})
 	}
 }
+
+// RecoverPanic is a middleware that handles all panic that occur during the execution of the request
+// logs them, sets a Connection: Close header and returns Internal error to the consumer.
+func RecoverPanic(log *log.Logger) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				if err := recover(); err != nil {
+					w.Header().Set("Connection", "Close")
+
+					log.Printf("panic: %v\n", err)
+					http.Error(w, "internal error", http.StatusInternalServerError)
+				}
+			}()
+
+			next.ServeHTTP(w, r)
+		})
+	}
+}
