@@ -5,15 +5,6 @@ import "net/http"
 // TODO: this whole file is copied from cmd/api/middleware.go
 // find a way to refactor it and reduce the duplication
 
-func (s *Server) logRequest(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: better format for the request
-		s.Log.Printf("%s - %s %s %s\n", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func (s *Server) secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-XSS-Protection", "1; mode-block")
