@@ -14,6 +14,8 @@ var (
 	homePage       Page = "home.page.tmpl"
 	listGamesPage  Page = "list.page.tmpl"
 	createGamePage Page = "create.page.tmpl"
+	signupUserPage Page = "signup.page.tmpl"
+	loginUserPage  Page = "login.page.tmpl"
 )
 
 type Renderer interface {
