@@ -22,8 +22,9 @@ var (
 )
 
 type userResponse struct {
-	Token    string `json:"token"`
-	Username string `json:"username"`
+	User     *models.User `json:"user"`
+	Token    string       `json:"token"`
+	Username string       `json:"username"`
 }
 
 type errorResponse struct {
@@ -143,7 +144,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 
 		// TODO: persist the token, so we can invalidate it
 
-		s.respond(w, r, &userResponse{Token: token}, http.StatusOK)
+		s.respond(w, r, &userResponse{Token: token, User: usr}, http.StatusOK)
 	}
 }
 

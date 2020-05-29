@@ -1,8 +1,13 @@
 package server
 
 import (
+	"context"
 	"net/http"
 )
+
+type userKeyType string
+
+var userKey userKeyType
 
 func (s *Server) requireLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -11,12 +16,14 @@ func (s *Server) requireLogin(next http.Handler) http.Handler {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
-
-		if _, err := s.Authenticator.DecodeToken(token); err != nil {
+		user, err := s.Authenticator.DecodeToken(token)
+		if err != nil {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), userKey, user)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

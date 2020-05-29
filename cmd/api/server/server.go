@@ -20,8 +20,8 @@ type UserModel interface {
 	Authenticate(email, password string) (*models.User, error)
 }
 
-// UserGameModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
-type UserGameModel interface {
+// UserGamesModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
+type UserGamesModel interface {
 	LinkGameToUser(userID, gameID string) error
 	GetUserGames(userID string) ([]*models.Game, error)
 }
@@ -40,7 +40,7 @@ type Server struct {
 	Authenticator
 	GameModel
 	UserModel
-	UserGameModel
+	UserGamesModel
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
