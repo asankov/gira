@@ -53,7 +53,12 @@ func (s *Server) handleGameCreateView() http.HandlerFunc {
 
 func (s *Server) handleGameCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.PostFormValue("name")
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		name := r.PostForm.Get("name")
 		if name == "" {
 			http.Error(w, "'name' is required", http.StatusBadRequest)
 			return

@@ -20,7 +20,12 @@ func (s *Server) handleUserLoginForm() http.HandlerFunc {
 
 func (s *Server) handleUserLogin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		email, password := r.PostFormValue("email"), r.PostFormValue("password")
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		email, password := r.PostForm.Get("email"), r.PostForm.Get("password")
 		res, err := s.Client.LoginUser(&models.User{
 			Email:    email,
 			Password: password,
@@ -43,7 +48,12 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 
 func (s *Server) handleUserSignup() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		username, email, password := r.PostFormValue("username"), r.PostFormValue("email"), r.PostFormValue("password")
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		username, email, password := r.PostForm.Get("username"), r.PostForm.Get("email"), r.PostForm.Get("password")
 
 		if _, err := s.Client.CreateUser(&models.User{
 			Username: username,
