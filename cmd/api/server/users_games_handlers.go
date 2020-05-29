@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -24,6 +25,34 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 		}
 
 		s.respond(w, r, games, http.StatusOK)
+	}
+}
+
+type userGameRequest struct {
+	Game *models.Game `json:"game"`
+}
+
+func (s *Server) handleUsersGamesPost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		var req userGameRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := s.UserGamesModel.LinkGameToUser(user.ID, req.Game.ID); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// TODO: better response
+		s.respond(w, r, nil, http.StatusOK)
 	}
 }
 
