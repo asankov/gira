@@ -43,6 +43,7 @@ func run() error {
 		Log:           log.New(os.Stdout, "", log.Ldate|log.Ltime),
 		GameModel:     &postgres.GameModel{DB: db},
 		UserModel:     &postgres.UserModel{DB: db},
+		UserGamesModel: &postgres.UserGamesModel{DB: db},
 		Authenticator: auth.NewAutheniticator(*secret),
 	}
 

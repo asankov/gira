@@ -25,7 +25,7 @@ func (m *UserGamesModel) GetUserGames(userID string) ([]*models.Game, error) {
 	}
 	defer rows.Close()
 
-	var games []*models.Game
+	games := []*models.Game{}
 	for rows.Next() {
 		var game models.Game
 
