@@ -11,9 +11,13 @@ import (
 )
 
 var (
+	errInvalidToken             = errors.New("invalid token")
+	errUserIsRequired           = errors.New("user is required")
+	errExpectedToken            = errors.New("expected token in header")
 	errEmailRequired            = errors.New("'email' is required field")
 	errUsernameRequired         = errors.New("'username' is required field")
 	errPasswordRequired         = errors.New("'password' is required field")
+	errParsingBody              = errors.New("error while parsing request body")
 	errHashedPasswordNotAllowed = errors.New("'hashedPassword' is not allowed field")
 )
 
@@ -22,28 +26,37 @@ type userResponse struct {
 	Username string `json:"username"`
 }
 
+type errorResponse struct {
+	Error string `json:"error"`
+}
+
 func (s *Server) handleUserCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
 
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			if err.Error() == "EOF" {
+				s.respondError(w, r, errUserIsRequired, http.StatusBadRequest)
+				return
+			}
+			s.Log.Printf("Error while parsing body: %v", err)
+			s.respondError(w, r, errParsingBody, http.StatusBadRequest)
 			return
 		}
 
 		if err := validateUser(&user); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			s.respondError(w, r, err, http.StatusBadRequest)
 			return
 		}
 
 		userResponse, err := s.UserModel.Insert(&user)
 		if err != nil {
 			if err == postgres.ErrEmailAlreadyExists || err == postgres.ErrUsernameAlreadyExists {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				s.respondError(w, r, err, http.StatusBadRequest)
 				return
 			}
 			s.Log.Printf("error while inserting user into the DB: %v", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
@@ -55,17 +68,18 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("x-auth-token")
 		if token == "" {
-			http.Error(w, "expected token in header", http.StatusBadRequest)
+			s.respondError(w, r, errExpectedToken, http.StatusBadRequest)
 			return
 		}
 
 		user, err := s.Authenticator.DecodeToken(token)
 		if err != nil {
 			if errors.Is(err, auth.ErrInvalidSignature) || errors.Is(err, auth.ErrTokenExpired) {
-				http.Error(w, "invalid token", http.StatusUnauthorized)
+				s.respondError(w, r, errInvalidToken, http.StatusUnauthorized)
 				return
 			}
-			http.Error(w, "error while authenticating user: "+err.Error(), http.StatusInternalServerError)
+			s.Log.Printf("Error while authenticating user: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 
 		s.respond(w, r, &userResponse{Username: user.Username}, http.StatusOK)
@@ -144,4 +158,13 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 			return
 		}
 	}
+}
+
+func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
+	if err := json.NewEncoder(w).Encode(errorResponse{Error: err.Error()}); err != nil {
+		s.Log.Printf("Error while encoding error response: %v", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(statusCode)
 }
