@@ -15,6 +15,7 @@ import (
 
 func TestHandleHome(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	renderer := fixtures.NewRendererMock(ctrl)
 

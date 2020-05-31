@@ -32,6 +32,7 @@ func setupUsersServer(u UserModel, a *fixtures.AuthenticatorMock) *Server {
 
 func TestUserCreate(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -146,6 +147,7 @@ func TestUserCreateDBError(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
 			userModel := fixtures.NewUserModelMock(ctrl)
 
@@ -169,6 +171,7 @@ func TestUserCreateDBError(t *testing.T) {
 
 func TestUserLogin(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
@@ -222,6 +225,7 @@ func TestUserLoginValidationError(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
 			userModel := fixtures.NewUserModelMock(ctrl)
 
@@ -269,6 +273,7 @@ func TestUserLoginServiceError(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
 			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)

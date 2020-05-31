@@ -32,6 +32,7 @@ func setupGamesServer(g GameModel, a *fixtures.AuthenticatorMock) *Server {
 
 func TestGetGames(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -76,6 +77,7 @@ func TestGetGames(t *testing.T) {
 
 func TestGetGamesErr(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -99,6 +101,7 @@ func TestGetGamesErr(t *testing.T) {
 
 func TestGetGameByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -149,6 +152,7 @@ func TestGetGameByIDDBError(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -174,6 +178,7 @@ func TestGetGameByIDDBError(t *testing.T) {
 }
 func TestCreateGame(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -223,6 +228,7 @@ func TestCreateGameValidationError(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
@@ -269,6 +275,7 @@ func TestCreateGameDBError(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)

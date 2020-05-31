@@ -25,6 +25,7 @@ func setupMiddlewareServer(a Authenticator) *Server {
 
 func TestRequireLogin(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
 	srv := setupMiddlewareServer(authenticator)
 
@@ -75,6 +76,7 @@ func TestRequireLoginError(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
 			srv := Server{Authenticator: authenticator}
 
