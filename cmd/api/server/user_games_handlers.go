@@ -41,12 +41,14 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 
 		var req userGameRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			s.Log.Printf("Error while decoding body: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
 			return
 		}
 
 		if err := s.UserGamesModel.LinkGameToUser(user.ID, req.Game.ID); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			s.Log.Printf("Error while linking game %s to user %s: %v", req.Game.ID, user.ID, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
