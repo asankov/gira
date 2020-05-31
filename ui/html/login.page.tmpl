@@ -1,7 +1,7 @@
 {{template "base" .}}
 {{define "title"}}Signup{{end}}
 {{define "main"}}
-<form action='/users/login' method='POST'>
+<form action='/users/login{{.Next}}' method='POST'>
     <div>
         <label>Email:</label>
         <input type='text' name='email'>
@@ -13,5 +13,5 @@
     <div>
         <input type='submit' value='Go'>
     </div>
-</form> 
+</form>
 {{end}}

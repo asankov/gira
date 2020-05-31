@@ -15,7 +15,12 @@ func (s *Server) handleUserSignupForm() http.HandlerFunc {
 
 func (s *Server) handleUserLoginForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, emptyTemplateData, loginUserPage)
+		nextQuery := r.URL.Query()["next"]
+		next := ""
+		if len(nextQuery) > 0 {
+			next = "?next=" + nextQuery[0]
+		}
+		s.render(w, r, &TemplateData{Next: next}, loginUserPage)
 	}
 }
 
@@ -42,6 +47,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			Value: res.Token,
 			Path:  "/",
 		})
+
 		w.Header().Add("Location", "/")
 		w.WriteHeader(http.StatusSeeOther)
 	}

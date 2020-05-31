@@ -20,6 +20,7 @@ func (s *Server) handleGamesCreate() http.HandlerFunc {
 		var game models.Game
 
 		if err := json.NewDecoder(r.Body).Decode(&game); err != nil {
+			s.Log.Printf("error while decoding request body: %v", err)
 			http.Error(w, "error decoding body", http.StatusBadRequest)
 			return
 		}

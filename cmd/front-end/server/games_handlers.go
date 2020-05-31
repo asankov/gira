@@ -61,7 +61,13 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 		token := r.Context().Value(contextTokenKey).(string)
 
 		if _, err := s.Client.CreateGame(&models.Game{Name: name}, token); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			if err == client.ErrNoAuthorization {
+				w.Header().Add("Location", "/users/login?next=/games")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
+			s.Log.Printf("error while creating game: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 

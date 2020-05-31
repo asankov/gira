@@ -27,6 +27,7 @@ type TemplateData struct {
 
 	Error string
 	Flash string
+	Next  string
 }
 
 // Renderer is the interface that will be used to interact with the part of the program
