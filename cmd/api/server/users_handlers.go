@@ -161,10 +161,10 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 }
 
 func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
+	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(errorResponse{Error: err.Error()}); err != nil {
 		s.Log.Printf("Error while encoding error response: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(statusCode)
 }
