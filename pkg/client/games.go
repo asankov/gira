@@ -67,12 +67,17 @@ func (c *Client) GetGameByID(id string) (*models.Game, error) {
 }
 
 // CreateGame creates a new game from the passed model.
-func (c *Client) CreateGame(game *models.Game) (*models.Game, error) {
+func (c *Client) CreateGame(game *models.Game, token string) (*models.Game, error) {
 	body, err := json.Marshal(game)
 	if err != nil {
 		return nil, ErrCreatingGame
 	}
-	res, err := http.Post(fmt.Sprintf("%s/games", c.addr), "application/json", bytes.NewBuffer(body))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/games", c.addr), bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("error while building HTTP request")
+	}
+	req.Header.Add("x-auth-token", token)
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, ErrCreatingGame
 	}

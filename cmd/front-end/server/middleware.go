@@ -1,9 +1,18 @@
 package server
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 // TODO: this whole file is copied from cmd/api/middleware.go
 // find a way to refactor it and reduce the duplication
+
+type contextTokenKeyType string
+
+var (
+	contextTokenKey contextTokenKeyType
+)
 
 func (s *Server) secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -16,15 +25,15 @@ func (s *Server) secureHeaders(next http.Handler) http.Handler {
 
 func (s *Server) requireLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, err := r.Cookie("token"); err != nil {
+		token, err := r.Cookie("token")
+		if err != nil {
 			w.Header().Add("Location", "/users/login")
 			w.WriteHeader(http.StatusSeeOther)
 			return
 		}
 
-		// at this point we don't care whether the cookie is valid or not, just that is exists
-		// if the token inside the cookie is not valid the back-end would return 401 Unathorized
+		ctx := context.WithValue(r.Context(), contextTokenKey, token.Value)
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
