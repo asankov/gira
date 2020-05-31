@@ -74,9 +74,6 @@ func (s *Server) handleUserSignup() http.HandlerFunc {
 			return
 		}
 
-		// TODO: this is not shown
-		s.Session.Put(r, "flash", "User created succesfully.")
-
 		w.Header().Add("Location", "/")
 		w.WriteHeader(http.StatusSeeOther)
 	}
