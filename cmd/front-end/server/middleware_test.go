@@ -11,20 +11,28 @@ var tokenValue = "my_token"
 func TestSecureHeaders(t *testing.T) {
 	srv := &Server{}
 
+	called := false
 	h := srv.secureHeaders(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		got, expected := w.Header().Get("X-XSS-Protection"), "1; mode-block"
-		if got != expected {
-			t.Errorf(`Got ("%s") for "X-XSS-Protection" Header, expected ("%s")`, got, expected)
-		}
-
-		got, expected = w.Header().Get("X-Frame-Options"), "deny"
-		if got != expected {
-			t.Errorf(`Got ("%s") for "X-Frame-Options" Header, expected ("%s")`, got, expected)
-		}
+		called = true
 	}))
 
+	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	h.ServeHTTP(httptest.NewRecorder(), r)
+	h.ServeHTTP(w, r)
+
+	if !called {
+		t.Errorf("Expected next handler to be called, and `called` to be equal to true, instead `called` is false")
+	}
+
+	got, expected := w.Header().Get("X-XSS-Protection"), "1; mode-block"
+	if got != expected {
+		t.Errorf(`Got ("%s") for "X-XSS-Protection" Header, expected ("%s")`, got, expected)
+	}
+
+	got, expected = w.Header().Get("X-Frame-Options"), "deny"
+	if got != expected {
+		t.Errorf(`Got ("%s") for "X-Frame-Options" Header, expected ("%s")`, got, expected)
+	}
 }
 
 func TestRequireLogin(t *testing.T) {
