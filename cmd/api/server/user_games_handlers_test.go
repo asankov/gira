@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"errors"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -73,4 +75,119 @@ func gameIn(game *models.Game, games []*models.Game) bool {
 		}
 	}
 	return false
+}
+
+func TestUsersGamesGetInternalError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+
+	userGamesMock.EXPECT().
+		GetUserGames(gomock.Eq("12")).
+		Return(nil, errors.New("error returned on purpose"))
+
+	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/users/games", nil)
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestUserGamesPost(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+
+	gameID := "666"
+	userGamesMock.EXPECT().
+		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID)).
+		Return(nil)
+
+	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &userGameRequest{Game: &models.Game{ID: gameID}}))
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
+	}
+}
+
+func TestUsersGamesPostInternalError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+
+	gameID := "666"
+	userGamesMock.EXPECT().
+		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID)).
+		Return(errors.New("error returned on purpose"))
+
+	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &userGameRequest{Game: &models.Game{ID: gameID}}))
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestUsersGamesPostParseError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+
+	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/games", bytes.NewBuffer(nil))
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
+	}
 }
