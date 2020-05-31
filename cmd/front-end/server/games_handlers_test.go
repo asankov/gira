@@ -1,4 +1,4 @@
-package server
+package server_test
 
 import (
 	"log"
@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/internal/fixtures"
 
 	"github.com/golang/mock/gomock"
@@ -17,7 +18,7 @@ func TestHandleHome(t *testing.T) {
 
 	renderer := fixtures.NewRendererMock(ctrl)
 
-	srv := &Server{
+	srv := &server.Server{
 		Log:      log.New(os.Stdout, "", 0),
 		Renderer: renderer,
 	}
@@ -26,7 +27,7 @@ func TestHandleHome(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 	renderer.EXPECT().
-		Render(gomock.Eq(w), gomock.Any(), gomock.Any(), gomock.Eq(homePage)).
+		Render(gomock.Eq(w), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil)
 
 	srv.ServeHTTP(w, r)
