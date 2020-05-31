@@ -8,16 +8,9 @@ import (
 	"github.com/asankov/gira/pkg/models"
 )
 
-type gamesData struct {
-	Games []*models.Game
-	User  *models.User
-	Flash string
-	Error string
-}
-
 func (s *Server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, &gamesData{}, homePage)
+		s.render(w, r, emptyTemplateData, homePage)
 	}
 }
 func (s *Server) handleGamesGet() http.HandlerFunc {
@@ -37,7 +30,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 			return
 		}
 
-		data := &gamesData{
+		data := &TemplateData{
 			Flash: flash,
 			Games: games,
 		}
@@ -48,7 +41,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 
 func (s *Server) handleGameCreateView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, &gamesData{}, createGamePage)
+		s.render(w, r, emptyTemplateData, createGamePage)
 	}
 }
 
@@ -88,7 +81,7 @@ func getToken(r *http.Request) string {
 	return cookie.Value
 }
 
-func (s *Server) render(w http.ResponseWriter, r *http.Request, data interface{}, p string) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, data *TemplateData, p string) {
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
 		s.Log.Printf("error while calling Render: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

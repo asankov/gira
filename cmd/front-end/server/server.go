@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/asankov/gira/pkg/client"
+	"github.com/asankov/gira/pkg/models"
 	"github.com/golangcollege/sessions"
 )
 
@@ -14,12 +15,24 @@ var (
 	createGamePage = "create.page.tmpl"
 	signupUserPage = "signup.page.tmpl"
 	loginUserPage  = "login.page.tmpl"
+
+	emptyTemplateData = &TemplateData{}
 )
+
+// TemplateData is the struct that holds all the data that can be passed to the template renderer to render
+type TemplateData struct {
+	Game  *models.Game
+	User  *models.User
+	Games []*models.Game
+
+	Error string
+	Flash string
+}
 
 // Renderer is the interface that will be used to interact with the part of the program
 // that is responsible for rendering the web pages
 type Renderer interface {
-	Render(w http.ResponseWriter, r *http.Request, d interface{}, p string) error
+	Render(w http.ResponseWriter, r *http.Request, d *TemplateData, p string) error
 }
 
 // Server is the struct that holds all the dependencies
