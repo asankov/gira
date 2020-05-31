@@ -8,9 +8,31 @@ import (
 	"testing"
 )
 
+var logger = log.New(os.Stdout, "", 0)
+
+func TestLog(t *testing.T) {
+	called := false
+	h := LogRequest(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		called = true
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	h.ServeHTTP(w, r)
+
+	got, expected := w.Code, http.StatusOK
+	if got != expected {
+		t.Errorf(`Got ("%d") for StatusCode, expected ("%d")`, got, expected)
+	}
+
+	if !called {
+		t.Errorf("Expected next handler to be called, and `called` to be equal to true, instead `called` is false")
+	}
+}
+
 func TestRecoverPanic(t *testing.T) {
 
-	h := RecoverPanic(log.New(os.Stdout, "", 0))(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	h := RecoverPanic(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		panic("don't panic")
 	}))
 
