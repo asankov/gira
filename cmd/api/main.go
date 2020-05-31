@@ -40,11 +40,11 @@ func run() error {
 	defer db.Close()
 
 	s := &server.Server{
-		Log:           log.New(os.Stdout, "", log.Ldate|log.Ltime),
-		GameModel:     &postgres.GameModel{DB: db},
-		UserModel:     &postgres.UserModel{DB: db},
+		Log:            log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		GameModel:      &postgres.GameModel{DB: db},
+		UserModel:      &postgres.UserModel{DB: db},
 		UserGamesModel: &postgres.UserGamesModel{DB: db},
-		Authenticator: auth.NewAutheniticator(*secret),
+		Authenticator:  auth.NewAutheniticator(*secret),
 	}
 
 	log.Println(fmt.Sprintf("listening on port %d", *port))
