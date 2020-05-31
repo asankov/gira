@@ -9,13 +9,13 @@ import (
 
 func (s *Server) handleUserSignupForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, &gamesData{}, signupUserPage)
+		s.render(w, r, emptyTemplateData, signupUserPage)
 	}
 }
 
 func (s *Server) handleUserLoginForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, &gamesData{}, loginUserPage)
+		s.render(w, r, emptyTemplateData, loginUserPage)
 	}
 }
 
@@ -63,11 +63,7 @@ func (s *Server) handleUserSignup() http.HandlerFunc {
 		}); err != nil {
 			s.Log.Printf("error while creating user: %v %v", err, err == nil)
 			if errResponse, ok := err.(*client.ErrorResponse); ok {
-				s.render(w, r, &struct {
-					User  *models.User
-					Error string
-					Flash string
-				}{Error: errResponse.Error()}, signupUserPage)
+				s.render(w, r, &TemplateData{Error: errResponse.Error()}, signupUserPage)
 				return
 			}
 			http.Error(w, err.Error(), http.StatusBadRequest)
