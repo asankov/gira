@@ -28,7 +28,7 @@ func (c *Client) GetUserGames(token string) ([]*models.Game, error) {
 
 	var games []*models.Game
 	if err := json.NewDecoder(res.Body).Decode(&games); err != nil {
-		return nil, fmt.Errorf("error while decoidng body: %w", err)
+		return nil, fmt.Errorf("error while decoding body: %w", err)
 	}
 
 	return games, nil
