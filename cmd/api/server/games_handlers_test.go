@@ -235,14 +235,8 @@ func TestCreateGameValidationError(t *testing.T) {
 
 			srv := setupGamesServer(gameModel, authenticator)
 
-			actualGame := c.game
-			gameModel.
-				EXPECT().
-				Insert(actualGame).
-				Return(actualGame, nil)
-
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, c.game))
 			r.Header.Set("x-auth-token", token)
 			srv.ServeHTTP(w, r)
 
