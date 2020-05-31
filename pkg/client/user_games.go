@@ -10,7 +10,7 @@ import (
 
 // GetUserGames returns all the games for the given user.
 func (c *Client) GetUserGames(token string) ([]*models.Game, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/users/%s/games", c.addr, "TODO"), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/users/games", c.addr), nil)
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
 	}
