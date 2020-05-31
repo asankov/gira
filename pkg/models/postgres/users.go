@@ -14,7 +14,7 @@ var (
 	// ErrEmailAlreadyExists is returned when a user with the same email already exists in the database
 	ErrEmailAlreadyExists = errors.New("user with the same email already exists")
 	// ErrUsernameAlreadyExists is returned when a user with the same username already exists in the database
-	ErrUsernameAlreadyExists = errors.New("user with the same username already")
+	ErrUsernameAlreadyExists = errors.New("user with the same username already exists")
 	// ErrWrongPassword is returned when the given password does not match the user password
 	ErrWrongPassword = errors.New("the given password does not match the user password")
 )

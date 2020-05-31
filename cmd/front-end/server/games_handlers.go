@@ -12,6 +12,7 @@ type gamesData struct {
 	Games []*models.Game
 	User  *models.User
 	Flash string
+	Error string
 }
 
 func (s *Server) handleHome() http.HandlerFunc {
@@ -89,6 +90,7 @@ func getToken(r *http.Request) string {
 
 func (s *Server) render(w http.ResponseWriter, r *http.Request, data interface{}, p string) {
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
+		s.Log.Printf("error while calling Render: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }

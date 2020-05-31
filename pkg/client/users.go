@@ -10,6 +10,15 @@ import (
 	"github.com/asankov/gira/pkg/models"
 )
 
+// ErrorResponse - this is duplicated with api/server/users_handlers.go
+type ErrorResponse struct {
+	Err string `json:"error"`
+}
+
+func (e *ErrorResponse) Error() string {
+	return e.Err
+}
+
 func (c *Client) GetUser(token string) (*models.User, error) {
 	url := fmt.Sprintf("%s/users", c.addr)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -40,10 +49,11 @@ func (c *Client) CreateUser(user *models.User) (*models.User, error) {
 	url := fmt.Sprintf("%s/users", c.addr)
 	res, err := http.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return nil, fmt.Errorf("error while calling %s: %w", url, err)
+		return nil, &ErrorResponse{Err: err.Error()}
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
+		return nil, parseError(res)
+		// return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
 	}
 
 	var userResponse *models.User
@@ -74,6 +84,14 @@ func (c *Client) LoginUser(user *models.User) (*models.UserResponse, error) {
 	}
 
 	return userResponse, nil
+}
+
+func parseError(r *http.Response) *ErrorResponse {
+	var err ErrorResponse
+	if err := json.NewDecoder(r.Body).Decode(&err); err != nil {
+		return nil
+	}
+	return &err
 }
 
 func parseErrorBody(r *http.Response) string {
