@@ -82,6 +82,14 @@ func getToken(r *http.Request) string {
 }
 
 func (s *Server) render(w http.ResponseWriter, r *http.Request, data *TemplateData, p string) {
+	if cookie, err := r.Cookie("token"); err == nil {
+		usr, err := s.Client.GetUser(cookie.Value)
+		if err != nil {
+			s.Log.Printf("error while fetching user: %v", err)
+		}
+
+		data.User = usr
+	}
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
 		s.Log.Printf("error while calling Render: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
