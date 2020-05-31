@@ -24,6 +24,7 @@ func setupUserGamesServer(u UserGamesModel, a *fixtures.AuthenticatorMock) *Serv
 
 func TestUsersGamesGet(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
@@ -79,6 +80,7 @@ func gameIn(game *models.Game, games []*models.Game) bool {
 
 func TestUsersGamesGetInternalError(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
@@ -108,6 +110,7 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 
 func TestUserGamesPost(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
@@ -138,6 +141,7 @@ func TestUserGamesPost(t *testing.T) {
 
 func TestUsersGamesPostInternalError(t *testing.T) {
 	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
