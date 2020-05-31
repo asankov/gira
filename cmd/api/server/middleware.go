@@ -5,9 +5,9 @@ import (
 	"net/http"
 )
 
-type userKeyType string
+type contextUserKeyType string
 
-var userKey userKeyType
+var contextUserKey contextUserKeyType
 
 func (s *Server) requireLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +22,7 @@ func (s *Server) requireLogin(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), userKey, user)
+		ctx := context.WithValue(r.Context(), contextUserKey, user)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
