@@ -43,7 +43,7 @@ func TestUsersGamesGet(t *testing.T) {
 	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/users/12/games", nil)
+	r := httptest.NewRequest(http.MethodGet, "/users/games", nil)
 	r.Header.Add("x-auth-token", token)
 
 	srv.ServeHTTP(w, r)

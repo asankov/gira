@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
-	"github.com/gorilla/mux"
 )
 
 func (s *Server) handleUsersGamesGet() http.HandlerFunc {
@@ -57,11 +56,6 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 }
 
 func userFromRequest(r *http.Request) (*models.User, error) {
-	args := mux.Vars(r)
-	id := args["id"]
-	if id == "" {
-		return nil, fmt.Errorf(`No 'id' in request`)
-	}
 	usr := r.Context().Value(contextUserKey)
 	if usr == nil {
 		return nil, fmt.Errorf("No user found in request")
@@ -69,10 +63,6 @@ func userFromRequest(r *http.Request) (*models.User, error) {
 	user, ok := usr.(*models.User)
 	if !ok {
 		return nil, fmt.Errorf("No user found in request")
-	}
-
-	if user.ID != id {
-		return nil, fmt.Errorf("ID param differs from userID in token")
 	}
 
 	return user, nil
