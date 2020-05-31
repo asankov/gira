@@ -19,7 +19,7 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 		games, err := s.UserGamesModel.GetUserGames(user.ID)
 		if err != nil {
 			s.Log.Printf("error while fetching user games: %v", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
