@@ -64,7 +64,9 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 			return
 		}
 
-		if _, err := s.Client.CreateGame(&models.Game{Name: name}); err != nil {
+		token := r.Context().Value(contextTokenKey).(string)
+
+		if _, err := s.Client.CreateGame(&models.Game{Name: name}, token); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
