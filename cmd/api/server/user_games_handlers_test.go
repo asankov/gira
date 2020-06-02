@@ -14,10 +14,13 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-func setupUserGamesServer(u UserGamesModel, a *fixtures.AuthenticatorMock) *Server {
+// TODO: this is the same in all test files.
+// remove in favour of server.New(*ServerOptions) method
+func setupUserGamesServer(ug UserGamesModel, u UserModel, a *fixtures.AuthenticatorMock) *Server {
 	return &Server{
 		Log:            log.New(os.Stdout, "", 0),
-		UserGamesModel: u,
+		UserGamesModel: ug,
+		UserModel:      u,
 		Authenticator:  a,
 	}
 }
@@ -27,10 +30,15 @@ func TestUsersGamesGet(t *testing.T) {
 	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
-	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
 		Return(&models.User{
 			ID: "12",
 		}, nil)
@@ -42,11 +50,9 @@ func TestUsersGamesGet(t *testing.T) {
 		},
 	}
 
-	userGamesMock.EXPECT().
+	userGamesModelMock.EXPECT().
 		GetUserGamesGrouped(gomock.Eq("12")).
 		Return(expectedGames, nil)
-
-	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/users/games", nil)
@@ -86,19 +92,22 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
-	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
 		Return(&models.User{
 			ID: "12",
 		}, nil)
 
-	userGamesMock.EXPECT().
+	userGamesModelMock.EXPECT().
 		GetUserGamesGrouped(gomock.Eq("12")).
 		Return(nil, errors.New("error returned on purpose"))
-
-	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/users/games", nil)
@@ -116,20 +125,23 @@ func TestUserGamesPost(t *testing.T) {
 	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
-	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
 		Return(&models.User{
 			ID: "12",
 		}, nil)
 
 	gameID := "666"
-	userGamesMock.EXPECT().
+	userGamesModelMock.EXPECT().
 		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID)).
 		Return(nil)
-
-	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
@@ -147,20 +159,23 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
-	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
 		Return(&models.User{
 			ID: "12",
 		}, nil)
 
 	gameID := "666"
-	userGamesMock.EXPECT().
+	userGamesModelMock.EXPECT().
 		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID)).
 		Return(errors.New("error returned on purpose"))
-
-	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
@@ -178,15 +193,18 @@ func TestUsersGamesPostParseError(t *testing.T) {
 	defer ctrl.Finish()
 
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
-	userGamesMock := fixtures.NewUserGamesModelMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
 		Return(&models.User{
 			ID: "12",
 		}, nil)
-
-	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/games", bytes.NewBuffer(nil))

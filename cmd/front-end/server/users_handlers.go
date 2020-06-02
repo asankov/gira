@@ -47,6 +47,22 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 	}
 }
 
+func (s *Server) handleUserLogout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := getToken(r)
+
+		if err := s.Client.LogoutUser(token); err != nil {
+			// TODO: render error page
+			s.Log.Printf("Error while logging-out user: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Location", "/")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
 func (s *Server) handleUserSignup() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if err := r.ParseForm(); err != nil {
@@ -63,7 +79,7 @@ func (s *Server) handleUserSignup() http.HandlerFunc {
 		}); err != nil {
 			s.Log.Printf("error while creating user: %v %v", err, err == nil)
 			if errResponse, ok := err.(*client.ErrorResponse); ok {
-				s.render(w, r, &TemplateData{Error: errResponse.Error()}, signupUserPage)
+				s.render(w, r, TemplateData{Error: errResponse.Error()}, signupUserPage)
 				return
 			}
 			http.Error(w, err.Error(), http.StatusBadRequest)

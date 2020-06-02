@@ -19,7 +19,13 @@ CREATE TABLE IF NOT EXISTS USER_GAMES (
   status game_status DEFAULT 'To Do'
 );
 
+CREATE TABLE IF NOT EXISTS USER_TOKENS (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES USERS(id),
+  token VARCHAR(400)
+);
+
 ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email);
 ALTER TABLE users ADD CONSTRAINT users_uc_username UNIQUE (username);
 
-ALTER TABLE user_games ADD CONSTRAINT user_games_unique_user_game (user_id, game_id);
+ALTER TABLE user_games ADD CONSTRAINT user_games_unique_user_game UNIQUE (user_id, game_id);

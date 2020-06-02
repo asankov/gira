@@ -86,6 +86,24 @@ func (c *Client) LoginUser(user *models.User) (*models.UserLoginResponse, error)
 	return userResponse, nil
 }
 
+func (c *Client) LogoutUser(token string) error {
+	url := fmt.Sprintf("%s/users/logout", c.addr)
+	req, err := http.NewRequest(http.MethodPost, url, nil)
+	if err != nil {
+		return fmt.Errorf("error while building request")
+	}
+	req.Header.Set("x-auth-token", token)
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("error while calling %s: %w", url, err)
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
+	}
+
+	return nil
+}
+
 func parseError(r *http.Response) *ErrorResponse {
 	var err ErrorResponse
 	if err := json.NewDecoder(r.Body).Decode(&err); err != nil {

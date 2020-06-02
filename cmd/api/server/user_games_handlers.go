@@ -105,3 +105,16 @@ func userFromRequest(r *http.Request) (*models.User, error) {
 
 	return user, nil
 }
+
+func tokenFromRequest(r *http.Request) (string, error) {
+	tkn := r.Context().Value(contextTokenKey)
+	if tkn == nil {
+		return "", fmt.Errorf("No token found in request")
+	}
+	token, ok := tkn.(string)
+	if !ok {
+		return "", fmt.Errorf("No token found in request")
+	}
+
+	return token, nil
+}

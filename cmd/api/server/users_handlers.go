@@ -63,14 +63,19 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 			return
 		}
 
-		user, err := s.Authenticator.DecodeToken(token)
-		if err != nil {
+		if _, err := s.Authenticator.DecodeToken(token); err != nil {
 			if errors.Is(err, auth.ErrInvalidSignature) || errors.Is(err, auth.ErrTokenExpired) {
 				s.respondError(w, r, errInvalidToken, http.StatusUnauthorized)
 				return
 			}
 			s.Log.Printf("Error while authenticating user: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+		user, err := s.UserModel.GetUserByToken(token)
+		if err != nil {
+			s.respondError(w, r, errInvalidToken, http.StatusUnauthorized)
+			return
 		}
 
 		s.respond(w, r, &models.UserResponse{User: user}, http.StatusOK)
@@ -133,8 +138,35 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 		}
 
 		// TODO: persist the token, so we can invalidate it
+		if err := s.UserModel.AssociateTokenWithUser(usr.ID, token); err != nil {
+			s.Log.Printf("Error while associating token with user %s: %v", usr.ID, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
 
 		s.respond(w, r, &models.UserLoginResponse{Token: token}, http.StatusOK)
+	}
+}
+
+func (s *Server) handleUserLogout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		token, err := tokenFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		if err := s.UserModel.InvalidateToken(user.ID, token); err != nil {
+			return
+		}
+
+		s.respond(w, r, nil, http.StatusOK)
 	}
 }
 

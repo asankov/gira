@@ -172,6 +172,9 @@ func TestUserLogin(t *testing.T) {
 	userModel.EXPECT().
 		Authenticate(expectedUser.Email, expectedUser.Password).
 		Return(&expectedUser, nil)
+	userModel.EXPECT().
+		AssociateTokenWithUser(expectedUser.ID, token).
+		Return(nil)
 
 	token := "my_test_token"
 	authenticatorMock.EXPECT().

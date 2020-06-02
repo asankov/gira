@@ -17,7 +17,7 @@ var (
 	signupUserPage = "signup.page.tmpl"
 	loginUserPage  = "login.page.tmpl"
 
-	emptyTemplateData = &TemplateData{}
+	emptyTemplateData = TemplateData{}
 )
 
 // TemplateData is the struct that holds all the data that can be passed to the template renderer to render
@@ -34,7 +34,7 @@ type TemplateData struct {
 // Renderer is the interface that will be used to interact with the part of the program
 // that is responsible for rendering the web pages
 type Renderer interface {
-	Render(w http.ResponseWriter, r *http.Request, d *TemplateData, p string) error
+	Render(w http.ResponseWriter, r *http.Request, d TemplateData, p string) error
 }
 
 // Server is the struct that holds all the dependencies

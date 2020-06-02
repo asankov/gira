@@ -29,6 +29,7 @@ func (s *Server) routes() http.Handler {
 
 	r.Handle("/users/login", s.handleUserLoginForm()).Methods(http.MethodGet)
 	r.Handle("/users/login", s.handleUserLogin()).Methods(http.MethodPost)
+	r.Handle("/users/logout", requireLogin.Then(s.handleUserLogout())).Methods(http.MethodPost)
 
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static", fileServer))

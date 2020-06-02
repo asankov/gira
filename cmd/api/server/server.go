@@ -18,6 +18,9 @@ type GameModel interface {
 type UserModel interface {
 	Insert(user *models.User) (*models.User, error)
 	Authenticate(email, password string) (*models.User, error)
+	AssociateTokenWithUser(userID, token string) error
+	InvalidateToken(userID, token string) error
+	GetUserByToken(token string) (*models.User, error)
 }
 
 // UserGamesModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
