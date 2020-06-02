@@ -18,7 +18,7 @@ var (
 	user = &models.User{Username: "anton"}
 )
 
-func setupGamesServer(g GameModel, a *fixtures.AuthenticatorMock) *Server {
+func setupGamesServer(g GameModel, u UserModel, a *fixtures.AuthenticatorMock) *Server {
 	a.EXPECT().
 		DecodeToken(gomock.Eq(token)).
 		Return(user, nil)
@@ -26,6 +26,7 @@ func setupGamesServer(g GameModel, a *fixtures.AuthenticatorMock) *Server {
 	return &Server{
 		Log:           log.New(os.Stdout, "", 0),
 		GameModel:     g,
+		UserModel:     u,
 		Authenticator: a,
 	}
 }
@@ -35,8 +36,9 @@ func TestGetGames(t *testing.T) {
 	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
+	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, authenticator)
+	srv := setupGamesServer(gameModel, userModel, authenticator)
 
 	gamesResponse := []*models.Game{
 		{ID: "1", Name: "AC"},
@@ -46,6 +48,10 @@ func TestGetGames(t *testing.T) {
 		EXPECT().
 		All().
 		Return(gamesResponse, nil)
+	userModel.
+		EXPECT().
+		GetUserByToken(token).
+		Return(user, nil)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
@@ -80,13 +86,18 @@ func TestGetGamesErr(t *testing.T) {
 	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
+	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, authenticator)
+	srv := setupGamesServer(gameModel, userModel, authenticator)
 
 	gameModel.
 		EXPECT().
 		All().
 		Return(nil, errors.New("this is an intentional error"))
+	userModel.
+		EXPECT().
+		GetUserByToken(token).
+		Return(user, nil)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
@@ -104,8 +115,9 @@ func TestGetGameByID(t *testing.T) {
 	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
+	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, authenticator)
+	srv := setupGamesServer(gameModel, userModel, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -113,6 +125,10 @@ func TestGetGameByID(t *testing.T) {
 		EXPECT().
 		Get("1").
 		Return(actualGame, nil)
+	userModel.
+		EXPECT().
+		GetUserByToken(token).
+		Return(user, nil)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
@@ -155,13 +171,18 @@ func TestGetGameByIDDBError(t *testing.T) {
 			defer ctrl.Finish()
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
+			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := setupGamesServer(gameModel, authenticator)
+			srv := setupGamesServer(gameModel, userModel, authenticator)
 
 			gameModel.
 				EXPECT().
 				Get("1").
 				Return(nil, c.dbError)
+			userModel.
+				EXPECT().
+				GetUserByToken(token).
+				Return(user, nil)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
@@ -181,9 +202,9 @@ func TestCreateGame(t *testing.T) {
 	defer ctrl.Finish()
 
 	gameModel := fixtures.NewGameModelMock(ctrl)
+	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-
-	srv := setupGamesServer(gameModel, authenticator)
+	srv := setupGamesServer(gameModel, userModel, authenticator)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -191,6 +212,10 @@ func TestCreateGame(t *testing.T) {
 		EXPECT().
 		Insert(actualGame).
 		Return(actualGame, nil)
+	userModel.
+		EXPECT().
+		GetUserByToken(token).
+		Return(user, nil)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
@@ -231,9 +256,14 @@ func TestCreateGameValidationError(t *testing.T) {
 			defer ctrl.Finish()
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
+			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
+			srv := setupGamesServer(gameModel, userModel, authenticator)
 
-			srv := setupGamesServer(gameModel, authenticator)
+			userModel.
+				EXPECT().
+				GetUserByToken(token).
+				Return(user, nil)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, c.game))
@@ -272,14 +302,19 @@ func TestCreateGameDBError(t *testing.T) {
 			defer ctrl.Finish()
 
 			gameModel := fixtures.NewGameModelMock(ctrl)
+			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := setupGamesServer(gameModel, authenticator)
+			srv := setupGamesServer(gameModel, userModel, authenticator)
 
 			actualGame := &models.Game{Name: "ACIII"}
 			gameModel.
 				EXPECT().
 				Insert(actualGame).
 				Return(nil, c.dbError)
+			userModel.
+				EXPECT().
+				GetUserByToken(token).
+				Return(user, nil)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))

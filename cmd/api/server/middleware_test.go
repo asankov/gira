@@ -16,10 +16,11 @@ var (
 	token = "my_test_token"
 )
 
-func setupMiddlewareServer(a Authenticator) *Server {
+func setupMiddlewareServer(a Authenticator, u UserModel) *Server {
 	return &Server{
 		Log:           log.New(os.Stdout, "", 0),
 		Authenticator: a,
+		UserModel:     u,
 	}
 }
 
@@ -27,11 +28,15 @@ func TestRequireLogin(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupMiddlewareServer(authenticator)
+	userModel := fixtures.NewUserModelMock(ctrl)
+	srv := setupMiddlewareServer(authenticator, userModel)
 
 	authenticator.EXPECT().
 		DecodeToken(gomock.Eq(token)).
 		Return(nil, nil)
+	userModel.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(user, nil)
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -54,11 +59,11 @@ func TestRequireLogin(t *testing.T) {
 func TestRequireLoginError(t *testing.T) {
 	testCases := []struct {
 		name  string
-		setup func(a *fixtures.AuthenticatorMock, r *http.Request)
+		setup func(*fixtures.AuthenticatorMock, *fixtures.UserModelMock, *http.Request)
 	}{
 		{
 			name: "Authenticator error",
-			setup: func(a *fixtures.AuthenticatorMock, r *http.Request) {
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
 				a.EXPECT().
 					DecodeToken(gomock.Eq(token)).
 					Return(nil, errors.New("Authenticator error"))
@@ -66,8 +71,20 @@ func TestRequireLoginError(t *testing.T) {
 			},
 		},
 		{
+			name: "DB Error",
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
+				a.EXPECT().
+					DecodeToken(gomock.Eq(token)).
+					Return(nil, nil)
+				u.EXPECT().
+					GetUserByToken(gomock.Eq(token)).
+					Return(nil, errors.New("DB Error"))
+				r.Header.Set("x-auth-token", token)
+			},
+		},
+		{
 			name: "Token not present",
-			setup: func(a *fixtures.AuthenticatorMock, r *http.Request) {
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
 				r.Header.Del("x-auth-token")
 			},
 		},
@@ -78,12 +95,13 @@ func TestRequireLoginError(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := Server{Authenticator: authenticator}
+			userModel := fixtures.NewUserModelMock(ctrl)
+			srv := setupMiddlewareServer(authenticator, userModel)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/", nil)
 
-			testCase.setup(authenticator, r)
+			testCase.setup(authenticator, userModel, r)
 
 			nextHandlerCalled := false
 			h := srv.requireLogin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

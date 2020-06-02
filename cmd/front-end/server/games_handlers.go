@@ -29,7 +29,7 @@ func (s *Server) handleGamesAdd() http.HandlerFunc {
 			return
 		}
 		// TODO: exclude games the user has already added
-		s.render(w, r, &TemplateData{Games: games}, addGamePage)
+		s.render(w, r, TemplateData{Games: games}, addGamePage)
 	}
 }
 
@@ -77,7 +77,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 			return
 		}
 
-		data := &TemplateData{
+		data := TemplateData{
 			Flash:     flash,
 			UserGames: mapToGames(gamesResponse),
 		}
@@ -136,14 +136,15 @@ func getToken(r *http.Request) string {
 	return cookie.Value
 }
 
-func (s *Server) render(w http.ResponseWriter, r *http.Request, data *TemplateData, p string) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateData, p string) {
 	if cookie, err := r.Cookie("token"); err == nil {
 		usr, err := s.Client.GetUser(cookie.Value)
 		if err != nil {
 			s.Log.Printf("error while fetching user: %v", err)
+		} else {
+			data.User = usr
 		}
 
-		data.User = usr
 	}
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
 		s.Log.Printf("error while calling Render: %v", err)

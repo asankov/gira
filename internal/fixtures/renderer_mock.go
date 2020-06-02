@@ -35,7 +35,7 @@ func (m *RendererMock) EXPECT() *RendererMockMockRecorder {
 }
 
 // Render mocks base method
-func (m *RendererMock) Render(arg0 http.ResponseWriter, arg1 *http.Request, arg2 *server.TemplateData, arg3 string) error {
+func (m *RendererMock) Render(arg0 http.ResponseWriter, arg1 *http.Request, arg2 server.TemplateData, arg3 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Render", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)

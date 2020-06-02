@@ -74,3 +74,30 @@ func (m *UserModel) Authenticate(email, password string) (*models.User, error) {
 func (m *UserModel) Get(id string) (*models.User, error) {
 	return nil, nil
 }
+
+// AssociateTokenWithUser associated the given token with the given userID
+func (m *UserModel) AssociateTokenWithUser(userID, token string) error {
+	if _, err := m.DB.Exec("INSERT INTO user_tokens (user_id, token) VALUES ($1, $2)", userID, token); err != nil {
+		// TODO: better error handling
+		return fmt.Errorf("error while inserting token into database: %w", err)
+	}
+	return nil
+}
+
+// InvalidateToken deleted the token from the database, making it invalid
+func (m *UserModel) InvalidateToken(userID, token string) error {
+	if _, err := m.DB.Exec("DELETE FROM user_tokens WHERE user_id = $1 AND token = $2", userID, token); err != nil {
+		// TODO: better error handling
+		return fmt.Errorf("error while deleting token from the database: %w", err)
+	}
+	return nil
+}
+
+// GetUserByToken returns the user, associated with the token passed to the method
+func (m *UserModel) GetUserByToken(token string) (*models.User, error) {
+	var usr models.User
+	if err := m.DB.QueryRow("SELECT id, username, email FROM USERS U WHERE id = (SELECT user_id FROM user_tokens WHERE token = $1)", token).Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
+		return nil, fmt.Errorf("error while looking up user: %w", err)
+	}
+	return &usr, nil
+}
