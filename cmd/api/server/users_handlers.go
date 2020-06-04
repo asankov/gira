@@ -131,8 +131,8 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 
 		usr, err := s.UserModel.Authenticate(user.Email, user.Password)
 		if err != nil {
-			// TODO: the error here should be 403
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			// TODO: JSON Error
+			http.Error(w, "Wrong email/password", http.StatusUnauthorized)
 			return
 		}
 
