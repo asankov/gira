@@ -246,8 +246,9 @@ func TestUserLoginValidationError(t *testing.T) {
 
 func TestUserLoginServiceError(t *testing.T) {
 	testCases := []struct {
-		name  string
-		setup func(u *fixtures.UserModelMock, a *fixtures.AuthenticatorMock)
+		name         string
+		setup        func(u *fixtures.UserModelMock, a *fixtures.AuthenticatorMock)
+		expectedCode int
 	}{
 		{
 			name: "UserModel.Authenticate fails",
@@ -256,6 +257,7 @@ func TestUserLoginServiceError(t *testing.T) {
 					Authenticate(expectedUser.Email, expectedUser.Password).
 					Return(nil, errors.New("user not found"))
 			},
+			expectedCode: http.StatusUnauthorized,
 		},
 		{
 			name: "Authenticator.NewTokenForUser fails",
@@ -268,6 +270,7 @@ func TestUserLoginServiceError(t *testing.T) {
 					NewTokenForUser(&expectedUser).
 					Return("", errors.New("intentional error"))
 			},
+			expectedCode: http.StatusInternalServerError,
 		},
 	}
 	for _, testCase := range testCases {
@@ -286,7 +289,7 @@ func TestUserLoginServiceError(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, expectedUser))
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, http.StatusInternalServerError
+			got, expected := w.Code, testCase.expectedCode
 			if got != expected {
 				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
 			}
