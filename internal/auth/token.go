@@ -53,7 +53,7 @@ func NewAutheniticator(secret string) *Authenticator {
 func (a *Authenticator) NewTokenForUser(user *models.User) (string, error) {
 	p := &payload{
 		User:      user,
-		ExpiresAt: time.Now().Add(5 * time.Minute).Unix(),
+		ExpiresAt: time.Now().Add(50 * time.Minute).Unix(),
 	}
 
 	base, err := tokenBase(standartHeader, p)
