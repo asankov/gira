@@ -35,10 +35,13 @@ func TestUsersGamesGet(t *testing.T) {
 			ID: "12",
 		}, nil)
 
-	expectedGames := []*models.Game{
-		{ID: "1", Name: "ACI"},
-		{ID: "2", Name: "ACII"},
+	expectedGames := map[models.Status][]*models.Game{
+		"To Do": {
+			{ID: "1", Name: "ACI"},
+			{ID: "2", Name: "ACII"},
+		},
 	}
+
 	userGamesMock.EXPECT().
 		GetUserGamesGrouped(gomock.Eq("12")).
 		Return(expectedGames, nil)
@@ -55,15 +58,15 @@ func TestUsersGamesGet(t *testing.T) {
 		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
 	}
 
-	var gamesResponse models.UserGameResponse
+	var gamesResponse map[models.Status][]*models.Game
 	fixtures.Decode(t, w.Body, &gamesResponse)
 
-	got, expected := len(gamesResponse.Games), len(expectedGames)
+	got, expected := len(gamesResponse), len(expectedGames)
 	if got != expected {
 		t.Errorf("Got (%d) for length of returned games, expected (%d)", got, expected)
 	}
-	for _, g := range gamesResponse.Games {
-		if !gameIn(g, expectedGames) {
+	for _, g := range gamesResponse["To Do"] {
+		if !gameIn(g, expectedGames["To Do"]) {
 			t.Errorf("Expected game (%#v) to be in returned games", g)
 		}
 	}
