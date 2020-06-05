@@ -10,11 +10,14 @@ CREATE TABLE IF NOT EXISTS USERS (
   hashed_password CHAR(60) NOT NULL
 );
 
+CREATE TYPE game_status AS ENUM ('To Do', 'In Progress', 'Done');
+
 CREATE TABLE IF NOT EXISTS USER_GAMES (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES USERS(id),
-  game_id INTEGER REFERENCES GAMES(id)
-)
+  game_id INTEGER REFERENCES GAMES(id),
+  status game_status DEFAULT 'To Do'
+);
 
 ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email);
 ALTER TABLE users ADD CONSTRAINT users_uc_username UNIQUE (username);

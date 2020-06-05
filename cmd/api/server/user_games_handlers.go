@@ -16,25 +16,21 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 			return
 		}
 
-		games, err := s.UserGamesModel.GetUserGames(user.ID)
+		games, err := s.UserGamesModel.GetUserGamesGrouped(user.ID)
 		if err != nil {
 			s.Log.Printf("error while fetching user games: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
-		gamesResponse := UserGameResponse{Games: games}
+		// gamesResponse := models.UserGameResponse{Games: games}
 
-		s.respond(w, r, gamesResponse, http.StatusOK)
+		s.respond(w, r, games, http.StatusOK)
 	}
 }
 
 type userGameRequest struct {
 	Game *models.Game `json:"game"`
-}
-
-type UserGameResponse struct {
-	Games []*models.Game `json:"games"`
 }
 
 func (s *Server) handleUsersGamesPost() http.HandlerFunc {
@@ -54,6 +50,37 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 
 		if err := s.UserGamesModel.LinkGameToUser(user.ID, req.Game.ID); err != nil {
 			s.Log.Printf("Error while linking game %s to user %s: %v", req.Game.ID, user.ID, err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		// TODO: better response
+		s.respond(w, r, nil, http.StatusOK)
+	}
+}
+
+type userGamePutRequest struct {
+	Game   *models.Game  `json:"game"`
+	Status models.Status `json:"status"`
+}
+
+func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		var req userGamePutRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			s.Log.Printf("Error while decoding body: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
+			return
+		}
+
+		if err := s.UserGamesModel.ChangeGameStatus(user.ID, req.Game.ID, req.Status); err != nil {
+			s.Log.Printf("Error while changing game status: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

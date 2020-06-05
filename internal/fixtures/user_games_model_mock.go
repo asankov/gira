@@ -33,6 +33,20 @@ func (m *UserGamesModelMock) EXPECT() *UserGamesModelMockMockRecorder {
 	return m.recorder
 }
 
+// ChangeGameStatus mocks base method
+func (m *UserGamesModelMock) ChangeGameStatus(arg0, arg1 string, arg2 models.Status) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeGameStatus", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeGameStatus indicates an expected call of ChangeGameStatus
+func (mr *UserGamesModelMockMockRecorder) ChangeGameStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeGameStatus", reflect.TypeOf((*UserGamesModelMock)(nil).ChangeGameStatus), arg0, arg1, arg2)
+}
+
 // GetUserGames mocks base method
 func (m *UserGamesModelMock) GetUserGames(arg0 string) ([]*models.Game, error) {
 	m.ctrl.T.Helper()
@@ -46,6 +60,21 @@ func (m *UserGamesModelMock) GetUserGames(arg0 string) ([]*models.Game, error) {
 func (mr *UserGamesModelMockMockRecorder) GetUserGames(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGames", reflect.TypeOf((*UserGamesModelMock)(nil).GetUserGames), arg0)
+}
+
+// GetUserGamesGrouped mocks base method
+func (m *UserGamesModelMock) GetUserGamesGrouped(arg0 string) (map[models.Status][]*models.Game, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserGamesGrouped", arg0)
+	ret0, _ := ret[0].(map[models.Status][]*models.Game)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserGamesGrouped indicates an expected call of GetUserGamesGrouped
+func (mr *UserGamesModelMockMockRecorder) GetUserGamesGrouped(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGamesGrouped", reflect.TypeOf((*UserGamesModelMock)(nil).GetUserGamesGrouped), arg0)
 }
 
 // LinkGameToUser mocks base method

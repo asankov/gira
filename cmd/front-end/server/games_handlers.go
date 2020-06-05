@@ -19,7 +19,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 		flash := s.Session.PopString(r, "flash")
 
 		token := getToken(r)
-		games, err := s.Client.GetUserGames(token)
+		gamesResponse, err := s.Client.GetUserGames(token)
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")
@@ -32,7 +32,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 
 		data := &TemplateData{
 			Flash: flash,
-			Games: games,
+			Games: gamesResponse.Games,
 		}
 
 		s.render(w, r, data, listGamesPage)
