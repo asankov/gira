@@ -40,7 +40,7 @@ func TestUsersGamesGet(t *testing.T) {
 		{ID: "2", Name: "ACII"},
 	}
 	userGamesMock.EXPECT().
-		GetUserGames(gomock.Eq("12")).
+		GetUserGamesGrouped(gomock.Eq("12")).
 		Return(expectedGames, nil)
 
 	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
@@ -92,7 +92,7 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 		}, nil)
 
 	userGamesMock.EXPECT().
-		GetUserGames(gomock.Eq("12")).
+		GetUserGamesGrouped(gomock.Eq("12")).
 		Return(nil, errors.New("error returned on purpose"))
 
 	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
