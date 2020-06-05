@@ -23,12 +23,18 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 			return
 		}
 
-		s.respond(w, r, games, http.StatusOK)
+		gamesResponse := UserGameResponse{Games: games}
+
+		s.respond(w, r, gamesResponse, http.StatusOK)
 	}
 }
 
 type userGameRequest struct {
 	Game *models.Game `json:"game"`
+}
+
+type UserGameResponse struct {
+	Games []*models.Game `json:"games"`
 }
 
 func (s *Server) handleUsersGamesPost() http.HandlerFunc {

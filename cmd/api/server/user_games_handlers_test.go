@@ -55,14 +55,14 @@ func TestUsersGamesGet(t *testing.T) {
 		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
 	}
 
-	var games []*models.Game
-	fixtures.Decode(t, w.Body, &games)
+	var gamesResponse UserGameResponse
+	fixtures.Decode(t, w.Body, &gamesResponse)
 
-	got, expected := len(games), len(expectedGames)
+	got, expected := len(gamesResponse.Games), len(expectedGames)
 	if got != expected {
 		t.Errorf("Got (%d) for length of returned games, expected (%d)", got, expected)
 	}
-	for _, g := range games {
+	for _, g := range gamesResponse.Games {
 		if !gameIn(g, expectedGames) {
 			t.Errorf("Expected game (%#v) to be in returned games", g)
 		}
