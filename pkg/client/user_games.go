@@ -9,7 +9,7 @@ import (
 )
 
 // GetUserGames returns all the games for the given user.
-func (c *Client) GetUserGames(token string) ([]*models.Game, error) {
+func (c *Client) GetUserGames(token string) (*models.UserGameResponse, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/users/games", c.addr), nil)
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
@@ -26,10 +26,10 @@ func (c *Client) GetUserGames(token string) ([]*models.Game, error) {
 		return nil, ErrFetchingGames
 	}
 
-	var games []*models.Game
-	if err := json.NewDecoder(res.Body).Decode(&games); err != nil {
+	var gamesResponse models.UserGameResponse
+	if err := json.NewDecoder(res.Body).Decode(&gamesResponse); err != nil {
 		return nil, fmt.Errorf("error while decoding body: %w", err)
 	}
 
-	return games, nil
+	return &gamesResponse, nil
 }

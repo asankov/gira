@@ -55,7 +55,7 @@ func TestUsersGamesGet(t *testing.T) {
 		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
 	}
 
-	var gamesResponse UserGameResponse
+	var gamesResponse models.UserGameResponse
 	fixtures.Decode(t, w.Body, &gamesResponse)
 
 	got, expected := len(gamesResponse.Games), len(expectedGames)
