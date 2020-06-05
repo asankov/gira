@@ -59,6 +59,37 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 	}
 }
 
+type userGamePutRequest struct {
+	Game   *models.Game  `json:"game"`
+	Status models.Status `json:"status"`
+}
+
+func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		var req userGamePutRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			s.Log.Printf("Error while decoding body: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
+			return
+		}
+
+		if err := s.UserGamesModel.ChangeGameStatus(user.ID, req.Game.ID, req.Status); err != nil {
+			s.Log.Printf("Error while changing game status: %v", err)
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+
+		// TODO: better response
+		s.respond(w, r, nil, http.StatusOK)
+	}
+}
+
 func userFromRequest(r *http.Request) (*models.User, error) {
 	usr := r.Context().Value(contextUserKey)
 	if usr == nil {

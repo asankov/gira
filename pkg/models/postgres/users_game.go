@@ -63,5 +63,12 @@ func (m *UserGamesModel) GetUserGamesGrouped(userID string) (map[models.Status][
 		models.StatusTODO:       todo,
 		models.StatusInProgress: inProgress,
 		models.StatusDone:       done,
-	}, nil  
+	}, nil
+}
+
+func (m *UserGamesModel) ChangeGameStatus(userID, gameID string, status models.Status) error {
+	if _, err := m.DB.Exec("UPDATE USER_GAMES SET status =  $1 WHERE user_id = $2 AND game_id = $3", status, userID, gameID); err != nil {
+		return fmt.Errorf("error while updating game status: %w", err)
+	}
+	return nil
 }

@@ -23,6 +23,7 @@ type UserModel interface {
 // UserGamesModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
 type UserGamesModel interface {
 	LinkGameToUser(userID, gameID string) error
+	ChangeGameStatus(userID, gameID string, status models.Status) error
 	GetUserGames(userID string) ([]*models.Game, error)
 	GetUserGamesGrouped(userID string) (map[models.Status][]*models.Game, error)
 }
