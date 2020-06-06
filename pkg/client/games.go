@@ -17,7 +17,7 @@ var (
 	ErrCreatingGame = errors.New("error while creating game")
 	// ErrNoAuthorization is returned when no authorization is sent for a authorized routes
 	ErrNoAuthorization = errors.New("no authorization is present")
-	// ErrLinkingGame is returned when an error occurred while linking game to user 
+	// ErrLinkingGame is returned when an error occurred while linking game to user
 	ErrLinkingGame = errors.New("error while linking game to user")
 )
 
