@@ -54,6 +54,10 @@ type UserResponse struct {
 	User *User `json:"user"`
 }
 
+type UserGameRequest struct {
+	Game *Game `json:"game"`
+}
+
 type UserGamesResponse struct {
 	Games []*Game `json:"games"`
 }

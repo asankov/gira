@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,4 +33,30 @@ func (c *Client) GetUserGames(token string) (map[models.Status][]*models.UserGam
 	}
 
 	return gamesResponse, nil
+}
+
+// LinkGameToUser adds the game with the given ID to the list of games of the user, associated with the token
+func (c *Client) LinkGameToUser(gameID, token string) (*models.UserGame, error) {
+	body, err := json.Marshal(models.UserGameRequest{Game: &models.Game{ID: gameID}})
+	if err != nil {
+		return nil, fmt.Errorf("error while marshalling body: %w", err)
+	}
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/users/games", c.addr), bytes.NewBuffer(body))
+	if err != nil {
+		return nil, fmt.Errorf("error while building HTTP request")
+	}
+	req.Header.Add("x-auth-token", token)
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, ErrLinkingGame
+	}
+	if res.StatusCode != http.StatusOK {
+		if res.StatusCode == http.StatusUnauthorized {
+			return nil, ErrNoAuthorization
+		}
+		return nil, ErrLinkingGame
+	}
+
+	// TODO: return real response
+	return nil, nil
 }

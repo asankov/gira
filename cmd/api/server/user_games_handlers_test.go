@@ -132,7 +132,7 @@ func TestUserGamesPost(t *testing.T) {
 	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &userGameRequest{Game: &models.Game{ID: gameID}}))
+	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
 	r.Header.Add("x-auth-token", token)
 
 	srv.ServeHTTP(w, r)
@@ -163,7 +163,7 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 	srv := setupUserGamesServer(userGamesMock, authenticatorMock)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &userGameRequest{Game: &models.Game{ID: gameID}}))
+	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
 	r.Header.Add("x-auth-token", token)
 
 	srv.ServeHTTP(w, r)

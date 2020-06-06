@@ -17,6 +17,8 @@ var (
 	ErrCreatingGame = errors.New("error while creating game")
 	// ErrNoAuthorization is returned when no authorization is sent for a authorized routes
 	ErrNoAuthorization = errors.New("no authorization is present")
+	// ErrLinkingGame is returned when an error occurred while linking game to user
+	ErrLinkingGame = errors.New("error while linking game to user")
 )
 
 // Client is the struct that is used to communicate
@@ -52,12 +54,12 @@ func (c *Client) GetGames(token string) ([]*models.Game, error) {
 		return nil, ErrFetchingGames
 	}
 
-	var games []*models.Game
+	var games models.GamesResponse
 	if err := json.NewDecoder(res.Body).Decode(&games); err != nil {
 		return nil, fmt.Errorf("error while decoidng body: %w", err)
 	}
 
-	return games, nil
+	return games.Games, nil
 }
 
 // GetGameByID returns the game with the given ID.

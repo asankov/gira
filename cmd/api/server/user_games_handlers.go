@@ -30,10 +30,6 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 	}
 }
 
-type userGameRequest struct {
-	Game *models.Game `json:"game"`
-}
-
 func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
@@ -42,7 +38,7 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 			return
 		}
 
-		var req userGameRequest
+		var req models.UserGameRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			s.Log.Printf("Error while decoding body: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
