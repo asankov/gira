@@ -33,12 +33,12 @@ func (c *Client) GetUser(token string) (*models.User, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
 	}
-	var userResponse *models.User
+	var userResponse *models.UserResponse
 	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
 		return nil, fmt.Errorf("error while decoding body: %w", err)
 	}
 
-	return userResponse, nil
+	return userResponse.User, nil
 }
 
 func (c *Client) CreateUser(user *models.User) (*models.User, error) {
@@ -64,7 +64,7 @@ func (c *Client) CreateUser(user *models.User) (*models.User, error) {
 	return userResponse, nil
 }
 
-func (c *Client) LoginUser(user *models.User) (*models.UserResponse, error) {
+func (c *Client) LoginUser(user *models.User) (*models.UserLoginResponse, error) {
 	body, err := json.Marshal(user)
 	if err != nil {
 		return nil, fmt.Errorf("error while building body: %w", err)
@@ -78,7 +78,7 @@ func (c *Client) LoginUser(user *models.User) (*models.UserResponse, error) {
 		return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
 	}
 
-	var userResponse *models.UserResponse
+	var userResponse *models.UserLoginResponse
 	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
 		return nil, fmt.Errorf("error while decoidng body: %w", err)
 	}

@@ -18,28 +18,30 @@ func (m *UserGamesModel) LinkGameToUser(userID, gameID string) error {
 	return nil
 }
 
-func (m *UserGamesModel) GetUserGames(userID string) ([]*models.Game, error) {
-	rows, err := m.DB.Query(`SELECT g.id, g.name, ug.status FROM USER_GAMES ug JOIN GAMES g ON ug.game_id = g.id where user_id = $1`, userID)
+func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error) {
+	rows, err := m.DB.Query(`SELECT ug.id, g.id AS user_game_id, g.name, ug.status FROM USER_GAMES ug JOIN GAMES g ON ug.game_id = g.id where user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	games := []*models.Game{}
+	userGames := []*models.UserGame{}
 	for rows.Next() {
-		var game models.Game
+		var userGame = models.UserGame{
+			Game: &models.Game{},
+		}
 
-		if err = rows.Scan(&game.ID, &game.Name, &game.Status); err != nil {
+		if err = rows.Scan(&userGame.ID, &userGame.Game.ID, &userGame.Game.Name, &userGame.Status); err != nil {
 			return nil, fmt.Errorf("error while reading games from the database: %w", err)
 		}
 
-		games = append(games, &game)
+		userGames = append(userGames, &userGame)
 	}
 
-	return games, nil
+	return userGames, nil
 }
 
-func (m *UserGamesModel) GetUserGamesGrouped(userID string) (map[models.Status][]*models.Game, error) {
+func (m *UserGamesModel) GetUserGamesGrouped(userID string) (map[models.Status][]*models.UserGame, error) {
 
 	games, err := m.GetUserGames(userID)
 	if err != nil {
@@ -48,7 +50,7 @@ func (m *UserGamesModel) GetUserGamesGrouped(userID string) (map[models.Status][
 
 	// TODO: this is really stupid. all of this should be implemented via SQL group by
 	// and ideally the statuses should be customizable
-	todo, inProgress, done := []*models.Game{}, []*models.Game{}, []*models.Game{}
+	todo, inProgress, done := []*models.UserGame{}, []*models.UserGame{}, []*models.UserGame{}
 	for _, game := range games {
 		if game.Status == models.StatusTODO {
 			todo = append(todo, game)
@@ -59,15 +61,15 @@ func (m *UserGamesModel) GetUserGamesGrouped(userID string) (map[models.Status][
 		}
 	}
 
-	return map[models.Status][]*models.Game{
+	return map[models.Status][]*models.UserGame{
 		models.StatusTODO:       todo,
 		models.StatusInProgress: inProgress,
 		models.StatusDone:       done,
 	}, nil
 }
 
-func (m *UserGamesModel) ChangeGameStatus(userID, gameID string, status models.Status) error {
-	if _, err := m.DB.Exec("UPDATE USER_GAMES SET status =  $1 WHERE user_id = $2 AND game_id = $3", status, userID, gameID); err != nil {
+func (m *UserGamesModel) ChangeGameStatus(userID, userGameID string, status models.Status) error {
+	if _, err := m.DB.Exec("UPDATE USER_GAMES SET status =  $1 WHERE id = $2 AND user_id = $3", status, userGameID, userID); err != nil {
 		return fmt.Errorf("error while updating game status: %w", err)
 	}
 	return nil

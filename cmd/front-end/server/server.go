@@ -21,9 +21,9 @@ var (
 
 // TemplateData is the struct that holds all the data that can be passed to the template renderer to render
 type TemplateData struct {
-	Game  *models.Game
-	User  *models.User
-	Games []*models.Game
+	Game      *models.Game
+	User      *models.User
+	UserGames []*models.UserGame
 
 	Error string
 	Flash string

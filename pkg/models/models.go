@@ -3,19 +3,22 @@ package models
 // Game is the representation of a game
 // in the database.
 type Game struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Status Status `json:"status"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type GamesResponse struct {
+	Games []*Game `json:"games"`
 }
 
 // User is the representation of a user
 // in the database.
 type User struct {
-	ID             string `json:"id"`
-	Username       string `json:"username"`
-	Email          string `json:"email"`
-	Password       string `json:"password"`
-	HashedPassword []byte
+	ID             string `json:"id,omitempty"`
+	Username       string `json:"username,omitempty"`
+	Email          string `json:"email,omitempty"`
+	Password       string `json:"password,omitempty"`
+	HashedPassword []byte `json:"-"`
 }
 
 // Status is the type that represents the status of a game
@@ -33,18 +36,36 @@ var (
 // UserGame is the representation of a user game relation
 // in the database.
 type UserGame struct {
+	ID     string `json:"id,omitempty"`
+	User   *User  `json:"user,omitempty"`
+	Game   *Game  `json:"game,omitempty"`
+	Status Status `json:"status,omitempty"`
+}
+
+// UserLoginResponse is the response that is returned
+// when a user is logged in.
+type UserLoginResponse struct {
+	Token string `json:"token"`
+}
+
+// UserResponse is the response that is returned
+// from the GET /users API
+type UserResponse struct {
+	User *User `json:"user"`
+}
+
+type UserGamesResponse struct {
+	Games []*Game `json:"games"`
+}
+
+type UserGameResponse struct {
 	ID     string `json:"id"`
-	User   *User  `json:"user"`
 	Game   *Game  `json:"game"`
 	Status Status `json:"status"`
 }
 
-// UserResponse is the response that is returned
-// when a user is logged in.
-type UserResponse struct {
-	Token string `json:"token"`
-}
-
-type UserGameResponse struct {
-	Games []*Game `json:"games"`
+// ErrorResponse is the generic error response returned from the API,
+// when an error of any kind occurred.
+type ErrorResponse struct {
+	Error string `json:"error"`
 }

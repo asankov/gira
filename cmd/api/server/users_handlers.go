@@ -21,16 +21,6 @@ var (
 	errHashedPasswordNotAllowed = errors.New("'hashedPassword' is not allowed field")
 )
 
-type userResponse struct {
-	User     *models.User `json:"user"`
-	Token    string       `json:"token"`
-	Username string       `json:"username"`
-}
-
-type errorResponse struct {
-	Error string `json:"error"`
-}
-
 func (s *Server) handleUserCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user models.User
@@ -83,7 +73,7 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
-		s.respond(w, r, &userResponse{Username: user.Username}, http.StatusOK)
+		s.respond(w, r, &models.UserResponse{User: user}, http.StatusOK)
 	}
 }
 
@@ -144,7 +134,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 
 		// TODO: persist the token, so we can invalidate it
 
-		s.respond(w, r, &userResponse{Token: token, User: usr}, http.StatusOK)
+		s.respond(w, r, &models.UserLoginResponse{Token: token}, http.StatusOK)
 	}
 }
 
@@ -163,7 +153,7 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 
 func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
 	w.WriteHeader(statusCode)
-	if err := json.NewEncoder(w).Encode(errorResponse{Error: err.Error()}); err != nil {
+	if err := json.NewEncoder(w).Encode(models.ErrorResponse{Error: err.Error()}); err != nil {
 		s.Log.Printf("Error while encoding error response: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

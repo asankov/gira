@@ -1,16 +1,31 @@
 {{template "base" .}}
 {{define "title"}}Games{{end}}
 {{define "main"}}
-{{if .Games}}
+{{if .UserGames}}
 <table>
     <tr>
         <th>ID</th>
         <th>Name</th>
+        <th>Status</th>
+        <th></th>
     </tr>
-    {{range .Games}}
+    {{range .UserGames}}
     <tr>
         <td>{{.ID}}</td>
-        <td>{{.Name}}</td>
+        <td>{{.Game.Name}}</td>
+        <td>{{.Status}}</td>
+        <td>
+            {{ if eq .Status "To Do" }}
+            <button> In Progress </button>
+            <button> Done </button>
+            {{ else if eq .Status "In Progress"}}
+            <button> To Do </button>
+            <button> Done </button>
+            {{ else if eq .Status "Done"}}
+            <button> To Do </button>
+            <button> In Progress </button>
+            {{ end }}
+        </td>
     </tr>
     {{end}}
 </table>

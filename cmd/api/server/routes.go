@@ -26,7 +26,7 @@ func (s *Server) routes() http.Handler {
 
 	r.Handle("/users/games", requireLogin.Then(s.handleUsersGamesGet())).Methods(http.MethodGet)
 	r.Handle("/users/games", requireLogin.Then(s.handleUsersGamesPost())).Methods(http.MethodPost)
-	r.Handle("/users/games", requireLogin.Then(s.handleUsersGamesPatch())).Methods(http.MethodPatch)
+	r.Handle("/users/games/{id}", requireLogin.Then(s.handleUsersGamesPatch())).Methods(http.MethodPatch)
 
 	return standartMiddleware.Then(r)
 }

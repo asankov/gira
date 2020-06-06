@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
+	"github.com/gorilla/mux"
 )
 
 func (s *Server) handleUsersGamesGet() http.HandlerFunc {
@@ -59,8 +60,7 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 	}
 }
 
-type userGamePutRequest struct {
-	Game   *models.Game  `json:"game"`
+type userGamePatchRequest struct {
 	Status models.Status `json:"status"`
 }
 
@@ -72,14 +72,21 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 			return
 		}
 
-		var req userGamePutRequest
+		args := mux.Vars(r)
+		userGameID := args["id"]
+		if userGameID == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		var req userGamePatchRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			s.Log.Printf("Error while decoding body: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
 			return
 		}
 
-		if err := s.UserGamesModel.ChangeGameStatus(user.ID, req.Game.ID, req.Status); err != nil {
+		if err := s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, req.Status); err != nil {
 			s.Log.Printf("Error while changing game status: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return

@@ -53,7 +53,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 			return
 		}
 
-		s.respond(w, r, all, http.StatusOK)
+		s.respond(w, r, models.GamesResponse{Games: all}, http.StatusOK)
 	}
 }
 

@@ -35,10 +35,10 @@ func TestUsersGamesGet(t *testing.T) {
 			ID: "12",
 		}, nil)
 
-	expectedGames := map[models.Status][]*models.Game{
+	expectedGames := map[models.Status][]*models.UserGame{
 		"To Do": {
-			{ID: "1", Name: "ACI"},
-			{ID: "2", Name: "ACII"},
+			{ID: "1", Game: &models.Game{ID: "1", Name: "ACI"}},
+			{ID: "2", Game: &models.Game{ID: "2", Name: "ACII"}},
 		},
 	}
 
@@ -58,7 +58,7 @@ func TestUsersGamesGet(t *testing.T) {
 		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
 	}
 
-	var gamesResponse map[models.Status][]*models.Game
+	var gamesResponse map[models.Status][]*models.UserGame
 	fixtures.Decode(t, w.Body, &gamesResponse)
 
 	got, expected := len(gamesResponse), len(expectedGames)
@@ -72,9 +72,9 @@ func TestUsersGamesGet(t *testing.T) {
 	}
 }
 
-func gameIn(game *models.Game, games []*models.Game) bool {
+func gameIn(game *models.UserGame, games []*models.UserGame) bool {
 	for _, g := range games {
-		if game.ID == g.ID && game.Name == g.Name {
+		if game.ID == g.ID && game.Game.Name == g.Game.Name && game.Game.ID == g.Game.ID {
 			return true
 		}
 	}

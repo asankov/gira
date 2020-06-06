@@ -48,10 +48,10 @@ func (mr *UserGamesModelMockMockRecorder) ChangeGameStatus(arg0, arg1, arg2 inte
 }
 
 // GetUserGames mocks base method
-func (m *UserGamesModelMock) GetUserGames(arg0 string) ([]*models.Game, error) {
+func (m *UserGamesModelMock) GetUserGames(arg0 string) ([]*models.UserGame, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserGames", arg0)
-	ret0, _ := ret[0].([]*models.Game)
+	ret0, _ := ret[0].([]*models.UserGame)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -63,10 +63,10 @@ func (mr *UserGamesModelMockMockRecorder) GetUserGames(arg0 interface{}) *gomock
 }
 
 // GetUserGamesGrouped mocks base method
-func (m *UserGamesModelMock) GetUserGamesGrouped(arg0 string) (map[models.Status][]*models.Game, error) {
+func (m *UserGamesModelMock) GetUserGamesGrouped(arg0 string) (map[models.Status][]*models.UserGame, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserGamesGrouped", arg0)
-	ret0, _ := ret[0].(map[models.Status][]*models.Game)
+	ret0, _ := ret[0].(map[models.Status][]*models.UserGame)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
