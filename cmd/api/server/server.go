@@ -23,9 +23,9 @@ type UserModel interface {
 // UserGamesModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
 type UserGamesModel interface {
 	LinkGameToUser(userID, gameID string) error
-	ChangeGameStatus(userID, gameID string, status models.Status) error
-	GetUserGames(userID string) ([]*models.Game, error)
-	GetUserGamesGrouped(userID string) (map[models.Status][]*models.Game, error)
+	ChangeGameStatus(userID, userGameID string, status models.Status) error
+	GetUserGames(userID string) ([]*models.UserGame, error)
+	GetUserGamesGrouped(userID string) (map[models.Status][]*models.UserGame, error)
 }
 
 // Authenticator is the interface to interact with the Authenticator (DB, OIDC provider, etc.)

@@ -31,12 +31,20 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 		}
 
 		data := &TemplateData{
-			Flash: flash,
-			Games: gamesResponse.Games,
+			Flash:     flash,
+			UserGames: mapToGames(gamesResponse),
 		}
 
 		s.render(w, r, data, listGamesPage)
 	}
+}
+
+func mapToGames(userGames map[models.Status][]*models.UserGame) []*models.UserGame {
+	res := []*models.UserGame{}
+	for _, v := range userGames {
+		res = append(res, v...)
+	}
+	return res
 }
 
 func (s *Server) handleGameCreateView() http.HandlerFunc {

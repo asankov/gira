@@ -96,15 +96,6 @@ func TestUserCreateValidationError(t *testing.T) {
 				Password: "t3$t",
 			},
 		},
-		{
-			name: "Filled hashed password",
-			user: &models.User{
-				Username:       "test",
-				Email:          "test@test.com",
-				Password:       "t3$t",
-				HashedPassword: []byte("t3$t"),
-			},
-		},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -195,7 +186,7 @@ func TestUserLogin(t *testing.T) {
 	if got != expected {
 		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
 	}
-	var userResponse models.UserResponse
+	var userResponse models.UserLoginResponse
 	fixtures.Decode(t, w.Body, &userResponse)
 	if userResponse.Token != token {
 		t.Fatalf(`Got ("%s") for token, expected ("%s")`, userResponse.Token, token)

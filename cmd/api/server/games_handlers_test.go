@@ -57,18 +57,18 @@ func TestGetGames(t *testing.T) {
 		t.Fatalf("Got status code - (%d), expected (%d)", got, expected)
 	}
 
-	var res []*models.Game
+	var res models.GamesResponse
 	fixtures.Decode(t, w.Body, &res)
 
-	if len(res) != 2 {
-		t.Fatalf("Got (%d) for length of result, expected %d", len(res), 2)
+	if len(res.Games) != 2 {
+		t.Fatalf("Got (%d) for length of result, expected %d", len(res.Games), 2)
 	}
-	for i := 0; i < len(res); i++ {
-		got, expected := res[i].ID, gamesResponse[i].ID
+	for i := 0; i < len(res.Games); i++ {
+		got, expected := res.Games[i].ID, gamesResponse[i].ID
 		if got != expected {
 			t.Fatalf("Got (%s) for result[%d].ID, expected (%s)", got, i, expected)
 		}
-		got, expected = res[i].Name, gamesResponse[i].Name
+		got, expected = res.Games[i].Name, gamesResponse[i].Name
 		if got != expected {
 			t.Fatalf("Got (%s) for result[%d].Name, expected (%s)", got, i, expected)
 		}
