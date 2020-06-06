@@ -13,6 +13,26 @@ func (s *Server) handleHome() http.HandlerFunc {
 		s.render(w, r, emptyTemplateData, homePage)
 	}
 }
+
+func (s *Server) handleGamesAdd() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		token := getToken(r)
+		games, err := s.Client.GetGames(token)
+		if err != nil {
+			if errors.Is(err, client.ErrNoAuthorization) {
+				w.Header().Add("Location", "/users/login")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// TODO: exclude games the user has already added
+		s.render(w, r, &TemplateData{Games: games}, addGamePage)
+	}
+}
+
 func (s *Server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

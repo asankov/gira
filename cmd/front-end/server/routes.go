@@ -19,6 +19,7 @@ func (s *Server) routes() http.Handler {
 
 	r.HandleFunc("/", s.handleHome()).Methods(http.MethodGet)
 	r.Handle("/games", requireLogin.Then(dynamicMiddleware.Then(s.handleGamesGet()))).Methods(http.MethodGet)
+	r.Handle("/games/add", requireLogin.Then(dynamicMiddleware.Then(s.handleGamesAdd()))).Methods(http.MethodGet)
 	r.Handle("/games/new", requireLogin.Then(dynamicMiddleware.Then(s.handleGameCreateView()))).Methods(http.MethodGet)
 	r.Handle("/games", requireLogin.Then(dynamicMiddleware.Then(s.handleGameCreate()))).Methods(http.MethodPost)
 

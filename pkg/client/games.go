@@ -52,12 +52,12 @@ func (c *Client) GetGames(token string) ([]*models.Game, error) {
 		return nil, ErrFetchingGames
 	}
 
-	var games []*models.Game
+	var games models.GamesResponse
 	if err := json.NewDecoder(res.Body).Decode(&games); err != nil {
 		return nil, fmt.Errorf("error while decoidng body: %w", err)
 	}
 
-	return games, nil
+	return games.Games, nil
 }
 
 // GetGameByID returns the game with the given ID.
