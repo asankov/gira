@@ -2,12 +2,15 @@
 {{define "title"}}Create a Game{{end}}
 {{define "main"}}
 {{ if .Games}}
-<label for="game">Select a game:</label>
-<select name="game" id="game">
-    {{range .Games}}
-    <option value="{{.ID}}">{{.Name}}</option>
-    {{end}}
-</select>
+<form action="/games/add" method="POST">
+    <label for="game">Select a game:</label>
+    <select name="game" id="game">
+        {{range .Games}}
+        <option value="{{.ID}}">{{.Name}}</option>
+        {{end}}
+    </select>
+    <button type="submit"> Add </button>
+</form>
 {{ else }}
 There are no available games to add.
 {{ end }}

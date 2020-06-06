@@ -33,6 +33,33 @@ func (s *Server) handleGamesAdd() http.HandlerFunc {
 	}
 }
 
+func (s *Server) handleGamesAddPost() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := getToken(r)
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		gameID := r.PostForm.Get("game")
+		if gameID == "" {
+			http.Error(w, "'game' is required", http.StatusBadRequest)
+			return
+		}
+
+		if _, err := s.Client.LinkGameToUser(gameID, token); err != nil {
+			s.Log.Println(err)
+			// TODO: render error page
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Location", "/games")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
 func (s *Server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
