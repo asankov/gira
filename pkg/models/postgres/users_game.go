@@ -74,3 +74,25 @@ func (m *UserGamesModel) ChangeGameStatus(userID, userGameID string, status mode
 	}
 	return nil
 }
+
+func (m *UserGamesModel) GetAvailableGamesFor(userID string) ([]*models.Game, error) {
+	rows, err := m.DB.Query(`SELECT id, name FROM games WHERE id NOT IN (SELECT game_id FROM user_games WHERE user_id = $1)`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	games := []*models.Game{}
+	for rows.Next() {
+		var game = models.Game{}
+
+		if err = rows.Scan(&game.ID, &game.Name); err != nil {
+			return nil, fmt.Errorf("error while reading games from the database: %w", err)
+		}
+
+		games = append(games, &game)
+	}
+
+	return games, nil
+
+}

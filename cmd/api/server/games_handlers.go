@@ -46,14 +46,26 @@ func (s *Server) handleGamesCreate() http.HandlerFunc {
 
 func (s *Server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		all, err := s.GameModel.All()
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var games []*models.Game
+		if _, ok := r.URL.Query()["excludeAssigned"]; ok {
+			games, err = s.UserGamesModel.GetAvailableGamesFor(user.ID)
+		} else {
+			games, err = s.GameModel.All()
+		}
+
 		if err != nil {
 			s.Log.Printf("error while fetching games from the database: %v", err)
 			http.Error(w, "error fetching games", http.StatusInternalServerError)
 			return
 		}
 
-		s.respond(w, r, models.GamesResponse{Games: all}, http.StatusOK)
+		s.respond(w, r, models.GamesResponse{Games: games}, http.StatusOK)
 	}
 }
 
