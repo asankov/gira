@@ -36,9 +36,22 @@ func New(addr string) (*Client, error) {
 	}, nil
 }
 
+type GetGamesOptions struct {
+	ExcludeAssigned bool
+}
+
+var NoOptions = &GetGamesOptions{}
+
 // GetGames returns all the games.
-func (c *Client) GetGames(token string) ([]*models.Game, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/games", c.addr), nil)
+func (c *Client) GetGames(token string, options *GetGamesOptions) ([]*models.Game, error) {
+	url := fmt.Sprintf("%s/games", c.addr)
+	if options == nil {
+		options = NoOptions
+	}
+	if options.ExcludeAssigned {
+		url += "?excludeAssigned=true"
+	}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
 	}

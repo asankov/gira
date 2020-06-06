@@ -18,7 +18,7 @@ func (s *Server) handleGamesAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		token := getToken(r)
-		games, err := s.Client.GetGames(token)
+		games, err := s.Client.GetGames(token, &client.GetGamesOptions{ExcludeAssigned: true})
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")

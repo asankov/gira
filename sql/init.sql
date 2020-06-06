@@ -21,3 +21,5 @@ CREATE TABLE IF NOT EXISTS USER_GAMES (
 
 ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email);
 ALTER TABLE users ADD CONSTRAINT users_uc_username UNIQUE (username);
+
+ALTER TABLE user_games ADD CONSTRAINT user_games_unique_user_game (user_id, game_id);
