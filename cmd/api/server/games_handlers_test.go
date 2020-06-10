@@ -2,10 +2,8 @@ package server
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
@@ -18,19 +16,6 @@ var (
 	user = &models.User{Username: "anton"}
 )
 
-func setupGamesServer(g GameModel, u UserModel, a *fixtures.AuthenticatorMock) *Server {
-	a.EXPECT().
-		DecodeToken(gomock.Eq(token)).
-		Return(user, nil)
-
-	return &Server{
-		Log:           log.New(os.Stdout, "", 0),
-		GameModel:     g,
-		UserModel:     u,
-		Authenticator: a,
-	}
-}
-
 func TestGetGames(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -38,12 +23,19 @@ func TestGetGames(t *testing.T) {
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, userModel, authenticator)
+	srv := newServer(t, &Options{
+		Authenticator: authenticator,
+		GameModel:     gameModel,
+		UserModel:     userModel,
+	})
 
 	gamesResponse := []*models.Game{
 		{ID: "1", Name: "AC"},
 		{ID: "2", Name: "ACII"},
 	}
+	authenticator.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(user, nil)
 	gameModel.
 		EXPECT().
 		All().
@@ -88,8 +80,14 @@ func TestGetGamesErr(t *testing.T) {
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, userModel, authenticator)
-
+	srv := newServer(t, &Options{
+		Authenticator: authenticator,
+		GameModel:     gameModel,
+		UserModel:     userModel,
+	})
+	authenticator.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(user, nil)
 	gameModel.
 		EXPECT().
 		All().
@@ -117,10 +115,16 @@ func TestGetGameByID(t *testing.T) {
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, userModel, authenticator)
-
+	srv := newServer(t, &Options{
+		Authenticator: authenticator,
+		GameModel:     gameModel,
+		UserModel:     userModel,
+	})
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
+	authenticator.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(user, nil)
 	gameModel.
 		EXPECT().
 		Get("1").
@@ -173,8 +177,14 @@ func TestGetGameByIDDBError(t *testing.T) {
 			gameModel := fixtures.NewGameModelMock(ctrl)
 			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := setupGamesServer(gameModel, userModel, authenticator)
-
+			srv := newServer(t, &Options{
+				Authenticator: authenticator,
+				GameModel:     gameModel,
+				UserModel:     userModel,
+			})
+			authenticator.EXPECT().
+				DecodeToken(gomock.Eq(token)).
+				Return(user, nil)
 			gameModel.
 				EXPECT().
 				Get("1").
@@ -204,7 +214,15 @@ func TestCreateGame(t *testing.T) {
 	gameModel := fixtures.NewGameModelMock(ctrl)
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupGamesServer(gameModel, userModel, authenticator)
+	srv := newServer(t, &Options{
+		Authenticator: authenticator,
+		GameModel:     gameModel,
+		UserModel:     userModel,
+	})
+
+	authenticator.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(user, nil)
 
 	actualName := "ACIII"
 	actualGame := &models.Game{Name: actualName}
@@ -258,8 +276,14 @@ func TestCreateGameValidationError(t *testing.T) {
 			gameModel := fixtures.NewGameModelMock(ctrl)
 			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := setupGamesServer(gameModel, userModel, authenticator)
-
+			srv := newServer(t, &Options{
+				Authenticator: authenticator,
+				GameModel:     gameModel,
+				UserModel:     userModel,
+			})
+			authenticator.EXPECT().
+				DecodeToken(gomock.Eq(token)).
+				Return(user, nil)
 			userModel.
 				EXPECT().
 				GetUserByToken(token).
@@ -304,8 +328,14 @@ func TestCreateGameDBError(t *testing.T) {
 			gameModel := fixtures.NewGameModelMock(ctrl)
 			userModel := fixtures.NewUserModelMock(ctrl)
 			authenticator := fixtures.NewAuthenticatorMock(ctrl)
-			srv := setupGamesServer(gameModel, userModel, authenticator)
-
+			srv := newServer(t, &Options{
+				Authenticator: authenticator,
+				GameModel:     gameModel,
+				UserModel:     userModel,
+			})
+			authenticator.EXPECT().
+				DecodeToken(gomock.Eq(token)).
+				Return(user, nil)
 			actualGame := &models.Game{Name: "ACIII"}
 			gameModel.
 				EXPECT().
