@@ -178,7 +178,8 @@ func TestUserLogin(t *testing.T) {
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 
 	srv := newServer(t, &Options{
-		UserModel: userModel,
+		UserModel:     userModel,
+		Authenticator: authenticatorMock,
 	})
 
 	userModel.EXPECT().
@@ -292,7 +293,8 @@ func TestUserLoginServiceError(t *testing.T) {
 			testCase.setup(userModel, authenticatorMock)
 
 			srv := newServer(t, &Options{
-				UserModel: userModel,
+				UserModel:     userModel,
+				Authenticator: authenticatorMock,
 			})
 
 			w := httptest.NewRecorder()
