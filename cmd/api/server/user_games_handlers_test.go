@@ -3,27 +3,14 @@ package server
 import (
 	"bytes"
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golang/mock/gomock"
 )
-
-// TODO: this is the same in all test files.
-// remove in favour of server.New(*ServerOptions) method
-func setupUserGamesServer(ug UserGamesModel, u UserModel, a *fixtures.AuthenticatorMock) *Server {
-	return &Server{
-		Log:            log.New(os.Stdout, "", 0),
-		UserGamesModel: ug,
-		UserModel:      u,
-		Authenticator:  a,
-	}
-}
 
 func TestUsersGamesGet(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -32,7 +19,11 @@ func TestUsersGamesGet(t *testing.T) {
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
 	userModelMock := fixtures.NewUserModelMock(ctrl)
-	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
@@ -94,7 +85,11 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
 	userModelMock := fixtures.NewUserModelMock(ctrl)
-	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
 
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
@@ -127,8 +122,11 @@ func TestUserGamesPost(t *testing.T) {
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
 	userModelMock := fixtures.NewUserModelMock(ctrl)
-	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
-
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
 		Return(nil, nil)
@@ -161,8 +159,11 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
 	userModelMock := fixtures.NewUserModelMock(ctrl)
-	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
-
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
 		Return(nil, nil)
@@ -195,8 +196,11 @@ func TestUsersGamesPostParseError(t *testing.T) {
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
 	userModelMock := fixtures.NewUserModelMock(ctrl)
-	srv := setupUserGamesServer(userGamesModelMock, userModelMock, authenticatorMock)
-
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
 	authenticatorMock.EXPECT().
 		DecodeToken(gomock.Eq(token)).
 		Return(nil, nil)
