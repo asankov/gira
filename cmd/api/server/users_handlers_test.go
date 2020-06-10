@@ -22,12 +22,17 @@ var (
 	}
 )
 
-func setupUsersServer(u UserModel, a *fixtures.AuthenticatorMock) *Server {
-	return &Server{
-		Log:           log.New(os.Stdout, "", 0),
-		UserModel:     u,
-		Authenticator: a,
+func newServer(t *testing.T, opts *Options) *Server {
+	if opts == nil {
+		opts = &Options{}
 	}
+	opts.Log = log.New(os.Stdout, "", 0)
+
+	srv, err := New(opts)
+	if err != nil {
+		t.Fatalf("Got unexpected error while constructing server: %v", err)
+	}
+	return srv
 }
 
 func TestUserCreate(t *testing.T) {
@@ -36,7 +41,10 @@ func TestUserCreate(t *testing.T) {
 
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := setupUsersServer(userModel, authenticator)
+	srv := newServer(t, &Options{
+		UserModel:     userModel,
+		Authenticator: authenticator,
+	})
 
 	userModel.EXPECT().
 		Insert(&expectedUser).
@@ -99,7 +107,7 @@ func TestUserCreateValidationError(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			srv := setupUsersServer(nil, nil)
+			srv := newServer(t, nil)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, c.user))
@@ -142,7 +150,9 @@ func TestUserCreateDBError(t *testing.T) {
 
 			userModel := fixtures.NewUserModelMock(ctrl)
 
-			srv := setupUsersServer(userModel, nil)
+			srv := newServer(t, &Options{
+				UserModel: userModel,
+			})
 
 			userModel.EXPECT().
 				Insert(&expectedUser).
@@ -167,7 +177,9 @@ func TestUserLogin(t *testing.T) {
 	userModel := fixtures.NewUserModelMock(ctrl)
 	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
 
-	srv := setupUsersServer(userModel, authenticatorMock)
+	srv := newServer(t, &Options{
+		UserModel: userModel,
+	})
 
 	userModel.EXPECT().
 		Authenticate(expectedUser.Email, expectedUser.Password).
@@ -223,7 +235,9 @@ func TestUserLoginValidationError(t *testing.T) {
 
 			userModel := fixtures.NewUserModelMock(ctrl)
 
-			srv := setupUsersServer(userModel, nil)
+			srv := newServer(t, &Options{
+				UserModel: userModel,
+			})
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, testCase.user))
@@ -277,7 +291,9 @@ func TestUserLoginServiceError(t *testing.T) {
 
 			testCase.setup(userModel, authenticatorMock)
 
-			srv := setupUsersServer(userModel, authenticatorMock)
+			srv := newServer(t, &Options{
+				UserModel: userModel,
+			})
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, expectedUser))
