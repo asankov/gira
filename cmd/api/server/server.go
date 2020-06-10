@@ -49,6 +49,29 @@ type Server struct {
 	UserGamesModel
 }
 
+// Options is the struct used to construct a server
+type Options struct {
+	Log *log.Logger
+	Authenticator
+	GameModel
+	UserModel
+	UserGamesModel
+}
+
+// New returns a new Server, based on opts.
+// It also validates the arguments and can return an error
+// if it receives options that are not right.
+func New(opts *Options) (*Server, error) {
+	// TODO: validate args
+	return &Server{
+		Log:            opts.Log,
+		Authenticator:  opts.Authenticator,
+		GameModel:      opts.GameModel,
+		UserModel:      opts.UserModel,
+		UserGamesModel: opts.UserGamesModel,
+	}, nil
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.routes().ServeHTTP(w, r)
 }
