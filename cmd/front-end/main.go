@@ -26,6 +26,7 @@ func run() error {
 	backEndAddr := flag.String("api_addr", "http://localhost:4000", "the address to the API service")
 	sessionSecret := flag.String("session_secret", "s6Ndh+pPbnzHb7*297k1q5W0Tzbpa@ge", "32-byte secret that is to be used for the session store")
 	logL := flag.String("log_level", "info", "the level of logging")
+	enforceHTTPS := flag.Bool("enforce-https", false, "whether or not to serve front-end via HTTPS")
 	flag.Parse()
 
 	session := sessions.New([]byte(*sessionSecret))
@@ -51,8 +52,21 @@ func run() error {
 		Renderer: templates.NewRenderer(),
 	}
 
-	s.Log.Infoln(fmt.Sprintf("Front-end listening on port %d", *port))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
+	addr := fmt.Sprintf(":%d", *port)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: s,
+	}
+
+	if *enforceHTTPS {
+		s.Log.Infoln(fmt.Sprintf("Front-end listening on %s via HTTPS", addr))
+		err = srv.ListenAndServeTLS("tls/cert.pem", "tls/key.pem")
+	} else {
+		s.Log.Infoln(fmt.Sprintf("Front-end listening on %s", addr))
+		err = srv.ListenAndServe()
+	}
+
+	if err != nil {
 		return fmt.Errorf("error while listening: %w", err)
 	}
 
