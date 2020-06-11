@@ -39,9 +39,10 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:  "token",
-			Value: res.Token,
-			Path:  "/",
+			Name:     "token",
+			Value:    res.Token,
+			Path:     "/",
+			SameSite: http.SameSiteLaxMode,
 		})
 		w.Header().Add("Location", "/")
 		w.WriteHeader(http.StatusSeeOther)

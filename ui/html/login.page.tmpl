@@ -2,6 +2,7 @@
 {{define "title"}}Signup{{end}}
 {{define "main"}}
 <form action='/users/login' method='POST'>
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <div>
         <label>Email:</label>
         <input type='text' name='email'>
@@ -13,5 +14,5 @@
     <div>
         <input type='submit' value='Go'>
     </div>
-</form> 
+</form>
 {{end}}

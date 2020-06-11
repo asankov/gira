@@ -25,6 +25,7 @@
             {{ if .User }}
             <span> Hello, {{.User.Username}}</span>
             <form action="/users/logout" method="POST">
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                 <button type="submit">Log out</button>
             </form>
             {{ else }}

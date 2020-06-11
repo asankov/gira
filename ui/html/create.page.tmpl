@@ -12,6 +12,7 @@
     }
 </style>
 <form action="/games" method="POST" id="add-new-game-form">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required>
     <label for="franchise">Franchise:</label>

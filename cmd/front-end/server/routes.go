@@ -35,6 +35,6 @@ func (s *Server) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static", fileServer))
 
-	standartMiddleware := alice.New(middleware.RecoverPanic(s.Log), middleware.LogRequest(s.Log), s.secureHeaders, s.Session.Enable)
+	standartMiddleware := alice.New(middleware.RecoverPanic(s.Log), middleware.LogRequest(s.Log), s.secureHeaders, s.Session.Enable, noSurf)
 	return standartMiddleware.Then(r)
 }

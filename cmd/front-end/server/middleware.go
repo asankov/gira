@@ -2,6 +2,8 @@ package server
 
 import (
 	"net/http"
+
+	"github.com/justinas/nosurf"
 )
 
 type authorizedHandler func(http.ResponseWriter, *http.Request, string)
@@ -26,4 +28,15 @@ func (s *Server) requireLogin(next authorizedHandler) http.Handler {
 
 		next(w, r, token.Value)
 	})
+}
+
+func noSurf(next http.Handler) http.Handler {
+	csrfHandler := nosurf.New(next)
+	csrfHandler.SetBaseCookie(http.Cookie{
+		HttpOnly: true,
+		Path:     "/",
+		Secure:   true,
+	})
+
+	return csrfHandler
 }

@@ -2,6 +2,7 @@
 {{define "title"}}Create a Game{{end}}
 {{define "main"}}
 <form action="/games/add" method="POST">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <label for="game">Select a game:</label>
     <select name="game" id="game">
         <option value="" selected disabled>-----</option>

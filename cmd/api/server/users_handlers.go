@@ -143,6 +143,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		s.Log.Printf("generated token: %s", token)
 
 		if err := s.UserModel.AssociateTokenWithUser(usr.ID, token); err != nil {
 			s.Log.Errorf("Error while associating token with user %s: %v", usr.ID, err)
@@ -150,6 +151,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
+		s.Log.Printf("returned token: %s", token)
 		s.respond(w, r, &models.UserLoginResponse{Token: token}, http.StatusOK)
 	}
 }
