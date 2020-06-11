@@ -43,8 +43,14 @@ func run() error {
 		Renderer: templates.NewRenderer(),
 	}
 
-	s.Log.Println(fmt.Sprintf("Front-end listening on port %d", *port))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
+	addr := fmt.Sprintf(":%d", *port)
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: s,
+	}
+
+	s.Log.Println(fmt.Sprintf("Front-end listening on %s", addr))
+	if err := srv.ListenAndServeTLS("tls/cert.pem", "tls/key.pem"); err != nil {
 		return fmt.Errorf("error while listening: %w", err)
 	}
 
