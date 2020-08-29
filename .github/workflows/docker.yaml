@@ -24,3 +24,23 @@ jobs:
             password: ${{ secrets.DOCKER_PASSWORD }}
             dockerfile: Dockerfile.${{ matrix.service }}
             repository: asankov/gira-${{ matrix.service }}
+  quay_io:
+    name: Build ${{ matrix.service }} image and push to Quay.io
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ['front-end', 'api']
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Build and push Docker images
+          uses: docker/build-push-action@v1
+          with:
+            tags: latest
+            registry: quay.io
+            tag_with_sha: true
+            username: ${{ secrets.QUAY_IO_USERNAME }}
+            password: ${{ secrets.QUAY_IO_PASSWORD }}
+            dockerfile: Dockerfile.${{ matrix.service }}
+            repository: asankov/gira-${{ matrix.service }}
