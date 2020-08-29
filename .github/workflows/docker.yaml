@@ -5,7 +5,7 @@ on:
     - main
 
 jobs:
-  mocks:
+  docker_hub:
     name: Build ${{ matrix.service }} image and push to Docker Hub
     runs-on: ubuntu-latest
     strategy:
