@@ -7,13 +7,12 @@ Gira is like Jira, but for tracking your video games progress
 ### How to run
 First, run a PostgreSQL database:
 ```
-$ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=antonsankov -p 5432:5432 -d postgres
+$ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=gira -p 5432:5432 -d postgres
 ```
 Initialize the database:
 ```
-$ docker exec postgres
-# psql -U antonsankov
-## CREATE DATABASE gira;
+$ docker exec -it postgres sh
+# psql -U gira
 ## \c gira;
 ## <content of init.sql>
 ```
