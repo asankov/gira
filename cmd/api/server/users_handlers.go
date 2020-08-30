@@ -1,6 +1,7 @@
 package server
 
 import (
+	"io"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -26,7 +27,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 		var user models.User
 
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-			if err.Error() == "EOF" {
+			if err == io.EOF {
 				s.respondError(w, r, errUserIsRequired, http.StatusBadRequest)
 				return
 			}
