@@ -39,7 +39,6 @@ func run() error {
 	defer db.Close()
 
 	s := &server.Server{
-		// TODO: make it possible to customize log level
 		Log:            logrus.New(),
 		GameModel:      &postgres.GameModel{DB: db},
 		UserModel:      &postgres.UserModel{DB: db},
