@@ -8,6 +8,7 @@ import (
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-multierror"
 )
 
 type GamePatchRequest struct {
@@ -98,13 +99,14 @@ func (s *Server) handleGamesGetByID() http.HandlerFunc {
 }
 
 func validateGame(game *models.Game) error {
+	var err *multierror.Error
 	if game.Name == "" {
-		return errNameRequired
+		err = multierror.Append(err, errNameRequired)
 	}
 
 	if game.ID != "" {
-		return errIDNotAllowed
+		err = multierror.Append(err, errIDNotAllowed)
 	}
 
-	return nil
+	return err.ErrorOrNil()
 }

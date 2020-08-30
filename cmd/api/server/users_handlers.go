@@ -9,6 +9,7 @@ import (
 	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
+	"github.com/hashicorp/go-multierror"
 )
 
 var (
@@ -84,27 +85,28 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 }
 
 func validateUser(user *models.User) error {
+	var err *multierror.Error
 	if user.ID != "" {
-		return errIDNotAllowed
+		err = multierror.Append(err, errIDNotAllowed)
 	}
 
 	if user.Username == "" {
-		return errUsernameRequired
+		err = multierror.Append(err, errUsernameRequired)
 	}
 
 	if user.Email == "" {
-		return errEmailRequired
+		err = multierror.Append(err, errEmailRequired)
 	}
 
 	if user.Password == "" {
-		return errPasswordRequired
+		err = multierror.Append(err, errPasswordRequired)
 	}
 
 	if user.HashedPassword != nil {
-		return errHashedPasswordNotAllowed
+		err = multierror.Append(err, errHashedPasswordNotAllowed)
 	}
 
-	return nil
+	return err.ErrorOrNil()
 }
 
 func (s *Server) handleUserLogin() http.HandlerFunc {
