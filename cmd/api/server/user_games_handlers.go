@@ -56,9 +56,7 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 	}
 }
 
-type userGamePatchRequest struct {
-	Status models.Status `json:"status"`
-}
+
 
 func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -75,10 +73,10 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 			return
 		}
 
-		var req userGamePatchRequest
+		var req models.ChangeGameStatusRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			s.Log.Printf("Error while decoding body: %v", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 

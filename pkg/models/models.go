@@ -73,3 +73,7 @@ type UserGameResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
+type ChangeGameStatusRequest struct {
+	Status Status `json:"status"`
+}
