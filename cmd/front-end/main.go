@@ -3,12 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/asankov/gira/cmd/front-end/templates"
+	"github.com/sirupsen/logrus"
 
 	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/pkg/client"
@@ -18,7 +17,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		log.Panic("error while running front-end service: " + err.Error())
+		logrus.Panic("error while running front-end service: " + err.Error())
 	}
 }
 
@@ -37,13 +36,13 @@ func run() error {
 	}
 
 	s := &server.Server{
-		Log:      log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Log:      logrus.New(),
 		Client:   cl,
 		Session:  session,
 		Renderer: templates.NewRenderer(),
 	}
 
-	s.Log.Println(fmt.Sprintf("Front-end listening on port %d", *port))
+	s.Log.Infoln(fmt.Sprintf("Front-end listening on port %d", *port))
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
 		return fmt.Errorf("error while listening: %w", err)
 	}

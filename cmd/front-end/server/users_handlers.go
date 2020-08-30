@@ -32,7 +32,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			Password: password,
 		})
 		if err != nil {
-			s.Log.Printf("error while logging in user: %v", err)
+			s.Log.Errorf("Error while logging in user: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -77,7 +77,7 @@ func (s *Server) handleUserSignup() http.HandlerFunc {
 			Email:    email,
 			Password: password,
 		}); err != nil {
-			s.Log.Printf("error while creating user: %v %v", err, err == nil)
+			s.Log.Errorf("Error while creating user: %v %v", err, err == nil)
 			if errResponse, ok := err.(*client.ErrorResponse); ok {
 				s.render(w, r, TemplateData{Error: errResponse.Error()}, signupUserPage)
 				return

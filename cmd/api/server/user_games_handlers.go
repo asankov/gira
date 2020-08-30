@@ -19,7 +19,7 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 
 		games, err := s.UserGamesModel.GetUserGamesGrouped(user.ID)
 		if err != nil {
-			s.Log.Printf("error while fetching user games: %v", err)
+			s.Log.Errorf("Error while fetching user games: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -40,13 +40,13 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 
 		var req models.UserGameRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			s.Log.Printf("Error while decoding body: %v", err)
+			s.Log.Errorf("Error while decoding body: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
 			return
 		}
 
 		if err := s.UserGamesModel.LinkGameToUser(user.ID, req.Game.ID); err != nil {
-			s.Log.Printf("Error while linking game %s to user %s: %v", req.Game.ID, user.ID, err)
+			s.Log.Errorf("Error while linking game %s to user %s: %v", req.Game.ID, user.ID, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -73,13 +73,13 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 
 		var req models.ChangeGameStatusRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			s.Log.Printf("Error while decoding body: %v", err)
+			s.Log.Errorf("Error while decoding body: %v", err)
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		if err := s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, req.Status); err != nil {
-			s.Log.Printf("Error while changing game status: %v", err)
+			s.Log.Errorf("Error while changing game status: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

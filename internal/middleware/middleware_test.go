@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 )
 
-var logger = log.New(os.Stdout, "", 0)
+var logger = logrus.StandardLogger()
 
 func TestLog(t *testing.T) {
 	called := false

@@ -1,10 +1,10 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
+	"github.com/sirupsen/logrus"
 )
 
 // GameModel is the interface to interact with the Games provider (DB, service, etc.)
@@ -41,7 +41,7 @@ type Authenticator interface {
 // Server is the struct that holds all the dependencies
 // needed to run the application
 type Server struct {
-	Log *log.Logger
+	Log *logrus.Logger
 
 	Authenticator
 	GameModel
@@ -51,7 +51,8 @@ type Server struct {
 
 // Options is the struct used to construct a server
 type Options struct {
-	Log *log.Logger
+	Log *logrus.Logger
+
 	Authenticator
 	GameModel
 	UserModel
