@@ -56,8 +56,6 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 	}
 }
 
-
-
 func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
