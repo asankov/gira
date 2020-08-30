@@ -220,3 +220,108 @@ func TestUsersGamesPostParseError(t *testing.T) {
 		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
 	}
 }
+
+func TestUsersGamesPatch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+	userGamesModelMock.
+		EXPECT().
+		ChangeGameStatus(gomock.Eq("12"), gomock.Eq("1"), gomock.Eq(models.StatusDone)).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshall(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
+	}
+}
+
+func TestUsersGamesPatchInvalidBody(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := newServer(t, &Options{
+		Authenticator: authenticatorMock,
+		UserModel:     userModelMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", nil)
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
+	}
+}
+
+func TestUsersGamesPatchErrChangingStatus(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+	userGamesModelMock.
+		EXPECT().
+		ChangeGameStatus(gomock.Eq("12"), gomock.Eq("1"), gomock.Eq(models.StatusDone)).
+		Return(errors.New("error while changing game status"))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshall(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
+	r.Header.Add("x-auth-token", token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
+	}
+}
