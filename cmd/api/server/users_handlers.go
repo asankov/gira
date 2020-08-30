@@ -1,9 +1,9 @@
 package server
 
 import (
-	"io"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 
 	"github.com/asankov/gira/internal/auth"
