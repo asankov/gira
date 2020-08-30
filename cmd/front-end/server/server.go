@@ -1,12 +1,12 @@
 package server
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golangcollege/sessions"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -40,7 +40,7 @@ type Renderer interface {
 // Server is the struct that holds all the dependencies
 // needed to run the application
 type Server struct {
-	Log      *log.Logger
+	Log      *logrus.Logger
 	Session  *sessions.Session
 	Client   *client.Client
 	Renderer Renderer

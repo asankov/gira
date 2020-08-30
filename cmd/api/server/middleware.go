@@ -20,7 +20,7 @@ func (s *Server) requireLogin(next http.Handler) http.Handler {
 		}
 
 		if _, err := s.Authenticator.DecodeToken(token); err != nil {
-			s.Log.Printf("error while decoding token: %v", err)
+			s.Log.Errorf("Error while decoding token: %v", err)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}

@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/asankov/gira/cmd/api/server"
+	"github.com/sirupsen/logrus"
 
 	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/models/postgres"
@@ -19,7 +18,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		log.Panic("error while running server: " + err.Error())
+		logrus.Panic("error while running server: " + err.Error())
 	}
 }
 
@@ -40,14 +39,15 @@ func run() error {
 	defer db.Close()
 
 	s := &server.Server{
-		Log:            log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		// TODO: make it possible to customize log level
+		Log:            logrus.New(),
 		GameModel:      &postgres.GameModel{DB: db},
 		UserModel:      &postgres.UserModel{DB: db},
 		UserGamesModel: &postgres.UserGamesModel{DB: db},
 		Authenticator:  auth.NewAutheniticator(*secret),
 	}
 
-	log.Println(fmt.Sprintf("listening on port %d", *port))
+	logrus.Infoln(fmt.Sprintf("listening on port %d", *port))
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}

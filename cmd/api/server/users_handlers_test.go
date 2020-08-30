@@ -2,16 +2,15 @@ package server
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -26,7 +25,7 @@ func newServer(t *testing.T, opts *Options) *Server {
 	if opts == nil {
 		opts = &Options{}
 	}
-	opts.Log = log.New(os.Stdout, "", 0)
+	opts.Log = logrus.StandardLogger()
 
 	srv, err := New(opts)
 	if err != nil {

@@ -49,7 +49,7 @@ func (s *Server) handleGamesAddPost() http.HandlerFunc {
 		}
 
 		if _, err := s.Client.LinkGameToUser(gameID, token); err != nil {
-			s.Log.Println(err)
+			s.Log.Errorln(err)
 			// TODO: render error page
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -82,7 +82,7 @@ func (s *Server) handleGamesChangeStatus() http.HandlerFunc {
 		}
 
 		if err := s.Client.ChangeGameStatus(gameID, token, models.Status(status)); err != nil {
-			s.Log.Println(err)
+			s.Log.Errorln(err)
 			// TODO: render error page
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -173,14 +173,14 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateDat
 	if cookie, err := r.Cookie("token"); err == nil {
 		usr, err := s.Client.GetUser(cookie.Value)
 		if err != nil {
-			s.Log.Printf("error while fetching user: %v", err)
+			s.Log.Errorf("Error while fetching user: %v", err)
 		} else {
 			data.User = usr
 		}
 
 	}
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
-		s.Log.Printf("error while calling Render: %v", err)
+		s.Log.Errorf("Error while calling Render: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }

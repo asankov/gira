@@ -1,14 +1,13 @@
 package server_test
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/internal/fixtures"
+	"github.com/sirupsen/logrus"
 
 	"github.com/golang/mock/gomock"
 )
@@ -20,7 +19,7 @@ func TestHandleHome(t *testing.T) {
 	renderer := fixtures.NewRendererMock(ctrl)
 
 	srv := &server.Server{
-		Log:      log.New(os.Stdout, "", 0),
+		Log:      logrus.StandardLogger(),
 		Renderer: renderer,
 	}
 

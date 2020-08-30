@@ -2,14 +2,13 @@ package server
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -18,7 +17,7 @@ var (
 
 func setupMiddlewareServer(a Authenticator, u UserModel) *Server {
 	return &Server{
-		Log:           log.New(os.Stdout, "", 0),
+		Log:           logrus.StandardLogger(),
 		Authenticator: a,
 		UserModel:     u,
 	}

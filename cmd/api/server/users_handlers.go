@@ -32,7 +32,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 				s.respondError(w, r, errUserIsRequired, http.StatusBadRequest)
 				return
 			}
-			s.Log.Printf("Error while parsing body: %v", err)
+			s.Log.Errorf("Error while parsing body: %v", err)
 			s.respondError(w, r, errParsingBody, http.StatusBadRequest)
 			return
 		}
@@ -48,7 +48,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 				s.respondError(w, r, err, http.StatusBadRequest)
 				return
 			}
-			s.Log.Printf("error while inserting user into the DB: %v", err)
+			s.Log.Errorf("Error while inserting user into the DB: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -70,7 +70,7 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 				s.respondError(w, r, errInvalidToken, http.StatusUnauthorized)
 				return
 			}
-			s.Log.Printf("Error while authenticating user: %v", err)
+			s.Log.Errorf("Error while authenticating user: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 
@@ -142,7 +142,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 
 		// TODO: persist the token, so we can invalidate it
 		if err := s.UserModel.AssociateTokenWithUser(usr.ID, token); err != nil {
-			s.Log.Printf("Error while associating token with user %s: %v", usr.ID, err)
+			s.Log.Errorf("Error while associating token with user %s: %v", usr.ID, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -179,7 +179,7 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 	if data != nil {
 		err := json.NewEncoder(w).Encode(data)
 		if err != nil {
-			s.Log.Printf("error while encoding response: %v", err)
+			s.Log.Errorf("Error while encoding response: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
@@ -189,7 +189,7 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
 	w.WriteHeader(statusCode)
 	if err := json.NewEncoder(w).Encode(models.ErrorResponse{Error: err.Error()}); err != nil {
-		s.Log.Printf("Error while encoding error response: %v", err)
+		s.Log.Errorf("Error while encoding error response: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

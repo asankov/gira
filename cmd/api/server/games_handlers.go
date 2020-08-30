@@ -40,7 +40,7 @@ func (s *Server) handleGamesCreate() http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			s.Log.Printf("error while inserting game into database: %v", err)
+			s.Log.Errorf("Error while inserting game into database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
@@ -65,7 +65,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 		}
 
 		if err != nil {
-			s.Log.Printf("error while fetching games from the database: %v", err)
+			s.Log.Errorf("Error while fetching games from the database: %v", err)
 			http.Error(w, "error fetching games", http.StatusInternalServerError)
 			return
 		}
@@ -89,7 +89,7 @@ func (s *Server) handleGamesGetByID() http.HandlerFunc {
 				http.NotFound(w, r)
 				return
 			}
-			s.Log.Printf("error while fetching game from the database: %v", err)
+			s.Log.Errorf("Error while fetching game from the database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
