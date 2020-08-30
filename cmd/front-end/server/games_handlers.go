@@ -60,6 +60,39 @@ func (s *Server) handleGamesAddPost() http.HandlerFunc {
 	}
 }
 
+func (s *Server) handleGamesChangeStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := getToken(r)
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		gameID := r.PostForm.Get("game")
+		if gameID == "" {
+			http.Error(w, "'game' is required", http.StatusBadRequest)
+			return
+		}
+
+		status := r.PostForm.Get("status")
+		if status == "" {
+			http.Error(w, "'status' is requred", http.StatusBadRequest)
+			return
+		}
+
+		if err := s.Client.ChangeGameStatus(gameID, token, models.Status(status)); err != nil {
+			s.Log.Println(err)
+			// TODO: render error page
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Location", "/games")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
 func (s *Server) handleGamesGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

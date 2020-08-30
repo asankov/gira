@@ -10,6 +10,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type GamePatchRequest struct {
+	Status string `json:"status"`
+}
+
 var (
 	errNameRequired = errors.New("'name' is required parameter")
 	errIDNotAllowed = errors.New("'id' is not allowed parameter")
@@ -92,6 +96,7 @@ func (s *Server) handleGamesGetByID() http.HandlerFunc {
 		s.respond(w, r, game, http.StatusOK)
 	}
 }
+
 func validateGame(game *models.Game) error {
 	if game.Name == "" {
 		return errNameRequired
