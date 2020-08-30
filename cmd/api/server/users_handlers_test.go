@@ -121,6 +121,19 @@ func TestUserCreateValidationError(t *testing.T) {
 	}
 }
 
+func TestUserCreateEmptyBody(t *testing.T) {
+	srv := newServer(t, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users", nil)
+	srv.ServeHTTP(w, r)
+
+	got, expected := w.Code, http.StatusBadRequest
+	if got != expected {
+		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+	}
+}
+
 func TestUserCreateDBError(t *testing.T) {
 	cases := []struct {
 		name         string
