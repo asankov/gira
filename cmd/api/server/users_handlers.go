@@ -61,7 +61,7 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("x-auth-token")
 		if token == "" {
-			s.respondError(w, r, errExpectedToken, http.StatusBadRequest)
+			s.respondError(w, r, errExpectedToken, http.StatusUnauthorized)
 			return
 		}
 
@@ -71,7 +71,8 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 				return
 			}
 			s.Log.Errorf("Error while authenticating user: %v", err)
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusUnauthorized)
+			return
 		}
 
 		user, err := s.UserModel.GetUserByToken(token)
