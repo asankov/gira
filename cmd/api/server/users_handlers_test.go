@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
@@ -317,6 +318,127 @@ func TestUserLoginServiceError(t *testing.T) {
 			if got != expected {
 				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
 			}
+		})
+	}
+}
+
+func TestUserGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&expectedUser, nil)
+
+	srv := newServer(t, &Options{
+		UserModel:     userModelMock,
+		Authenticator: authenticatorMock,
+	})
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/users", nil)
+	r.Header.Add("x-auth-token", token)
+	srv.ServeHTTP(w, r)
+
+	got, expected := w.Code, http.StatusOK
+	if got != expected {
+		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
+	}
+	var userResponse models.UserResponse
+	fixtures.Decode(t, w.Body, &userResponse)
+	gotUser := userResponse.User
+
+	if gotUser.ID != expectedUser.ID {
+		t.Errorf("Got %s user ID, expected %s", gotUser.ID, expectedUser.ID)
+	}
+	if gotUser.Username != expectedUser.Username {
+		t.Errorf("Got %s username, expected %s", gotUser.Username, expectedUser.Username)
+	}
+	if gotUser.Email != expectedUser.Email {
+		t.Errorf("Got %s email, expected %s", gotUser.Email, expectedUser.Email)
+	}
+}
+
+func TestUserGetUnathorized(t *testing.T) {
+	testCases := []struct {
+		name  string
+		setup func(*fixtures.AuthenticatorMock, *fixtures.UserModelMock, *http.Request)
+	}{
+		{
+			name:  "No token",
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {},
+		},
+		{
+			name: "Invalid signature",
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
+				r.Header.Add("x-auth-token", token)
+
+				a.EXPECT().
+					DecodeToken(gomock.Eq(token)).
+					Return(nil, auth.ErrInvalidSignature)
+			},
+		},
+		{
+			name: "Token expired",
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
+				r.Header.Add("x-auth-token", token)
+
+				a.EXPECT().
+					DecodeToken(gomock.Eq(token)).
+					Return(nil, auth.ErrTokenExpired)
+			},
+		},
+		{
+			name: "Generic token error",
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
+				r.Header.Add("x-auth-token", token)
+
+				a.EXPECT().
+					DecodeToken(gomock.Eq(token)).
+					Return(nil, errors.New("some generic error"))
+			},
+		},
+		{
+			name: "UserModel error",
+			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
+				r.Header.Add("x-auth-token", token)
+
+				a.EXPECT().
+					DecodeToken(gomock.Eq(token)).
+					Return(nil, nil)
+				u.EXPECT().
+					GetUserByToken(gomock.Eq(token)).
+					Return(nil, errors.New("some error"))
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+			userModelMock := fixtures.NewUserModelMock(ctrl)
+			srv := newServer(t, &Options{
+				Authenticator: authenticatorMock,
+				UserModel:     userModelMock,
+			})
+
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/users", nil)
+			testCase.setup(authenticatorMock, userModelMock, r)
+			srv.ServeHTTP(w, r)
+
+			if w.Code != http.StatusUnauthorized {
+				t.Errorf("Got %d for status, expected %d", w.Code, http.StatusUnauthorized)
+			}
+			// TODO: assert error once we return JSON
 		})
 	}
 }
