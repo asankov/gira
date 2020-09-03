@@ -47,7 +47,7 @@ func TestUsersGamesGet(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/users/games", nil)
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -106,7 +106,7 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/users/games", nil)
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -143,7 +143,7 @@ func TestUserGamesPost(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -180,7 +180,7 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -212,7 +212,7 @@ func TestUsersGamesPostParseError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/games", bytes.NewBuffer(nil))
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -249,7 +249,7 @@ func TestUsersGamesPatch(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshall(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -280,7 +280,7 @@ func TestUsersGamesPatchInvalidBody(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", nil)
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 
@@ -317,7 +317,7 @@ func TestUsersGamesPatchErrChangingStatus(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshall(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
 

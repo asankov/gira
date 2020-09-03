@@ -55,7 +55,7 @@ func (c *Client) GetGames(token string, options *GetGamesOptions) ([]*models.Gam
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
 	}
-	req.Header.Add("x-auth-token", token)
+	req.Header.Add(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, ErrFetchingGames
@@ -91,7 +91,7 @@ func (c *Client) CreateGame(game *models.Game, token string) (*models.Game, erro
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
 	}
-	req.Header.Add("x-auth-token", token)
+	req.Header.Add(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, ErrCreatingGame

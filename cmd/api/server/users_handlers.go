@@ -59,7 +59,7 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 
 func (s *Server) handleUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("x-auth-token")
+		token := r.Header.Get(models.XAuthToken)
 		if token == "" {
 			s.respondError(w, r, errExpectedToken, http.StatusUnauthorized)
 			return
