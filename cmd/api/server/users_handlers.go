@@ -167,6 +167,7 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 		}
 
 		if err := s.UserModel.InvalidateToken(user.ID, token); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
