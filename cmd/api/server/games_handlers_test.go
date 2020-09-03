@@ -47,7 +47,7 @@ func TestGetGames(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	r.Header.Set("x-auth-token", token)
+	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Result().StatusCode, http.StatusOK
@@ -99,7 +99,7 @@ func TestGetGamesErr(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games", nil)
-	r.Header.Set("x-auth-token", token)
+	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Result().StatusCode, http.StatusInternalServerError
@@ -136,7 +136,7 @@ func TestGetGameByID(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
-	r.Header.Set("x-auth-token", token)
+	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	statusCode := w.Result().StatusCode
@@ -196,7 +196,7 @@ func TestGetGameByIDDBError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/games/1", nil)
-			r.Header.Set("x-auth-token", token)
+			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Result().StatusCode, c.expectedCode
@@ -237,7 +237,7 @@ func TestCreateGame(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
-	r.Header.Set("x-auth-token", token)
+	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	statusCode := w.Result().StatusCode
@@ -291,7 +291,7 @@ func TestCreateGameValidationError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, c.game))
-			r.Header.Set("x-auth-token", token)
+			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Result().StatusCode, http.StatusBadRequest
@@ -348,7 +348,7 @@ func TestCreateGameDBError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
-			r.Header.Set("x-auth-token", token)
+			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Result().StatusCode, c.expectedCode

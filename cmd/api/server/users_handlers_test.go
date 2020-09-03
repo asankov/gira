@@ -360,7 +360,7 @@ func TestUserGet(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/users", nil)
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Code, http.StatusOK
@@ -394,7 +394,7 @@ func TestUserGetUnathorized(t *testing.T) {
 		{
 			name: "Invalid signature",
 			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
-				r.Header.Add("x-auth-token", token)
+				r.Header.Add(models.XAuthToken, token)
 
 				a.EXPECT().
 					DecodeToken(gomock.Eq(token)).
@@ -404,7 +404,7 @@ func TestUserGetUnathorized(t *testing.T) {
 		{
 			name: "Token expired",
 			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
-				r.Header.Add("x-auth-token", token)
+				r.Header.Add(models.XAuthToken, token)
 
 				a.EXPECT().
 					DecodeToken(gomock.Eq(token)).
@@ -414,7 +414,7 @@ func TestUserGetUnathorized(t *testing.T) {
 		{
 			name: "Generic token error",
 			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
-				r.Header.Add("x-auth-token", token)
+				r.Header.Add(models.XAuthToken, token)
 
 				a.EXPECT().
 					DecodeToken(gomock.Eq(token)).
@@ -424,7 +424,7 @@ func TestUserGetUnathorized(t *testing.T) {
 		{
 			name: "UserModel error",
 			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
-				r.Header.Add("x-auth-token", token)
+				r.Header.Add(models.XAuthToken, token)
 
 				a.EXPECT().
 					DecodeToken(gomock.Eq(token)).
@@ -483,7 +483,7 @@ func TestUserLogout(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/logout", nil)
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Code, http.StatusOK
@@ -515,7 +515,7 @@ func TestUserLogoutInvalidateError(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPost, "/users/logout", nil)
-	r.Header.Add("x-auth-token", token)
+	r.Header.Add(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Code, http.StatusBadRequest

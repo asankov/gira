@@ -25,7 +25,7 @@ func (c *Client) GetUser(token string) (*models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error while building request")
 	}
-	req.Header.Set("x-auth-token", token)
+	req.Header.Set(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error while calling %s: %w", url, err)
@@ -92,7 +92,7 @@ func (c *Client) LogoutUser(token string) error {
 	if err != nil {
 		return fmt.Errorf("error while building request")
 	}
-	req.Header.Set("x-auth-token", token)
+	req.Header.Set(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("error while calling %s: %w", url, err)

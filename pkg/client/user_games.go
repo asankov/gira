@@ -15,7 +15,7 @@ func (c *Client) GetUserGames(token string) (map[models.Status][]*models.UserGam
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
 	}
-	req.Header.Add("x-auth-token", token)
+	req.Header.Add(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, ErrFetchingGames
@@ -45,7 +45,7 @@ func (c *Client) LinkGameToUser(gameID, token string) (*models.UserGame, error) 
 	if err != nil {
 		return nil, fmt.Errorf("error while building HTTP request")
 	}
-	req.Header.Add("x-auth-token", token)
+	req.Header.Add(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, ErrLinkingGame
@@ -71,7 +71,7 @@ func (c *Client) ChangeGameStatus(gameID, token string, status models.Status) er
 	if err != nil {
 		return fmt.Errorf("error while building HTTP request")
 	}
-	req.Header.Add("x-auth-token", token)
+	req.Header.Add(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
