@@ -294,6 +294,23 @@ func TestUserLoginServiceError(t *testing.T) {
 			},
 			expectedCode: http.StatusInternalServerError,
 		},
+		{
+			name: "UserModel.AssociateTokenWithUser fails",
+			setup: func(u *fixtures.UserModelMock, a *fixtures.AuthenticatorMock) {
+				u.EXPECT().
+					Authenticate(expectedUser.Email, expectedUser.Password).
+					Return(&expectedUser, nil)
+
+				a.EXPECT().
+					NewTokenForUser(&expectedUser).
+					Return(token, nil)
+
+				u.EXPECT().
+					AssociateTokenWithUser(expectedUser.ID, token).
+					Return(errors.New("intentional error while associating token with user"))
+			},
+			expectedCode: http.StatusInternalServerError,
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -440,5 +457,69 @@ func TestUserGetUnathorized(t *testing.T) {
 			}
 			// TODO: assert error once we return JSON
 		})
+	}
+}
+
+func TestUserLogout(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	srv := newServer(t, &Options{
+		UserModel:     userModelMock,
+		Authenticator: authenticatorMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&expectedUser, nil)
+	userModelMock.EXPECT().
+		InvalidateToken(gomock.Eq(expectedUser.ID), gomock.Eq(token)).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/logout", nil)
+	r.Header.Add("x-auth-token", token)
+	srv.ServeHTTP(w, r)
+
+	got, expected := w.Code, http.StatusOK
+	if got != expected {
+		t.Fatalf("Got %d for status code, expected %d", got, expected)
+	}
+}
+
+func TestUserLogoutInvalidateError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	srv := newServer(t, &Options{
+		UserModel:     userModelMock,
+		Authenticator: authenticatorMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&expectedUser, nil)
+	userModelMock.EXPECT().
+		InvalidateToken(gomock.Eq(expectedUser.ID), gomock.Eq(token)).
+		Return(errors.New("this token is already validated"))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/logout", nil)
+	r.Header.Add("x-auth-token", token)
+	srv.ServeHTTP(w, r)
+
+	got, expected := w.Code, http.StatusBadRequest
+	if got != expected {
+		t.Fatalf("Got %d for status code, expected %d", got, expected)
 	}
 }
