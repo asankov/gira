@@ -30,6 +30,7 @@ func run() error {
 	dbPass := flag.String("db_pass", "", "the password for the database")
 	dbName := flag.String("db_name", "gira", "the name of the database")
 	secret := flag.String("token_string", "9^ahslgndb&ahas2ey*hasdh732rbusd", "secret to be used for encoding and decoding JWT tokens")
+	logL := flag.String("log_level", "info", "the level of logging")
 	flag.Parse()
 
 	db, err := openDB(*dbHost, *dbPort, *dbUser, *dbName, *dbPass)
@@ -38,8 +39,16 @@ func run() error {
 	}
 	defer db.Close()
 
+	log := logrus.New()
+	logLevel, err := logrus.ParseLevel(*logL)
+	if err != nil {
+		return err
+	}
+	log.SetLevel(logLevel)
+	logrus.SetLevel(logLevel)
+
 	s := &server.Server{
-		Log:            logrus.New(),
+		Log:            log,
 		GameModel:      &postgres.GameModel{DB: db},
 		UserModel:      &postgres.UserModel{DB: db},
 		UserGamesModel: &postgres.UserGamesModel{DB: db},
