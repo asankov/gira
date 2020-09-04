@@ -37,12 +37,25 @@ type Renderer interface {
 	Render(w http.ResponseWriter, r *http.Request, d TemplateData, p string) error
 }
 
+// APIClient is the interface that interacts with the API
+type APIClient interface {
+	LogoutUser(token string) error
+	GetUser(token string) (*models.User, error)
+	CreateUser(user *models.User) (*models.User, error)
+	LinkGameToUser(gameID, token string) (*models.UserGame, error)
+	LoginUser(user *models.User) (*models.UserLoginResponse, error)
+	CreateGame(game *models.Game, token string) (*models.Game, error)
+	ChangeGameStatus(gameID, token string, status models.Status) error
+	GetUserGames(token string) (map[models.Status][]*models.UserGame, error)
+	GetGames(token string, options *client.GetGamesOptions) ([]*models.Game, error)
+}
+
 // Server is the struct that holds all the dependencies
 // needed to run the application
 type Server struct {
 	Log      *logrus.Logger
 	Session  *sessions.Session
-	Client   *client.Client
+	Client   APIClient
 	Renderer Renderer
 }
 
