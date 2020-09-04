@@ -28,7 +28,6 @@ func (s *Server) handleGamesAdd() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// TODO: exclude games the user has already added
 		s.render(w, r, TemplateData{Games: games}, addGamePage)
 	}
 }
