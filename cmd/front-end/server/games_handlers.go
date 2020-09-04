@@ -48,6 +48,7 @@ func (s *Server) handleGamesAddPost() http.HandlerFunc {
 		}
 
 		if _, err := s.Client.LinkGameToUser(gameID, token); err != nil {
+			// TODO: if err == no auth
 			s.Log.Errorln(err)
 			// TODO: render error page
 			http.Error(w, err.Error(), http.StatusInternalServerError)
