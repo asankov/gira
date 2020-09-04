@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/asankov/gira/cmd/front-end/server"
@@ -187,5 +189,117 @@ func TestGamesAddClientError(t *testing.T) {
 			testCase.additionalAsserts(t, w)
 		})
 	}
+}
 
+func TestGamesAddPost(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		LinkGameToUser(gomock.Eq(game.ID), token).
+		Return(nil, nil)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("game", game.ID)
+	r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusSeeOther)
+	}
+
+	got, expected := w.Header().Get("Location"), "/games"
+	if got != expected {
+		t.Errorf("Got %s for Location header, expected %s", got, expected)
+	}
+}
+
+func TestGamesAddPostFormError(t *testing.T) {
+	testCases := []struct {
+		name       string
+		getRequest func() *http.Request
+	}{
+		{
+			name: "Error parsing form",
+			getRequest: func() *http.Request {
+				r := httptest.NewRequest(http.MethodPost, "/games/add", nil)
+				r.Body = nil
+				r.AddCookie(&http.Cookie{
+					Name:  "token",
+					Value: token,
+				})
+				return r
+			},
+		},
+		{
+			name: "Validation error",
+			getRequest: func() *http.Request {
+				form := url.Values{}
+				r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
+				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+				r.AddCookie(&http.Cookie{
+					Name:  "token",
+					Value: token,
+				})
+				return r
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			srv := newServer(nil, nil)
+
+			w := httptest.NewRecorder()
+
+			srv.ServeHTTP(w, testCase.getRequest())
+
+			if w.Code != http.StatusBadRequest {
+				t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusBadRequest)
+			}
+		})
+	}
+}
+
+func TestGamesAddPostClientError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		LinkGameToUser(gomock.Eq(game.ID), token).
+		Return(nil, errors.New("error while linking game"))
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("game", game.ID)
+	r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusSeeOther)
+	}
 }
