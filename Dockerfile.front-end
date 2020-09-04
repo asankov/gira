@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:alpine AS builder
 
 RUN mkdir /app
 
@@ -7,6 +7,10 @@ ADD . /app/
 WORKDIR /app
 
 RUN go build -o front-end ./cmd/front-end
+
+FROM alpine:latest
+
+COPY --from=builder /app/front-end .
 
 ENV PORT ""
 ENV BACK_END_ADDR ""
