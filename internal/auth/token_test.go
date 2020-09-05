@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/asankov/gira/pkg/models"
@@ -28,5 +29,17 @@ func TestToken(t *testing.T) {
 	got, actual := usr.Username, expectedUser.Username
 	if got != actual {
 		t.Errorf("got (%v), expected (%v) for username", got, actual)
+	}
+}
+
+func TestDecodeTokenError(t *testing.T) {
+	a := NewAutheniticator("secret")
+
+	_, err := a.DecodeToken("o.o")
+	if err == nil {
+		t.Fatalf("Got nil error for invalid token format, expected an error")
+	}
+	if !errors.Is(err, ErrInvalidFormat) {
+		t.Errorf("Got %v error, expected ErrInvalidFormat", err)
 	}
 }
