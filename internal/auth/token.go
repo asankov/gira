@@ -18,6 +18,8 @@ var (
 	ErrTokenExpired = errors.New("token has expired")
 	// ErrInvalidSignature means that the JWT has been tampered with
 	ErrInvalidSignature = errors.New("invalid signature")
+	// ErrInvalidFormat means that the token is not a valid JWT token
+	ErrInvalidFormat = errors.New("invalid token format")
 
 	standartHeader = &header{
 		Algorith: "HS256",
@@ -81,7 +83,7 @@ func (a *Authenticator) hash(src string) string {
 func (a *Authenticator) DecodeToken(token string) (*models.User, error) {
 	components := strings.Split(token, ".")
 	if len(components) != 3 {
-		return nil, fmt.Errorf("invalid token format")
+		return nil, ErrInvalidFormat
 	}
 
 	pDec, err := base64.StdEncoding.DecodeString(components[1])
