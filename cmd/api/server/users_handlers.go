@@ -177,22 +177,16 @@ func (s *Server) handleUserLogout() http.HandlerFunc {
 
 func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{}, statusCode int) {
 	w.WriteHeader(statusCode)
-
-	if data != nil {
-		err := json.NewEncoder(w).Encode(data)
-		if err != nil {
-			s.Log.Errorf("Error while encoding response: %v", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
+	if data == nil {
+		return
 	}
-}
-
-func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
-	w.WriteHeader(statusCode)
-	if err := json.NewEncoder(w).Encode(models.ErrorResponse{Error: err.Error()}); err != nil {
+	if err := json.NewEncoder(w).Encode(data); err != nil {
 		s.Log.Errorf("Error while encoding error response: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+}
+
+func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
+	s.respond(w, r, models.ErrorResponse{Error: err.Error()}, statusCode)
 }
