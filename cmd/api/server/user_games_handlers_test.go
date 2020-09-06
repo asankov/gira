@@ -289,7 +289,7 @@ func TestUsersGamesPatchInvalidBody(t *testing.T) {
 	}
 }
 
-func TestUsersGamesPatchErrChangingStatus(t *testing.T) {
+func TestUsersGamesPatchServiceError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -317,6 +317,128 @@ func TestUsersGamesPatchErrChangingStatus(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshal(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
+	r.Header.Add(models.XAuthToken, token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
+	}
+}
+
+func TestUsersGamesDelete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+	userGamesModelMock.EXPECT().GetUserGames(gomock.Eq("12")).Return([]*models.UserGame{
+		{
+			ID: "1",
+		},
+	}, nil)
+	userGamesModelMock.
+		EXPECT().
+		DeleteUserGame(gomock.Eq("1")).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodDelete, "/users/games/1", nil)
+	r.Header.Add(models.XAuthToken, token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
+	}
+}
+
+func TestUsersGamesDeleteUserDoesNotOwnGame(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+	userGamesModelMock.EXPECT().GetUserGames(gomock.Eq("12")).Return([]*models.UserGame{
+		{
+			ID: "123",
+		},
+	}, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodDelete, "/users/games/1", nil)
+	r.Header.Add(models.XAuthToken, token)
+
+	srv.ServeHTTP(w, r)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
+	}
+}
+
+func TestUsersGamesDeleteServiceError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+	userModelMock := fixtures.NewUserModelMock(ctrl)
+	srv := newServer(t, &Options{
+		Authenticator:  authenticatorMock,
+		UserModel:      userModelMock,
+		UserGamesModel: userGamesModelMock,
+	})
+
+	authenticatorMock.EXPECT().
+		DecodeToken(gomock.Eq(token)).
+		Return(nil, nil)
+	userModelMock.EXPECT().
+		GetUserByToken(gomock.Eq(token)).
+		Return(&models.User{
+			ID: "12",
+		}, nil)
+	userGamesModelMock.EXPECT().GetUserGames(gomock.Eq("12")).Return([]*models.UserGame{
+		{
+			ID: "1",
+		},
+	}, nil)
+	userGamesModelMock.
+		EXPECT().
+		DeleteUserGame(gomock.Eq("1")).
+		Return(errors.New("error while deleting game"))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodDelete, "/users/games/1", nil)
 	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
