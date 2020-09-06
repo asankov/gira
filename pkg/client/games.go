@@ -69,7 +69,7 @@ func (c *Client) GetGames(token string, options *GetGamesOptions) ([]*models.Gam
 
 	var games models.GamesResponse
 	if err := json.NewDecoder(res.Body).Decode(&games); err != nil {
-		return nil, fmt.Errorf("error while decoidng body: %w", err)
+		return nil, fmt.Errorf("error while decoding body: %w", err)
 	}
 
 	return games.Games, nil
@@ -106,7 +106,7 @@ func (c *Client) CreateGame(game *models.Game, token string) (*models.Game, erro
 
 	var gameResponse models.Game
 	if err := json.NewDecoder(res.Body).Decode(&gameResponse); err != nil {
-		return nil, fmt.Errorf("error while decoidng body: %w", err)
+		return nil, fmt.Errorf("error while decoding body: %w", err)
 	}
 
 	return &gameResponse, nil
