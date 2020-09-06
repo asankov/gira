@@ -27,7 +27,10 @@
                 <button type="submit" name="status" value="To Do"> To Do </button>
                 <button type="submit" name="status" value="In Progress"> In Progress </button>
                 {{ end }}
-                <button style="color: red"> Delete </button>
+            </form>
+            <form action="/games/delete" method="POST">
+                <input type="hidden" name="game" value="{{.ID}}">
+                <button type="submit" style="color: red"> Delete </button>
             </form>
         </td>
     </tr>
