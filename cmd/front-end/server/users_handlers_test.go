@@ -1,6 +1,7 @@
 package server_test
 
 import (
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -62,7 +63,8 @@ func TestUserLogin(t *testing.T) {
 		LoginUser(gomock.Eq(&models.User{
 			Email:    email,
 			Password: password,
-		})).Return(&models.UserLoginResponse{Token: token}, nil)
+		})).
+		Return(&models.UserLoginResponse{Token: token}, nil)
 
 	w := httptest.NewRecorder()
 	form := url.Values{}
@@ -87,5 +89,50 @@ func TestUserLogin(t *testing.T) {
 	gotCookie := cookies[0]
 	if gotCookie.Name != cookie.Name || gotCookie.Value != cookie.Value || gotCookie.Path != cookie.Path {
 		t.Errorf("Got (%v) cookie, expected (%v)", gotCookie, cookie)
+	}
+}
+
+func TestUserLoginFormError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		LoginUser(gomock.Eq(&models.User{
+			Email:    email,
+			Password: password,
+		})).
+		Return(nil, errors.New("error while logging in user"))
+
+	w := httptest.NewRecorder()
+	form := url.Values{}
+	form.Add("email", email)
+	form.Add("password", password)
+	r := httptest.NewRequest(http.MethodPost, "/users/login", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	srv.ServeHTTP(w, r)
+
+	gotCode, expectedCode := w.Code, http.StatusBadRequest
+	if gotCode != expectedCode {
+		t.Errorf("Got (%d) for status code, expected (%d)", gotCode, expectedCode)
+	}
+}
+
+func TestUserLoginClientError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	srv := newServer(nil, nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/login", nil)
+	r.Body = nil
+	srv.ServeHTTP(w, r)
+
+	gotCode, expectedCode := w.Code, http.StatusBadRequest
+	if gotCode != expectedCode {
+		t.Errorf("Got (%d) for status code, expected (%d)", gotCode, expectedCode)
 	}
 }

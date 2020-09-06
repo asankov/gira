@@ -33,6 +33,7 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 		})
 		if err != nil {
 			s.Log.Errorf("Error while logging in user: %v", err)
+			// TODO: return to login screen with sensible error
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
