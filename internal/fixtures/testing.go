@@ -7,14 +7,20 @@ import (
 	"testing"
 )
 
-// Marshall unmarshalls the payload and returns a *bytes.Buffer with the content,
+// MarshalBytes unmarshals the payload and returns a []byte with the content,
 // or fails the test if unable to
-func Marshall(t *testing.T, payload interface{}) *bytes.Buffer {
+func MarshalBytes(t *testing.T, payload interface{}) []byte {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		t.Fatalf("Got unexpected error while marshalling payload - %v", err)
 	}
-	return bytes.NewBuffer(body)
+	return body
+}
+
+// Marshall unmarshalls the payload and returns a *bytes.Buffer with the content,
+// or fails the test if unable to
+func Marshall(t *testing.T, payload interface{}) *bytes.Buffer {
+	return bytes.NewBuffer(MarshalBytes(t, payload))
 }
 
 // Decode decodes the reader into into the passed value,
