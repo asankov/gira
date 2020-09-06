@@ -142,7 +142,7 @@ func TestUserGamesPost(t *testing.T) {
 		Return(nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
+	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshal(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
 	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
@@ -179,7 +179,7 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 		Return(errors.New("error returned on purpose"))
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshall(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
+	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshal(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
 	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
@@ -248,7 +248,7 @@ func TestUsersGamesPatch(t *testing.T) {
 		Return(nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshall(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
+	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshal(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
 	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)
@@ -316,7 +316,7 @@ func TestUsersGamesPatchErrChangingStatus(t *testing.T) {
 		Return(errors.New("error while changing game status"))
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshall(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
+	r := httptest.NewRequest(http.MethodPatch, "/users/games/1", fixtures.Marshal(t, models.ChangeGameStatusRequest{Status: models.StatusDone}))
 	r.Header.Add(models.XAuthToken, token)
 
 	srv.ServeHTTP(w, r)

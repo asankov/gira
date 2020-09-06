@@ -51,7 +51,7 @@ func TestUserCreate(t *testing.T) {
 		Return(&expectedUser, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, expectedUser))
+	r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, expectedUser))
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Code, http.StatusOK
@@ -110,7 +110,7 @@ func TestUserCreateValidationError(t *testing.T) {
 			srv := newServer(t, nil)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, c.user))
+			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, c.user))
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Code, http.StatusBadRequest
@@ -172,7 +172,7 @@ func TestUserCreateDBError(t *testing.T) {
 				Return(nil, c.dbError)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshall(t, expectedUser))
+			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, expectedUser))
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Code, c.expectedCode
@@ -208,7 +208,7 @@ func TestUserLogin(t *testing.T) {
 		Return(token, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, expectedUser))
+	r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshal(t, expectedUser))
 	srv.ServeHTTP(w, r)
 
 	got, expected := w.Code, http.StatusOK
@@ -254,7 +254,7 @@ func TestUserLoginValidationError(t *testing.T) {
 			})
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, testCase.user))
+			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshal(t, testCase.user))
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Code, http.StatusBadRequest
@@ -328,7 +328,7 @@ func TestUserLoginServiceError(t *testing.T) {
 			})
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshall(t, expectedUser))
+			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshal(t, expectedUser))
 			srv.ServeHTTP(w, r)
 
 			got, expected := w.Code, testCase.expectedCode

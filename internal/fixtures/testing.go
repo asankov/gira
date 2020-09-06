@@ -17,9 +17,9 @@ func MarshalBytes(t *testing.T, payload interface{}) []byte {
 	return body
 }
 
-// Marshall unmarshalls the payload and returns a *bytes.Buffer with the content,
+// Marshal unmarshalls the payload and returns a *bytes.Buffer with the content,
 // or fails the test if unable to
-func Marshall(t *testing.T, payload interface{}) *bytes.Buffer {
+func Marshal(t *testing.T, payload interface{}) *bytes.Buffer {
 	return bytes.NewBuffer(MarshalBytes(t, payload))
 }
 
