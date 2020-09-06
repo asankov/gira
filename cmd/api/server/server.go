@@ -30,6 +30,7 @@ type UserGamesModel interface {
 	GetAvailableGamesFor(userID string) ([]*models.Game, error)
 	GetUserGames(userID string) ([]*models.UserGame, error)
 	GetUserGamesGrouped(userID string) (map[models.Status][]*models.UserGame, error)
+	DeleteUserGame(userGameID string) error
 }
 
 // Authenticator is the interface to interact with the Authenticator (DB, OIDC provider, etc.)

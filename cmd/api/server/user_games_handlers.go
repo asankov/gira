@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -86,6 +87,39 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 
 		// TODO: better response
 		s.respond(w, r, nil, http.StatusOK)
+	}
+}
+
+func (s *Server) handleUsersGamesDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		args := mux.Vars(r)
+		userGameID := args["id"]
+		if userGameID == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		userGames, _ := s.UserGamesModel.GetUserGames(user.ID)
+		for _, userGame := range userGames {
+			if userGame.ID == userGameID {
+				if err := s.UserGamesModel.DeleteUserGame(userGameID); err != nil {
+					s.Log.Errorf("Error while deleting user game: %v", err)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+
+				// TODO: better response
+				s.respond(w, r, nil, http.StatusOK)
+			}
+		}
+
+		s.respondError(w, r, errors.New(http.StatusText(http.StatusBadRequest)), http.StatusBadRequest)
 	}
 }
 
