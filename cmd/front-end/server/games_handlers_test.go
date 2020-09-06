@@ -10,6 +10,7 @@ import (
 
 	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/internal/fixtures"
+	"github.com/asankov/gira/internal/fixtures/assert"
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golangcollege/sessions"
@@ -301,5 +302,122 @@ func TestGamesAddPostClientError(t *testing.T) {
 
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusSeeOther)
+	}
+}
+
+func TestGamesChangeStatus(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		ChangeGameStatus(gomock.Eq(game.ID), gomock.Eq(token), gomock.Eq(models.StatusInProgress)).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("game", game.ID)
+	form.Add("status", string(models.StatusInProgress))
+	r := httptest.NewRequest(http.MethodPost, "/games/status", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	assert.Redirect(t, w, "/games")
+}
+
+func TestGamesChangeStatusServiceError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		ChangeGameStatus(gomock.Eq(game.ID), gomock.Eq(token), gomock.Eq(models.StatusInProgress)).
+		Return(errors.New("error while changing status"))
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("game", game.ID)
+	form.Add("status", string(models.StatusInProgress))
+	r := httptest.NewRequest(http.MethodPost, "/games/status", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	assert.StatusCode(t, w, http.StatusInternalServerError)
+}
+
+func TestGamesChangeStatusPostError(t *testing.T) {
+	testCases := []struct {
+		name    string
+		request func() *http.Request
+	}{
+		{
+			name: "Empty game",
+			request: func() *http.Request {
+				form := url.Values{
+					"status": []string{string(models.StatusTODO)},
+				}
+				body := strings.NewReader(form.Encode())
+				r := httptest.NewRequest(http.MethodPost, "/games/status", body)
+				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+				return r
+			},
+		},
+		{
+			name: "Empty status",
+			request: func() *http.Request {
+				form := url.Values{
+					"game": []string{"1"},
+				}
+				body := strings.NewReader(form.Encode())
+				r := httptest.NewRequest(http.MethodPost, "/games/status", body)
+				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+				return r
+			},
+		},
+		{
+			name: "Nil form",
+			request: func() *http.Request {
+				r := httptest.NewRequest(http.MethodPost, "/games/status", nil)
+				r.Body = nil
+				return r
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			srv := newServer(nil, nil)
+
+			w := httptest.NewRecorder()
+			r := testCase.request()
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+			srv.ServeHTTP(w, r)
+
+			assert.StatusCode(t, w, http.StatusBadRequest)
+		})
 	}
 }
