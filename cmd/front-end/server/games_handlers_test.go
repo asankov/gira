@@ -63,6 +63,33 @@ func TestHandleHome(t *testing.T) {
 	assert.StatusOK(t, w)
 }
 
+func TestHandleCreateView(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	rendererMock := fixtures.NewRendererMock(ctrl)
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, rendererMock)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/games/new", nil)
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+
+	apiClientMock.EXPECT().GetUser(gomock.Eq(token)).Return(user, nil)
+
+	rendererMock.EXPECT().
+		Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil)
+
+	srv.ServeHTTP(w, r)
+
+	assert.StatusOK(t, w)
+}
+
 func TestGamesAdd(t *testing.T) {
 	testCases := []struct {
 		name  string
@@ -397,4 +424,104 @@ func TestGamesChangeStatusPostError(t *testing.T) {
 			assert.StatusCode(t, w, http.StatusBadRequest)
 		})
 	}
+}
+
+func TestGamesCreate(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		CreateGame(gomock.Eq(&models.Game{Name: game.Name}), gomock.Eq(token)).
+		Return(game, nil)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("name", game.Name)
+	r := httptest.NewRequest(http.MethodPost, "/games", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	assert.Redirect(t, w, "/games/add")
+}
+
+func TestGamesCreatePostError(t *testing.T) {
+	testCases := []struct {
+		name    string
+		request func() *http.Request
+	}{
+		{
+			name: "Empty game",
+			request: func() *http.Request {
+				form := url.Values{}
+				body := strings.NewReader(form.Encode())
+				r := httptest.NewRequest(http.MethodPost, "/games", body)
+				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+				return r
+			},
+		},
+		{
+			name: "Nil form",
+			request: func() *http.Request {
+				r := httptest.NewRequest(http.MethodPost, "/games", nil)
+				r.Body = nil
+				return r
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			srv := newServer(nil, nil)
+
+			w := httptest.NewRecorder()
+			r := testCase.request()
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+			srv.ServeHTTP(w, r)
+
+			assert.StatusCode(t, w, http.StatusBadRequest)
+		})
+	}
+}
+
+func TestGamesCreateServiceError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		CreateGame(gomock.Eq(&models.Game{Name: game.Name}), gomock.Eq(token)).
+		Return(nil, errors.New("error while creating game"))
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("name", game.Name)
+	r := httptest.NewRequest(http.MethodPost, "/games", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	assert.StatusCode(t, w, http.StatusInternalServerError)
 }

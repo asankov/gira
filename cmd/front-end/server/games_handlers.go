@@ -17,7 +17,7 @@ func (s *Server) handleHome() http.HandlerFunc {
 func (s *Server) handleGamesAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		token := getToken(r)
+		token := r.Context().Value(contextTokenKey).(string)
 		games, err := s.Client.GetGames(token, &client.GetGamesOptions{ExcludeAssigned: true})
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
@@ -146,7 +146,7 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 			return
 		}
 
-		token := r.Context().Value(contextTokenKey).(string)
+		token := getToken(r)
 
 		if _, err := s.Client.CreateGame(&models.Game{Name: name}, token); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -190,12 +190,7 @@ func (s *Server) handleGamesDelete() http.HandlerFunc {
 }
 
 func getToken(r *http.Request) string {
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		// let it panic, the middleware should not allow this to happen
-		panic("token not present in cookie")
-	}
-	return cookie.Value
+	return r.Context().Value(contextTokenKey).(string)
 }
 
 func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateData, p string) {
