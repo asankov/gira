@@ -236,7 +236,7 @@ func TestCreateGame(t *testing.T) {
 		Return(user, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
+	r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshal(t, actualGame))
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
@@ -290,7 +290,7 @@ func TestCreateGameValidationError(t *testing.T) {
 				Return(user, nil)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, c.game))
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshal(t, c.game))
 			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
@@ -347,7 +347,7 @@ func TestCreateGameDBError(t *testing.T) {
 				Return(user, nil)
 
 			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshall(t, actualGame))
+			r := httptest.NewRequest(http.MethodPost, "/games", fixtures.Marshal(t, actualGame))
 			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
