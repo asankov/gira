@@ -17,6 +17,10 @@ func Redirect(t *testing.T, w *httptest.ResponseRecorder, uri string) {
 	}
 }
 
+func StatusOK(t *testing.T, w *httptest.ResponseRecorder) {
+	StatusCode(t, w, http.StatusOK)
+}
+
 func StatusCode(t *testing.T, w *httptest.ResponseRecorder, statusCode int) {
 	if w.Code != statusCode {
 		t.Errorf("Got (%d) status code, expected (%d)", w.Code, statusCode)

@@ -60,10 +60,7 @@ func TestHandleHome(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Errorf("Got (%d) for status code, expected (%d)", got, expected)
-	}
+	assert.StatusOK(t, w)
 }
 
 func TestGamesAdd(t *testing.T) {
@@ -121,10 +118,7 @@ func TestGamesAdd(t *testing.T) {
 
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, http.StatusOK
-			if got != expected {
-				t.Errorf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			assert.StatusOK(t, w)
 		})
 	}
 }
@@ -146,10 +140,7 @@ func TestGamesAddClientError(t *testing.T) {
 
 			expectedCode: http.StatusSeeOther,
 			additionalAsserts: func(t *testing.T, w *httptest.ResponseRecorder) {
-				got, expected := w.Header().Get("Location"), "/users/login"
-				if got != expected {
-					t.Errorf("Got %s for Location header, expected %s", got, expected)
-				}
+				assert.Redirect(t, w, "/users/login")
 			},
 		},
 		{
@@ -183,10 +174,7 @@ func TestGamesAddClientError(t *testing.T) {
 
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, testCase.expectedCode
-			if got != expected {
-				t.Errorf("Got (%d) for status code, expected (%d)", got, testCase.expectedCode)
-			}
+			assert.StatusCode(t, w, testCase.expectedCode)
 			testCase.additionalAsserts(t, w)
 		})
 	}
@@ -216,14 +204,7 @@ func TestGamesAddPost(t *testing.T) {
 	})
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusSeeOther {
-		t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusSeeOther)
-	}
-
-	got, expected := w.Header().Get("Location"), "/games"
-	if got != expected {
-		t.Errorf("Got %s for Location header, expected %s", got, expected)
-	}
+	assert.Redirect(t, w, "/games")
 }
 
 func TestGamesAddPostFormError(t *testing.T) {
@@ -269,9 +250,7 @@ func TestGamesAddPostFormError(t *testing.T) {
 
 			srv.ServeHTTP(w, testCase.getRequest())
 
-			if w.Code != http.StatusBadRequest {
-				t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusBadRequest)
-			}
+			assert.StatusCode(t, w, http.StatusBadRequest)
 		})
 	}
 }
@@ -300,9 +279,7 @@ func TestGamesAddPostClientError(t *testing.T) {
 	})
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf("Got (%d) for status code, expected (%d)", w.Code, http.StatusSeeOther)
-	}
+	assert.StatusCode(t, w, http.StatusInternalServerError)
 }
 
 func TestGamesChangeStatus(t *testing.T) {
