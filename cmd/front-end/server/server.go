@@ -40,6 +40,7 @@ type Renderer interface {
 // APIClient is the interface that interacts with the API
 type APIClient interface {
 	LogoutUser(token string) error
+	DeleteUserGame(gameID, token string) error
 	GetUser(token string) (*models.User, error)
 	CreateUser(user *models.User) (*models.User, error)
 	LinkGameToUser(gameID, token string) (*models.UserGame, error)

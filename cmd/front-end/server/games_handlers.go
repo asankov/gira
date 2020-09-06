@@ -160,6 +160,35 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 	}
 }
 
+func (s *Server) handleGamesDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		gameID := r.PostForm.Get("game")
+		if gameID == "" {
+			http.Error(w, "'game' is required", http.StatusBadRequest)
+			return
+		}
+
+		token := r.Context().Value(contextTokenKey).(string)
+
+		if err := s.Client.DeleteUserGame(gameID, token); err != nil {
+			// todo: if err == no auth redirect to login
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		s.Session.Put(r, "flash", "Game successfully deleted.")
+
+		w.Header().Add("Location", "/games")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
 func getToken(r *http.Request) string {
 	cookie, err := r.Cookie("token")
 	if err != nil {
