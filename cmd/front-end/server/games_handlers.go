@@ -177,7 +177,11 @@ func (s *Server) handleGamesDelete() http.HandlerFunc {
 		token := getToken(r)
 
 		if err := s.Client.DeleteUserGame(gameID, token); err != nil {
-			// todo: if err == no auth redirect to login
+			if errors.Is(err, client.ErrNoAuthorization) {
+				w.Header().Add("Location", "/users/login")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
