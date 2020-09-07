@@ -51,11 +51,17 @@ func NewAutheniticator(secret string) *Authenticator {
 }
 
 // NewTokenForUser generates a new JWT for the given username,
-// signs it with a secret and returns it.
+// with the default expiration of 50 minutes, signs it with a secret and returns it.
 func (a *Authenticator) NewTokenForUser(user *models.User) (string, error) {
+	return a.NewTokenForUserWithExpiration(user, 50*time.Minute)
+}
+
+// NewTokenForUserWithExpiration generates a new JWT for the given username,
+// with expiration now + d, signs it with a secret and returns it.
+func (a *Authenticator) NewTokenForUserWithExpiration(user *models.User, d time.Duration) (string, error) {
 	p := &payload{
 		User:      user,
-		ExpiresAt: time.Now().Add(50 * time.Minute).Unix(),
+		ExpiresAt: time.Now().Add(d).Unix(),
 	}
 
 	base, err := tokenBase(standartHeader, p)
