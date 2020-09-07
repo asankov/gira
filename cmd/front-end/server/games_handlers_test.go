@@ -63,6 +63,26 @@ func TestHandleHome(t *testing.T) {
 	assert.StatusOK(t, w)
 }
 
+func TestHandleHomeRendererError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	renderer := fixtures.NewRendererMock(ctrl)
+
+	srv := newServer(nil, renderer)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	renderer.EXPECT().
+		Render(gomock.Eq(w), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(errors.New("error while rendering page"))
+
+	srv.ServeHTTP(w, r)
+
+	assert.StatusCode(t, w, http.StatusInternalServerError)
+}
+
 func TestHandleCreateView(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -524,4 +544,110 @@ func TestGamesCreateServiceError(t *testing.T) {
 	srv.ServeHTTP(w, r)
 
 	assert.StatusCode(t, w, http.StatusInternalServerError)
+}
+
+func TestGamesGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	rendererMock := fixtures.NewRendererMock(ctrl)
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+	srv := newServer(apiClientMock, rendererMock)
+
+	apiClientMock.EXPECT().
+		GetUser(gomock.Eq(token)).
+		Return(user, nil)
+	apiClientMock.EXPECT().
+		GetUserGames(gomock.Eq(token)).
+		Return(map[models.Status][]*models.UserGame{
+			models.StatusDone: {
+				&models.UserGame{
+					ID: "1",
+					Game: &models.Game{
+						ID:   "1",
+						Name: "1",
+					},
+				},
+			},
+			models.StatusTODO: {
+				&models.UserGame{
+					ID: "2",
+					Game: &models.Game{
+						ID:   "2",
+						Name: "2",
+					},
+				},
+			},
+		}, nil)
+
+	rendererMock.EXPECT().
+		Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("name", game.Name)
+	r := httptest.NewRequest(http.MethodGet, "/games", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+
+	srv.ServeHTTP(w, r)
+}
+
+func TestGamesGetClientError(t *testing.T) {
+	testCases := []struct {
+		name   string
+		setup  func(*fixtures.APIClientMock)
+		assert func(t *testing.T, w *httptest.ResponseRecorder)
+	}{
+		{
+			name: "Auth error",
+			setup: func(a *fixtures.APIClientMock) {
+				a.EXPECT().GetUserGames(gomock.Eq(token)).Return(nil, client.ErrNoAuthorization)
+			},
+
+			assert: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Redirect(t, w, "/users/login")
+			},
+		},
+		{
+			name: "Other error",
+			setup: func(a *fixtures.APIClientMock) {
+				a.EXPECT().GetUserGames(gomock.Eq(token)).Return(nil, errors.New("unknown error"))
+			},
+			assert: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.StatusCode(t, w, http.StatusInternalServerError)
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			apiClientMock := fixtures.NewAPIClientMock(ctrl)
+			srv := newServer(apiClientMock, nil)
+
+			testCase.setup(apiClientMock)
+
+			w := httptest.NewRecorder()
+
+			form := url.Values{}
+			form.Add("name", game.Name)
+			r := httptest.NewRequest(http.MethodGet, "/games", strings.NewReader(form.Encode()))
+			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+
+			srv.ServeHTTP(w, r)
+
+			testCase.assert(t, w)
+		})
+	}
 }

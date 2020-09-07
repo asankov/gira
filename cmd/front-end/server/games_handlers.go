@@ -190,19 +190,23 @@ func (s *Server) handleGamesDelete() http.HandlerFunc {
 }
 
 func getToken(r *http.Request) string {
-	return r.Context().Value(contextTokenKey).(string)
+	val := r.Context().Value(contextTokenKey)
+	if token, ok := val.(string); ok {
+		return token
+	}
+	return ""
 }
 
 func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateData, p string) {
-	if cookie, err := r.Cookie("token"); err == nil {
-		usr, err := s.Client.GetUser(cookie.Value)
+	if token := getToken(r); token != "" {
+		usr, err := s.Client.GetUser(token)
 		if err != nil {
 			s.Log.Errorf("Error while fetching user: %v", err)
 		} else {
 			data.User = usr
 		}
-
 	}
+
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
 		s.Log.Errorf("Error while calling Render: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
