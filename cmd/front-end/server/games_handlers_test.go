@@ -651,3 +651,133 @@ func TestGamesGetClientError(t *testing.T) {
 		})
 	}
 }
+
+func TestGamesDelete(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		DeleteUserGame(gomock.Eq(game.ID), gomock.Eq(token)).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("game", game.ID)
+	r := httptest.NewRequest(http.MethodPost, "/games/delete", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	assert.Redirect(t, w, "/games")
+}
+
+func TestGamesDeleteClientError(t *testing.T) {
+	testCases := []struct {
+		name   string
+		setup  func(*fixtures.APIClientMock)
+		assert func(t *testing.T, w *httptest.ResponseRecorder)
+	}{
+		{
+			name: "Auth error",
+			setup: func(a *fixtures.APIClientMock) {
+				a.EXPECT().DeleteUserGame(gomock.Eq(game.ID), gomock.Eq(token)).Return(client.ErrNoAuthorization)
+			},
+
+			assert: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Redirect(t, w, "/users/login")
+			},
+		},
+		{
+			name: "Other error",
+			setup: func(a *fixtures.APIClientMock) {
+				a.EXPECT().DeleteUserGame(gomock.Eq(game.ID), gomock.Eq(token)).Return(errors.New("unknown error"))
+
+			},
+			assert: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.StatusCode(t, w, http.StatusInternalServerError)
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			apiClientMock := fixtures.NewAPIClientMock(ctrl)
+			srv := newServer(apiClientMock, nil)
+
+			testCase.setup(apiClientMock)
+
+			w := httptest.NewRecorder()
+
+			form := url.Values{}
+			form.Add("game", game.ID)
+			r := httptest.NewRequest(http.MethodPost, "/games/delete", strings.NewReader(form.Encode()))
+			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+
+			srv.ServeHTTP(w, r)
+
+			testCase.assert(t, w)
+		})
+	}
+}
+
+func TestGamesDeletePostError(t *testing.T) {
+	testCases := []struct {
+		name    string
+		request func() *http.Request
+	}{
+		{
+			name: "Empty game",
+			request: func() *http.Request {
+				form := url.Values{
+					"status": []string{string(models.StatusTODO)},
+				}
+				body := strings.NewReader(form.Encode())
+				r := httptest.NewRequest(http.MethodPost, "/games/delete", body)
+				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+				return r
+			},
+		},
+		{
+			name: "Nil form",
+			request: func() *http.Request {
+				r := httptest.NewRequest(http.MethodPost, "/games/delete", nil)
+				r.Body = nil
+				return r
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			srv := newServer(nil, nil)
+
+			w := httptest.NewRecorder()
+			r := testCase.request()
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+			srv.ServeHTTP(w, r)
+
+			assert.StatusCode(t, w, http.StatusBadRequest)
+		})
+	}
+}
