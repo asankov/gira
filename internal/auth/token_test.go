@@ -1,27 +1,28 @@
-package auth
+package auth_test
 
 import (
-	"errors"
 	"testing"
+	"time"
 
+	"github.com/asankov/gira/internal/auth"
+	"github.com/asankov/gira/internal/fixtures/assert"
 	"github.com/asankov/gira/pkg/models"
 )
 
 var (
 	expectedUser     = &models.User{Username: expectedUsername}
 	expectedUsername = "username"
+
+	authenticator = auth.NewAutheniticator("secret")
 )
 
 func TestToken(t *testing.T) {
-
-	a := NewAutheniticator("secret")
-
-	token, err := a.NewTokenForUser(expectedUser)
+	token, err := authenticator.NewTokenForUser(expectedUser)
 	if err != nil {
 		t.Fatalf("got (%v), expected nil error when creating token for user", err)
 	}
 
-	usr, err := a.DecodeToken(token)
+	usr, err := authenticator.DecodeToken(token)
 	if err != nil {
 		t.Fatalf("got (%v), expected nil error when decoding token", err)
 	}
@@ -33,13 +34,29 @@ func TestToken(t *testing.T) {
 }
 
 func TestDecodeTokenError(t *testing.T) {
-	a := NewAutheniticator("secret")
+	_, err := authenticator.DecodeToken("o.o")
 
-	_, err := a.DecodeToken("o.o")
-	if err == nil {
-		t.Fatalf("Got nil error for invalid token format, expected an error")
+	assert.Error(t, err, auth.ErrInvalidFormat)
+}
+
+func TestTokenExpired(t *testing.T) {
+	token, err := authenticator.NewTokenForUserWithExpiration(expectedUser, 1*time.Millisecond)
+	if err != nil {
+		t.Fatalf("got (%v), expected nil error when creating token for user", err)
 	}
-	if !errors.Is(err, ErrInvalidFormat) {
-		t.Errorf("Got %v error, expected ErrInvalidFormat", err)
-	}
+
+	// wait for the token to expire
+	time.Sleep(1 * time.Second)
+
+	_, err = authenticator.DecodeToken(token)
+	assert.Error(t, err, auth.ErrTokenExpired)
+}
+
+func TestInvalidSignature(t *testing.T) {
+	newAuthenticator := auth.NewAutheniticator("some.other.secret")
+	newToken, err := newAuthenticator.NewTokenForUser(&models.User{})
+	assert.NoError(t, err)
+
+	_, err = authenticator.DecodeToken(newToken)
+	assert.Error(t, err, auth.ErrInvalidSignature)
 }
