@@ -17,7 +17,7 @@ func (s *Server) handleHome() http.HandlerFunc {
 func (s *Server) handleGamesAdd() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		token := r.Context().Value(contextTokenKey).(string)
+		token := getToken(r)
 		games, err := s.Client.GetGames(token, &client.GetGamesOptions{ExcludeAssigned: true})
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
@@ -174,7 +174,7 @@ func (s *Server) handleGamesDelete() http.HandlerFunc {
 			return
 		}
 
-		token := r.Context().Value(contextTokenKey).(string)
+		token := getToken(r)
 
 		if err := s.Client.DeleteUserGame(gameID, token); err != nil {
 			// todo: if err == no auth redirect to login
