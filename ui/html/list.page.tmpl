@@ -15,16 +15,23 @@
         <td>{{.Game.Name}}</td>
         <td>{{.Status}}</td>
         <td>
-            {{ if eq .Status "To Do" }}
-            <button> In Progress </button>
-            <button> Done </button>
-            {{ else if eq .Status "In Progress"}}
-            <button> To Do </button>
-            <button> Done </button>
-            {{ else if eq .Status "Done"}}
-            <button> To Do </button>
-            <button> In Progress </button>
-            {{ end }}
+            <form action="/games/status" method="POST">
+                <input type="hidden" name="game" value="{{.ID}}">
+                {{ if eq .Status "To Do" }}
+                <button type="submit" name="status" value="In Progress"> In Progress </button>
+                <button type="submit" name="status" value="Done"> Done </button>
+                {{ else if eq .Status "In Progress"}}
+                <button type="submit" name="status" value="To Do"> To Do </button>
+                <button type="submit" name="status" value="Done"> Done </button>
+                {{ else if eq .Status "Done"}}
+                <button type="submit" name="status" value="To Do"> To Do </button>
+                <button type="submit" name="status" value="In Progress"> In Progress </button>
+                {{ end }}
+            </form>
+            <form action="/games/delete" method="POST">
+                <input type="hidden" name="game" value="{{.ID}}">
+                <button type="submit" style="color: red"> Delete </button>
+            </form>
         </td>
     </tr>
     {{end}}

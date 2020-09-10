@@ -1,0 +1,66 @@
+name: Docker
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  docker_hub:
+    name: Build ${{ matrix.service }} image and push to Docker Hub
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ['front-end', 'api']
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Build and push Docker images
+          uses: docker/build-push-action@v1
+          with:
+            tags: latest
+            tag_with_sha: true
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+            dockerfile: Dockerfile.${{ matrix.service }}
+            repository: asankov/gira-${{ matrix.service }}
+  quay_io:
+    name: Build ${{ matrix.service }} image and push to Quay.io
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ['front-end', 'api']
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Build and push Docker images
+          uses: docker/build-push-action@v1
+          with:
+            tags: latest
+            registry: quay.io
+            tag_with_sha: true
+            username: ${{ secrets.QUAY_IO_USERNAME }}
+            password: ${{ secrets.QUAY_IO_PASSWORD }}
+            dockerfile: Dockerfile.${{ matrix.service }}
+            repository: asankov/gira-${{ matrix.service }}
+  gh_cr:
+    name: Build ${{ matrix.service}} image and push to GitHub Container Registry
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ['front-end', 'api']
+    
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Build and push Docker images
+          uses: docker/build-push-action@v1
+          with:
+            tags: latest
+            registry: docker.pkg.github.com
+            tag_with_sha: true
+            username: ${{ secrets.GHCR_USERNAME }}
+            password: ${{ secrets.GHCR_PASSWORD }}
+            dockerfile: Dockerfile.${{ matrix.service }}
+            repository: asankov/gira/gira-${{ matrix.service }}

@@ -18,6 +18,13 @@ func (m *UserGamesModel) LinkGameToUser(userID, gameID string) error {
 	return nil
 }
 
+func (m *UserGamesModel) DeleteUserGame(userGameID string) error {
+	if _, err := m.DB.Exec(`DELETE FROM USER_GAMES U WHERE U.id = $1`, userGameID); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error) {
 	rows, err := m.DB.Query(`SELECT ug.id, g.id AS user_game_id, g.name, ug.status FROM USER_GAMES ug JOIN GAMES g ON ug.game_id = g.id where user_id = $1`, userID)
 	if err != nil {

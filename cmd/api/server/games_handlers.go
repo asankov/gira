@@ -8,7 +8,12 @@ import (
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-multierror"
 )
+
+type GamePatchRequest struct {
+	Status string `json:"status"`
+}
 
 var (
 	errNameRequired = errors.New("'name' is required parameter")
@@ -35,7 +40,7 @@ func (s *Server) handleGamesCreate() http.HandlerFunc {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			s.Log.Printf("error while inserting game into database: %v", err)
+			s.Log.Errorf("Error while inserting game into database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
@@ -60,7 +65,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 		}
 
 		if err != nil {
-			s.Log.Printf("error while fetching games from the database: %v", err)
+			s.Log.Errorf("Error while fetching games from the database: %v", err)
 			http.Error(w, "error fetching games", http.StatusInternalServerError)
 			return
 		}
@@ -84,7 +89,7 @@ func (s *Server) handleGamesGetByID() http.HandlerFunc {
 				http.NotFound(w, r)
 				return
 			}
-			s.Log.Printf("error while fetching game from the database: %v", err)
+			s.Log.Errorf("Error while fetching game from the database: %v", err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}
@@ -92,14 +97,16 @@ func (s *Server) handleGamesGetByID() http.HandlerFunc {
 		s.respond(w, r, game, http.StatusOK)
 	}
 }
+
 func validateGame(game *models.Game) error {
+	var err *multierror.Error
 	if game.Name == "" {
-		return errNameRequired
+		err = multierror.Append(err, errNameRequired)
 	}
 
 	if game.ID != "" {
-		return errIDNotAllowed
+		err = multierror.Append(err, errIDNotAllowed)
 	}
 
-	return nil
+	return err.ErrorOrNil()
 }

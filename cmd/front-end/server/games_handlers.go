@@ -28,7 +28,6 @@ func (s *Server) handleGamesAdd() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		// TODO: exclude games the user has already added
 		s.render(w, r, TemplateData{Games: games}, addGamePage)
 	}
 }
@@ -49,7 +48,41 @@ func (s *Server) handleGamesAddPost() http.HandlerFunc {
 		}
 
 		if _, err := s.Client.LinkGameToUser(gameID, token); err != nil {
-			s.Log.Println(err)
+			// TODO: if err == no auth
+			s.Log.Errorln(err)
+			// TODO: render error page
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Location", "/games")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
+func (s *Server) handleGamesChangeStatus() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := getToken(r)
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		gameID := r.PostForm.Get("game")
+		if gameID == "" {
+			http.Error(w, "'game' is required", http.StatusBadRequest)
+			return
+		}
+
+		status := r.PostForm.Get("status")
+		if status == "" {
+			http.Error(w, "'status' is requred", http.StatusBadRequest)
+			return
+		}
+
+		if err := s.Client.ChangeGameStatus(gameID, token, models.Status(status)); err != nil {
+			s.Log.Errorln(err)
 			// TODO: render error page
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -113,7 +146,7 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 			return
 		}
 
-		token := r.Context().Value(contextTokenKey).(string)
+		token := getToken(r)
 
 		if _, err := s.Client.CreateGame(&models.Game{Name: name}, token); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -122,32 +155,64 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 
 		s.Session.Put(r, "flash", "Game successfully created.")
 
+		w.Header().Add("Location", "/games/add")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
+func (s *Server) handleGamesDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		gameID := r.PostForm.Get("game")
+		if gameID == "" {
+			http.Error(w, "'game' is required", http.StatusBadRequest)
+			return
+		}
+
+		token := getToken(r)
+
+		if err := s.Client.DeleteUserGame(gameID, token); err != nil {
+			if errors.Is(err, client.ErrNoAuthorization) {
+				w.Header().Add("Location", "/users/login")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		s.Session.Put(r, "flash", "Game successfully deleted.")
+
 		w.Header().Add("Location", "/games")
 		w.WriteHeader(http.StatusSeeOther)
 	}
 }
 
 func getToken(r *http.Request) string {
-	cookie, err := r.Cookie("token")
-	if err != nil {
-		// let it panic, the middleware should not allow this to happen
-		panic("token not present in cookie")
+	val := r.Context().Value(contextTokenKey)
+	if token, ok := val.(string); ok {
+		return token
 	}
-	return cookie.Value
+	return ""
 }
 
 func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateData, p string) {
-	if cookie, err := r.Cookie("token"); err == nil {
-		usr, err := s.Client.GetUser(cookie.Value)
+	if token := getToken(r); token != "" {
+		usr, err := s.Client.GetUser(token)
 		if err != nil {
-			s.Log.Printf("error while fetching user: %v", err)
+			s.Log.Errorf("Error while fetching user: %v", err)
 		} else {
 			data.User = usr
 		}
-
 	}
+
 	if err := s.Renderer.Render(w, r, data, p); err != nil {
-		s.Log.Printf("error while calling Render: %v", err)
+		s.Log.Errorf("Error while calling Render: %v", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }

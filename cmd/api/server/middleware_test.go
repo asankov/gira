@@ -2,14 +2,14 @@ package server
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
+	"github.com/asankov/gira/pkg/models"
 	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -18,7 +18,7 @@ var (
 
 func setupMiddlewareServer(a Authenticator, u UserModel) *Server {
 	return &Server{
-		Log:           log.New(os.Stdout, "", 0),
+		Log:           logrus.StandardLogger(),
 		Authenticator: a,
 		UserModel:     u,
 	}
@@ -40,7 +40,7 @@ func TestRequireLogin(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
-	r.Header.Set("x-auth-token", token)
+	r.Header.Set(models.XAuthToken, token)
 
 	nextHandlerCalled := false
 	h := srv.requireLogin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +67,7 @@ func TestRequireLoginError(t *testing.T) {
 				a.EXPECT().
 					DecodeToken(gomock.Eq(token)).
 					Return(nil, errors.New("Authenticator error"))
-				r.Header.Set("x-auth-token", token)
+				r.Header.Set(models.XAuthToken, token)
 			},
 		},
 		{
@@ -79,13 +79,13 @@ func TestRequireLoginError(t *testing.T) {
 				u.EXPECT().
 					GetUserByToken(gomock.Eq(token)).
 					Return(nil, errors.New("DB Error"))
-				r.Header.Set("x-auth-token", token)
+				r.Header.Set(models.XAuthToken, token)
 			},
 		},
 		{
 			name: "Token not present",
 			setup: func(a *fixtures.AuthenticatorMock, u *fixtures.UserModelMock, r *http.Request) {
-				r.Header.Del("x-auth-token")
+				r.Header.Del(models.XAuthToken)
 			},
 		},
 	}

@@ -18,6 +18,8 @@ var (
 	ErrTokenExpired = errors.New("token has expired")
 	// ErrInvalidSignature means that the JWT has been tampered with
 	ErrInvalidSignature = errors.New("invalid signature")
+	// ErrInvalidFormat means that the token is not a valid JWT token
+	ErrInvalidFormat = errors.New("invalid token format")
 
 	standartHeader = &header{
 		Algorith: "HS256",
@@ -49,11 +51,17 @@ func NewAutheniticator(secret string) *Authenticator {
 }
 
 // NewTokenForUser generates a new JWT for the given username,
-// signs it with a secret and returns it.
+// with the default expiration of 50 minutes, signs it with a secret and returns it.
 func (a *Authenticator) NewTokenForUser(user *models.User) (string, error) {
+	return a.NewTokenForUserWithExpiration(user, 50*time.Minute)
+}
+
+// NewTokenForUserWithExpiration generates a new JWT for the given username,
+// with expiration now + d, signs it with a secret and returns it.
+func (a *Authenticator) NewTokenForUserWithExpiration(user *models.User, d time.Duration) (string, error) {
 	p := &payload{
 		User:      user,
-		ExpiresAt: time.Now().Add(50 * time.Minute).Unix(),
+		ExpiresAt: time.Now().Add(d).Unix(),
 	}
 
 	base, err := tokenBase(standartHeader, p)
@@ -81,7 +89,7 @@ func (a *Authenticator) hash(src string) string {
 func (a *Authenticator) DecodeToken(token string) (*models.User, error) {
 	components := strings.Split(token, ".")
 	if len(components) != 3 {
-		return nil, fmt.Errorf("invalid token format")
+		return nil, ErrInvalidFormat
 	}
 
 	pDec, err := base64.StdEncoding.DecodeString(components[1])

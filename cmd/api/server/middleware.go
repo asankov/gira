@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"net/http"
+
+	"github.com/asankov/gira/pkg/models"
 )
 
 type contextUserKeyType string
@@ -13,14 +15,14 @@ var contextTokenKey contextTokenKeyType
 
 func (s *Server) requireLogin(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("x-auth-token")
+		token := r.Header.Get(models.XAuthToken)
 		if token == "" {
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
 
 		if _, err := s.Authenticator.DecodeToken(token); err != nil {
-			s.Log.Printf("error while decoding token: %v", err)
+			s.Log.Errorf("Error while decoding token: %v", err)
 			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}

@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/asankov/gira/cmd/api/server"
+	"github.com/sirupsen/logrus"
 
 	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/models/postgres"
@@ -19,7 +18,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		log.Panic("error while running server: " + err.Error())
+		logrus.Panic("error while running server: " + err.Error())
 	}
 }
 
@@ -31,6 +30,7 @@ func run() error {
 	dbPass := flag.String("db_pass", "", "the password for the database")
 	dbName := flag.String("db_name", "gira", "the name of the database")
 	secret := flag.String("token_string", "9^ahslgndb&ahas2ey*hasdh732rbusd", "secret to be used for encoding and decoding JWT tokens")
+	logL := flag.String("log_level", "info", "the level of logging")
 	flag.Parse()
 
 	db, err := openDB(*dbHost, *dbPort, *dbUser, *dbName, *dbPass)
@@ -39,15 +39,23 @@ func run() error {
 	}
 	defer db.Close()
 
+	log := logrus.New()
+	logLevel, err := logrus.ParseLevel(*logL)
+	if err != nil {
+		return err
+	}
+	log.SetLevel(logLevel)
+	logrus.SetLevel(logLevel)
+
 	s := &server.Server{
-		Log:            log.New(os.Stdout, "", log.Ldate|log.Ltime),
+		Log:            log,
 		GameModel:      &postgres.GameModel{DB: db},
 		UserModel:      &postgres.UserModel{DB: db},
 		UserGamesModel: &postgres.UserGamesModel{DB: db},
 		Authenticator:  auth.NewAutheniticator(*secret),
 	}
 
-	log.Println(fmt.Sprintf("listening on port %d", *port))
+	logrus.Infoln(fmt.Sprintf("listening on port %d", *port))
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}

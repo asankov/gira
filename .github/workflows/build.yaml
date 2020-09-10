@@ -1,8 +1,8 @@
 name: Build
 on:
   push:
-    branches: 
-    - master
+    branches:
+    - main
   pull_request:
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [1.14, 1.13]
+        go-version: [1.15, 1.14, 1.13]
         service: ['api', 'front-end']
 
     steps:

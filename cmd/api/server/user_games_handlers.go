@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -19,7 +20,7 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 
 		games, err := s.UserGamesModel.GetUserGamesGrouped(user.ID)
 		if err != nil {
-			s.Log.Printf("error while fetching user games: %v", err)
+			s.Log.Errorf("Error while fetching user games: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -40,13 +41,13 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 
 		var req models.UserGameRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			s.Log.Printf("Error while decoding body: %v", err)
+			s.Log.Errorf("Error while decoding body: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
 			return
 		}
 
 		if err := s.UserGamesModel.LinkGameToUser(user.ID, req.Game.ID); err != nil {
-			s.Log.Printf("Error while linking game %s to user %s: %v", req.Game.ID, user.ID, err)
+			s.Log.Errorf("Error while linking game %s to user %s: %v", req.Game.ID, user.ID, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -54,10 +55,6 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 		// TODO: better response
 		s.respond(w, r, nil, http.StatusOK)
 	}
-}
-
-type userGamePatchRequest struct {
-	Status models.Status `json:"status"`
 }
 
 func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
@@ -75,21 +72,54 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 			return
 		}
 
-		var req userGamePatchRequest
+		var req models.ChangeGameStatusRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			s.Log.Printf("Error while decoding body: %v", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusBadRequest)
+			s.Log.Errorf("Error while decoding body: %v", err)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
 		}
 
 		if err := s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, req.Status); err != nil {
-			s.Log.Printf("Error while changing game status: %v", err)
+			s.Log.Errorf("Error while changing game status: %v", err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
 
 		// TODO: better response
 		s.respond(w, r, nil, http.StatusOK)
+	}
+}
+
+func (s *Server) handleUsersGamesDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		args := mux.Vars(r)
+		userGameID := args["id"]
+		if userGameID == "" {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+
+		userGames, _ := s.UserGamesModel.GetUserGames(user.ID)
+		for _, userGame := range userGames {
+			if userGame.ID == userGameID {
+				if err := s.UserGamesModel.DeleteUserGame(userGameID); err != nil {
+					s.Log.Errorf("Error while deleting user game: %v", err)
+					http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+
+				// TODO: better response
+				s.respond(w, r, nil, http.StatusOK)
+			}
+		}
+
+		s.respondError(w, r, errors.New(http.StatusText(http.StatusBadRequest)), http.StatusBadRequest)
 	}
 }
 
