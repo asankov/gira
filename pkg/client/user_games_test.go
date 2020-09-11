@@ -2,7 +2,6 @@ package client_test
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
@@ -42,21 +41,11 @@ var (
 )
 
 func TestGetUserGames(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/users/games" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if r.Header.Get(models.XAuthToken) != token {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(fixtures.MarshalBytes(t, usersGameResponse)); err != nil {
-			t.Fatalf("error while writing response - %v", err)
-		}
-	}))
+	ts := fixtures.NewTestServer(t).
+		Path("/users/games").
+		Token(token).
+		Data(usersGameResponse).
+		Build()
 	defer ts.Close()
 
 	cl := newClient(t, ts.URL)
@@ -84,13 +73,65 @@ func TestGetUserGameHTTPError(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(testCase.responseCode)
-			}))
+			ts := fixtures.NewTestServer(t).
+				Path("/users/games").
+				Token(token).
+				Data(usersGameResponse).
+				Return(testCase.responseCode).
+				Build()
 			defer ts.Close()
 
 			cl := newClient(t, ts.URL)
 			_, err := cl.GetUserGames(token)
+			assert.Error(t, err, testCase.expectedErr)
+		})
+	}
+}
+
+func TestLinkGameToUser(t *testing.T) {
+	ts := fixtures.NewTestServer(t).
+		Path("/users/games").
+		Method(http.MethodPost).
+		Token(token).
+		Build()
+	defer ts.Close()
+
+	cl := newClient(t, ts.URL)
+
+	_, err := cl.LinkGameToUser("12", token)
+	assert.NoError(t, err)
+}
+
+func TestLinkGameToUserHTTPError(t *testing.T) {
+	testCases := []struct {
+		name         string
+		responseCode int
+		expectedErr  error
+	}{
+		{
+			name:         "Auth error",
+			responseCode: http.StatusUnauthorized,
+			expectedErr:  client.ErrNoAuthorization,
+		},
+		{
+			name:         "Other error",
+			responseCode: http.StatusInternalServerError,
+			expectedErr:  client.ErrLinkingGame,
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ts := fixtures.NewTestServer(t).
+				Path("/users/games").
+				Method(http.MethodPost).
+				Token(token).
+				Return(testCase.responseCode).
+				Build()
+			defer ts.Close()
+
+			cl := newClient(t, ts.URL)
+
+			_, err := cl.LinkGameToUser("12", token)
 			assert.Error(t, err, testCase.expectedErr)
 		})
 	}
