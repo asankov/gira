@@ -6,6 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/stretchr/testify/require"
+
 	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
@@ -29,9 +34,8 @@ func newServer(t *testing.T, opts *Options) *Server {
 	opts.Log = logrus.StandardLogger()
 
 	srv, err := New(opts)
-	if err != nil {
-		t.Fatalf("Got unexpected error while constructing server: %v", err)
-	}
+	require.Nil(t, err)
+
 	return srv
 }
 
@@ -54,19 +58,13 @@ func TestUserCreate(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, expectedUser))
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-	}
+	gassert.StatusOK(t, w)
 
 	var user models.User
 	fixtures.Decode(t, w.Body, &user)
-	if user.Username != expectedUser.Username {
-		t.Errorf("Got (%s) for username, expected (%s)", user.Username, expectedUser.Username)
-	}
-	if user.Email != expectedUser.Email {
-		t.Errorf("Got (%s) for email, expected (%s)", user.Email, expectedUser.Email)
-	}
+
+	assert.Equal(t, user.Email, expectedUser.Email)
+	assert.Equal(t, user.Username, expectedUser.Username)
 }
 
 func TestUserCreateValidationError(t *testing.T) {
@@ -113,10 +111,7 @@ func TestUserCreateValidationError(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, c.user))
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, http.StatusBadRequest
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, http.StatusBadRequest)
 		})
 	}
 }
@@ -128,14 +123,11 @@ func TestUserCreateEmptyBody(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/users", nil)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusBadRequest
-	if got != expected {
-		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
 
 func TestUserCreateDBError(t *testing.T) {
-	cases := []struct {
+	testCases := []struct {
 		name         string
 		dbError      error
 		expectedCode int
@@ -156,8 +148,8 @@ func TestUserCreateDBError(t *testing.T) {
 			expectedCode: http.StatusInternalServerError,
 		},
 	}
-	for _, c := range cases {
-		t.Run(c.name, func(t *testing.T) {
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -169,16 +161,14 @@ func TestUserCreateDBError(t *testing.T) {
 
 			userModel.EXPECT().
 				Insert(&expectedUser).
-				Return(nil, c.dbError)
+				Return(nil, testCase.dbError)
 
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, expectedUser))
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, c.expectedCode
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, testCase.expectedCode)
+
 		})
 	}
 }
@@ -211,15 +201,10 @@ func TestUserLogin(t *testing.T) {
 	r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshal(t, expectedUser))
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-	}
+	gassert.StatusOK(t, w)
 	var userResponse models.UserLoginResponse
 	fixtures.Decode(t, w.Body, &userResponse)
-	if userResponse.Token != token {
-		t.Fatalf(`Got ("%s") for token, expected ("%s")`, userResponse.Token, token)
-	}
+	assert.Equal(t, token, userResponse.Token)
 }
 
 func TestUserLoginValidationError(t *testing.T) {
@@ -257,10 +242,8 @@ func TestUserLoginValidationError(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshal(t, testCase.user))
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, http.StatusBadRequest
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, http.StatusBadRequest)
+
 			// TODO: assert body, once we start returning proper errors
 		})
 	}
@@ -331,10 +314,7 @@ func TestUserLoginServiceError(t *testing.T) {
 			r := httptest.NewRequest(http.MethodPost, "/users/login", fixtures.Marshal(t, expectedUser))
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Code, testCase.expectedCode
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, testCase.expectedCode)
 		})
 	}
 }
@@ -363,23 +343,15 @@ func TestUserGet(t *testing.T) {
 	r.Header.Add(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-	}
+	gassert.StatusOK(t, w)
+
 	var userResponse models.UserResponse
 	fixtures.Decode(t, w.Body, &userResponse)
 	gotUser := userResponse.User
 
-	if gotUser.ID != expectedUser.ID {
-		t.Errorf("Got %s user ID, expected %s", gotUser.ID, expectedUser.ID)
-	}
-	if gotUser.Username != expectedUser.Username {
-		t.Errorf("Got %s username, expected %s", gotUser.Username, expectedUser.Username)
-	}
-	if gotUser.Email != expectedUser.Email {
-		t.Errorf("Got %s email, expected %s", gotUser.Email, expectedUser.Email)
-	}
+	assert.Equal(t, w, gotUser.ID, expectedUser.ID)
+	assert.Equal(t, w, gotUser.Email, expectedUser.Email)
+	assert.Equal(t, w, gotUser.Username, expectedUser.Username)
 }
 
 func TestUserGetUnathorized(t *testing.T) {
@@ -452,9 +424,8 @@ func TestUserGetUnathorized(t *testing.T) {
 			testCase.setup(authenticatorMock, userModelMock, r)
 			srv.ServeHTTP(w, r)
 
-			if w.Code != http.StatusUnauthorized {
-				t.Errorf("Got %d for status, expected %d", w.Code, http.StatusUnauthorized)
-			}
+			gassert.StatusCode(t, w, http.StatusUnauthorized)
+
 			// TODO: assert error once we return JSON
 		})
 	}
@@ -486,10 +457,7 @@ func TestUserLogout(t *testing.T) {
 	r.Header.Add(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Fatalf("Got %d for status code, expected %d", got, expected)
-	}
+	gassert.StatusOK(t, w)
 }
 
 func TestUserLogoutInvalidateError(t *testing.T) {
@@ -518,8 +486,5 @@ func TestUserLogoutInvalidateError(t *testing.T) {
 	r.Header.Add(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusBadRequest
-	if got != expected {
-		t.Fatalf("Got %d for status code, expected %d", got, expected)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
