@@ -36,15 +36,3 @@ func Error(t *testing.T, err error, expectedError error) {
 		t.Fatalf("Got (%v) error, expected error to be (%v)", err, expectedError)
 	}
 }
-
-func NoError(t *testing.T, err error) {
-	if err != nil {
-		t.Fatalf("Got unexpected error - (%v)", err)
-	}
-}
-
-func True(t *testing.T, cond bool) {
-	if !cond {
-		t.Fatalf("Got false, expected true")
-	}
-}

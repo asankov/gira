@@ -6,6 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golang/mock/gomock"
@@ -49,12 +53,8 @@ func TestRequireLogin(t *testing.T) {
 
 	h.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Errorf(`Got ("%d") for StatusCode, expected ("%d")`, w.Code, http.StatusOK)
-	}
-	if !nextHandlerCalled {
-		t.Errorf("Got false for nextHandlerCalled, expected true")
-	}
+	gassert.StatusOK(t, w)
+	assert.False(t, nextHandlerCalled)
 }
 func TestRequireLoginError(t *testing.T) {
 	testCases := []struct {
@@ -110,12 +110,8 @@ func TestRequireLoginError(t *testing.T) {
 
 			h.ServeHTTP(w, r)
 
-			if w.Code != http.StatusUnauthorized {
-				t.Errorf(`Got ("%d") for StatusCode, expected ("%d")`, w.Code, http.StatusUnauthorized)
-			}
-			if nextHandlerCalled {
-				t.Errorf("Got true for nextHandlerCalled, expected false")
-			}
+			gassert.StatusCode(t, w, http.StatusUnauthorized)
+			assert.True(t, nextHandlerCalled)
 		})
 	}
 }
