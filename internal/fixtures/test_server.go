@@ -21,8 +21,9 @@ type ServerBuilder struct {
 
 func NewTestServer(t *testing.T) ServerBuilder {
 	return ServerBuilder{
-		path:   "/",
-		method: http.MethodGet,
+		path:         "/",
+		method:       http.MethodGet,
+		responseCode: http.StatusOK,
 	}
 }
 
@@ -74,6 +75,8 @@ func (s ServerBuilder) Build() *httptest.Server {
 				return
 			}
 		}
+
+		// TODO: assert body
 
 		w.WriteHeader(s.responseCode)
 		if s.data != nil {

@@ -48,7 +48,6 @@ func TestGetGames(t *testing.T) {
 			ts := fixtures.NewTestServer(t).
 				Path("/games").
 				Data(gameResponse).
-				Return(http.StatusOK).
 				Token(token).
 				Build()
 			defer ts.Close()
@@ -75,7 +74,6 @@ func TestGetGamesExcludeAssigned(t *testing.T) {
 	ts := fixtures.NewTestServer(t).
 		Path("/games").
 		Data(gameResponse).
-		Return(http.StatusOK).
 		Token(token).
 		Query("excludeAssigned=true").
 		Build()
