@@ -5,5 +5,24 @@ services:
     ports:
       - '5432:5432'
     environment:
-      - POSTGRES_USER=antonsankov
+      - POSTGRES_USER=gira
       - POSTGRES_PASSWORD=password
+  front-end:
+    image: docker.pkg.github.com/asankov/gira/gira-front-end
+    ports:
+      - '80:80'
+    environment:
+      - PORT=80
+      - LOG_LEVEL=debug
+      - BACK_END_ADDR=api:4000
+  api:
+    image: docker.pkg.github.com/asankov/gira/gira-api
+    ports:
+      - '4000:4000'
+    environment:
+      - PORT=4000
+      - LOG_LEVEL=debug
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=gira
+      - DB_PASS=password
