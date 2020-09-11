@@ -5,6 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,14 +23,8 @@ func TestLog(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	h.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Errorf(`Got ("%d") for StatusCode, expected ("%d")`, got, expected)
-	}
-
-	if !called {
-		t.Errorf("Expected next handler to be called, and `called` to be equal to true, instead `called` is false")
-	}
+	gassert.StatusOK(t, w)
+	assert.False(t, called)
 }
 
 func TestRecoverPanic(t *testing.T) {
@@ -40,12 +37,6 @@ func TestRecoverPanic(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	h.ServeHTTP(w, r)
 
-	got, expected := w.Header().Get("Connection"), "Close"
-	if got != expected {
-		t.Errorf(`Got ("%s") for "Connection" Header, expected ("%s")`, got, expected)
-	}
-
-	if w.Code != http.StatusInternalServerError {
-		t.Errorf(`Got ("%d") for StatusCode, expected ("%d")`, w.Code, http.StatusInternalServerError)
-	}
+	assert.Equal(t, "Close", w.Header().Get("Connection"))
+	gassert.StatusCode(t, w, http.StatusInternalServerError)
 }

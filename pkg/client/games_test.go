@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"testing"
 
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -113,9 +115,9 @@ func TestGetGamesHTTPError(t *testing.T) {
 			cl, err := client.New(ts.URL)
 			require.NoError(t, err)
 
-			if _, err = cl.GetGames(token, nil); err != testCase.expectedErr {
-				t.Fatalf("Got %v error when calling GetGames, expected %v", err, testCase.expectedErr)
-			}
+			games, err := cl.GetGames(token, nil)
+			assert.Nil(t, games)
+			gassert.Error(t, err, testCase.expectedErr)
 		})
 	}
 }
@@ -167,10 +169,10 @@ func TestCreateGameHTTPError(t *testing.T) {
 
 			cl, err := client.New(ts.URL)
 			require.NoError(t, err)
-			
-			if _, err = cl.CreateGame(game, token); err != testCase.expectedErr {
-				t.Fatalf("Got %v error when calling CreateGame, expected %v", err, testCase.expectedErr)
-			}
+
+			createdGame, err := cl.CreateGame(game, token)
+			assert.Nil(t, createdGame)
+			gassert.Error(t, err, testCase.expectedErr)
 		})
 	}
 }

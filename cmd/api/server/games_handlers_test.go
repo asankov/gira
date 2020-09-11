@@ -6,6 +6,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/asankov/gira/pkg/models/postgres"
@@ -50,26 +55,15 @@ func TestGetGames(t *testing.T) {
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Result().StatusCode, http.StatusOK
-	if got != expected {
-		t.Fatalf("Got status code - (%d), expected (%d)", got, expected)
-	}
+	gassert.StatusOK(t, w)
 
 	var res models.GamesResponse
 	fixtures.Decode(t, w.Body, &res)
 
-	if len(res.Games) != 2 {
-		t.Fatalf("Got (%d) for length of result, expected %d", len(res.Games), 2)
-	}
+	require.Equal(t, 2, len(res.Games))
 	for i := 0; i < len(res.Games); i++ {
-		got, expected := res.Games[i].ID, gamesResponse[i].ID
-		if got != expected {
-			t.Fatalf("Got (%s) for result[%d].ID, expected (%s)", got, i, expected)
-		}
-		got, expected = res.Games[i].Name, gamesResponse[i].Name
-		if got != expected {
-			t.Fatalf("Got (%s) for result[%d].Name, expected (%s)", got, i, expected)
-		}
+		assert.Equal(t, gamesResponse[i].ID, res.Games[i].ID)
+		assert.Equal(t, gamesResponse[i].Name, res.Games[i].Name)
 	}
 }
 
@@ -102,10 +96,7 @@ func TestGetGamesErr(t *testing.T) {
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Result().StatusCode, http.StatusInternalServerError
-	if got != expected {
-		t.Fatalf("Got status code - (%d), expected (%d)", got, expected)
-	}
+	gassert.StatusCode(t, w, http.StatusInternalServerError)
 }
 
 func TestGetGameByID(t *testing.T) {
@@ -139,16 +130,11 @@ func TestGetGameByID(t *testing.T) {
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	statusCode := w.Result().StatusCode
-	if statusCode != http.StatusOK {
-		t.Fatalf("Got (%d) for status code, expected (%d)", statusCode, http.StatusOK)
-	}
+	gassert.StatusOK(t, w)
 
 	var game *models.Game
 	fixtures.Decode(t, w.Body, &game)
-	if game.Name != actualName {
-		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
-	}
+	assert.Equal(t, game.Name, actualGame)
 }
 
 func TestGetGameByIDDBError(t *testing.T) {
@@ -199,10 +185,7 @@ func TestGetGameByIDDBError(t *testing.T) {
 			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Result().StatusCode, c.expectedCode
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, c.expectedCode)
 		})
 	}
 
@@ -240,16 +223,11 @@ func TestCreateGame(t *testing.T) {
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
-	statusCode := w.Result().StatusCode
-	if statusCode != http.StatusOK {
-		t.Fatalf("Got (%d) for status code, expected (%d)", statusCode, http.StatusOK)
-	}
+	gassert.StatusOK(t, w)
 
 	var game *models.Game
 	fixtures.Decode(t, w.Body, &game)
-	if game.Name != actualName {
-		t.Fatalf("Got (%s) for game.Name, expected (%s)", game.Name, actualName)
-	}
+	assert.Equal(t, actualName, game.Name)
 }
 
 func TestCreateGameValidationError(t *testing.T) {
@@ -294,10 +272,7 @@ func TestCreateGameValidationError(t *testing.T) {
 			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Result().StatusCode, http.StatusBadRequest
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, http.StatusBadRequest)
 		})
 	}
 }
@@ -351,10 +326,7 @@ func TestCreateGameDBError(t *testing.T) {
 			r.Header.Set(models.XAuthToken, token)
 			srv.ServeHTTP(w, r)
 
-			got, expected := w.Result().StatusCode, c.expectedCode
-			if got != expected {
-				t.Fatalf("Got (%d) for status code, expected (%d)", got, expected)
-			}
+			gassert.StatusCode(t, w, c.expectedCode)
 		})
 	}
 }
