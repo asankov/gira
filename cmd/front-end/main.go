@@ -22,11 +22,13 @@ func main() {
 }
 
 func run() error {
-	port := flag.Int("port", 4001, "port on which the application is exposed")
-	backEndAddr := flag.String("api_addr", "http://localhost:4000", "the address to the API service")
-	sessionSecret := flag.String("session_secret", "s6Ndh+pPbnzHb7*297k1q5W0Tzbpa@ge", "32-byte secret that is to be used for the session store")
-	logL := flag.String("log_level", "info", "the level of logging")
-	enforceHTTPS := flag.Bool("enforce-https", false, "whether or not to serve front-end via HTTPS")
+	var (
+		logL          = flag.String("log_level", "info", "the level of logging")
+		port          = flag.Int("port", 4001, "port on which the application is exposed")
+		backEndAddr   = flag.String("api_addr", "http://localhost:4000", "the address to the API service")
+		sessionSecret = flag.String("session_secret", "s6Ndh+pPbnzHb7*297k1q5W0Tzbpa@ge", "32-byte secret that is to be used for the session store")
+		enforceHTTPS  = flag.Bool("enforce-https", false, "whether or not to serve front-end via HTTPS")
+	)
 	flag.Parse()
 
 	session := sessions.New([]byte(*sessionSecret))
