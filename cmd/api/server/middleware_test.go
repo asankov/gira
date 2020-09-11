@@ -54,7 +54,7 @@ func TestRequireLogin(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	gassert.StatusOK(t, w)
-	assert.False(t, nextHandlerCalled)
+	assert.True(t, nextHandlerCalled)
 }
 func TestRequireLoginError(t *testing.T) {
 	testCases := []struct {
@@ -111,7 +111,7 @@ func TestRequireLoginError(t *testing.T) {
 			h.ServeHTTP(w, r)
 
 			gassert.StatusCode(t, w, http.StatusUnauthorized)
-			assert.True(t, nextHandlerCalled)
+			assert.False(t, nextHandlerCalled)
 		})
 	}
 }
