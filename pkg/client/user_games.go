@@ -80,7 +80,7 @@ func (c *Client) ChangeGameStatus(gameID, token string, status models.Status) er
 		if res.StatusCode == http.StatusUnauthorized {
 			return ErrNoAuthorization
 		}
-		return fmt.Errorf("error while changing game status: got non-OK status code: %d", res.StatusCode)
+		return ErrChangingGameStatus
 	}
 
 	// TODO: return real response
@@ -101,7 +101,7 @@ func (c *Client) DeleteUserGame(gameID, token string) error {
 		if res.StatusCode == http.StatusUnauthorized {
 			return ErrNoAuthorization
 		}
-		return fmt.Errorf("error while deleting game: got non-OK status code: %d", res.StatusCode)
+		return ErrDeletingGame
 	}
 
 	// TODO: return real response
