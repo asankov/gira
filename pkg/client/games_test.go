@@ -4,6 +4,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
@@ -22,9 +25,8 @@ var (
 
 func newClient(t *testing.T, url string) *client.Client {
 	cl, err := client.New(url)
-	if err != nil {
-		t.Fatalf("Got non-nil error while constructing client: %v", err)
-	}
+	require.NoError(t, err)
+
 	return cl
 }
 
@@ -55,17 +57,11 @@ func TestGetGames(t *testing.T) {
 			cl := newClient(t, ts.URL)
 
 			games, err := cl.GetGames(token, testCase.options)
-			if err != nil {
-				t.Fatalf("Got non-nil error when calling GetGames: %v", err)
-			}
 
-			if len(games) != 1 {
-				t.Fatalf("Got %d for length of returned games, expected 1", len(games))
-			}
-
-			if games[0].ID != game.ID || games[0].Name != game.Name {
-				t.Errorf("Got (%v) for returned game, expected (%v)", games[0], game)
-			}
+			require.NoError(t, err)
+			assert.Equal(t, 1, len(games))
+			assert.Equal(t, game.ID, games[0].ID)
+			assert.Equal(t, game.Name, games[0].Name)
 		})
 	}
 }
@@ -82,17 +78,11 @@ func TestGetGamesExcludeAssigned(t *testing.T) {
 	cl := newClient(t, ts.URL)
 
 	games, err := cl.GetGames(token, &client.GetGamesOptions{ExcludeAssigned: true})
-	if err != nil {
-		t.Fatalf("Got non-nil error when calling GetGames: %v", err)
-	}
 
-	if len(games) != 1 {
-		t.Fatalf("Got %d for length of returned games, expected 1", len(games))
-	}
-
-	if games[0].ID != game.ID || games[0].Name != game.Name {
-		t.Errorf("Got (%v) for returned game, expected (%v)", games[0], game)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, 1, len(games))
+	assert.Equal(t, game.ID, games[0].ID)
+	assert.Equal(t, game.Name, games[0].Name)
 }
 
 func TestGetGamesHTTPError(t *testing.T) {
@@ -121,9 +111,7 @@ func TestGetGamesHTTPError(t *testing.T) {
 			defer ts.Close()
 
 			cl, err := client.New(ts.URL)
-			if err != nil {
-				t.Fatalf("Got non-nil error while constructing client: %v", err)
-			}
+			require.NoError(t, err)
 
 			if _, err = cl.GetGames(token, nil); err != testCase.expectedErr {
 				t.Fatalf("Got %v error when calling GetGames, expected %v", err, testCase.expectedErr)
@@ -145,13 +133,10 @@ func TestCreateGame(t *testing.T) {
 	cl := newClient(t, ts.URL)
 
 	createdGame, err := cl.CreateGame(game, token)
-	if err != nil {
-		t.Fatalf("Got non-nil error when calling CreateGame: %v", err)
-	}
 
-	if createdGame.ID != game.ID || createdGame.Name != game.Name {
-		t.Errorf("Got (%v) for created game, expected (%v)", createdGame, game)
-	}
+	require.NoError(t, err)
+	assert.Equal(t, game.ID, createdGame.ID)
+	assert.Equal(t, game.Name, createdGame.Name)
 }
 
 func TestCreateGameHTTPError(t *testing.T) {
@@ -181,10 +166,8 @@ func TestCreateGameHTTPError(t *testing.T) {
 			defer ts.Close()
 
 			cl, err := client.New(ts.URL)
-			if err != nil {
-				t.Fatalf("Got non-nil error while constructing client: %v", err)
-			}
-
+			require.NoError(t, err)
+			
 			if _, err = cl.CreateGame(game, token); err != testCase.expectedErr {
 				t.Fatalf("Got %v error when calling CreateGame, expected %v", err, testCase.expectedErr)
 			}

@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/asankov/gira/internal/fixtures"
-	"github.com/asankov/gira/internal/fixtures/assert"
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/google/go-cmp/cmp"
