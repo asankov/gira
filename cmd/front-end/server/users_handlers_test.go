@@ -8,6 +8,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	"github.com/stretchr/testify/assert"
+
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golang/mock/gomock"
@@ -46,10 +52,7 @@ func testFormAt(t *testing.T, path string) {
 	r := httptest.NewRequest(http.MethodGet, path, nil)
 	srv.ServeHTTP(w, r)
 
-	got, expected := w.Code, http.StatusOK
-	if got != expected {
-		t.Errorf("Got (%d) for status code, expected (%d)", got, expected)
-	}
+	gassert.StatusOK(t, w)
 }
 
 func TestUserLogin(t *testing.T) {
@@ -74,22 +77,15 @@ func TestUserLogin(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	srv.ServeHTTP(w, r)
 
-	gotCode, expectedCode := w.Code, http.StatusSeeOther
-	if gotCode != expectedCode {
-		t.Errorf("Got (%d) for status code, expected (%d)", gotCode, expectedCode)
-	}
-	gotHeader, expectedHeader := w.Header().Get("Location"), "/"
-	if gotHeader != expectedHeader {
-		t.Errorf("Got %s for Location header, expected %s", gotHeader, expectedHeader)
-	}
+	gassert.Redirect(t, w, "/")
 	cookies := w.Result().Cookies()
-	if len(cookies) != 1 {
-		t.Fatalf("Got (%d) cookies, expected 1", len(cookies))
-	}
+
+	require.Equal(t, 1, len(cookies))
+
 	gotCookie := cookies[0]
-	if gotCookie.Name != cookie.Name || gotCookie.Value != cookie.Value || gotCookie.Path != cookie.Path {
-		t.Errorf("Got (%v) cookie, expected (%v)", gotCookie, cookie)
-	}
+	assert.Equal(t, cookie.Name, gotCookie.Name)
+	assert.Equal(t, cookie.Value, gotCookie.Value)
+	assert.Equal(t, cookie.Path, gotCookie.Path)
 }
 
 func TestUserLoginFormError(t *testing.T) {
@@ -114,10 +110,7 @@ func TestUserLoginFormError(t *testing.T) {
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	srv.ServeHTTP(w, r)
 
-	gotCode, expectedCode := w.Code, http.StatusBadRequest
-	if gotCode != expectedCode {
-		t.Errorf("Got (%d) for status code, expected (%d)", gotCode, expectedCode)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
 
 func TestUserLoginClientError(t *testing.T) {
@@ -131,8 +124,5 @@ func TestUserLoginClientError(t *testing.T) {
 	r.Body = nil
 	srv.ServeHTTP(w, r)
 
-	gotCode, expectedCode := w.Code, http.StatusBadRequest
-	if gotCode != expectedCode {
-		t.Errorf("Got (%d) for status code, expected (%d)", gotCode, expectedCode)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
