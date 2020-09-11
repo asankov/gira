@@ -7,6 +7,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
+
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/models"
 	"github.com/golang/mock/gomock"
@@ -51,21 +56,14 @@ func TestUsersGamesGet(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
-	}
+	gassert.StatusOK(t, w)
 
 	var gamesResponse map[models.Status][]*models.UserGame
 	fixtures.Decode(t, w.Body, &gamesResponse)
 
-	got, expected := len(gamesResponse), len(expectedGames)
-	if got != expected {
-		t.Errorf("Got (%d) for length of returned games, expected (%d)", got, expected)
-	}
+	require.Equal(t, len(gamesResponse), len(expectedGames))
 	for _, g := range gamesResponse["To Do"] {
-		if !gameIn(g, expectedGames["To Do"]) {
-			t.Errorf("Expected game (%#v) to be in returned games", g)
-		}
+		assert.True(t, gameIn(g, expectedGames["To Do"]))
 	}
 }
 
@@ -110,9 +108,7 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
-	}
+	gassert.StatusCode(t, w, http.StatusInternalServerError)
 }
 
 func TestUserGamesPost(t *testing.T) {
@@ -147,9 +143,7 @@ func TestUserGamesPost(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
-	}
+	gassert.StatusOK(t, w)
 }
 
 func TestUsersGamesPostInternalError(t *testing.T) {
@@ -184,9 +178,7 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
-	}
+	gassert.StatusCode(t, w, http.StatusInternalServerError)
 }
 
 func TestUsersGamesPostParseError(t *testing.T) {
@@ -216,9 +208,7 @@ func TestUsersGamesPostParseError(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
 
 func TestUsersGamesPatch(t *testing.T) {
@@ -253,9 +243,7 @@ func TestUsersGamesPatch(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
-	}
+	gassert.StatusOK(t, w)
 }
 
 func TestUsersGamesPatchInvalidBody(t *testing.T) {
@@ -284,9 +272,7 @@ func TestUsersGamesPatchInvalidBody(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
 
 func TestUsersGamesPatchServiceError(t *testing.T) {
@@ -321,9 +307,7 @@ func TestUsersGamesPatchServiceError(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
-	}
+	gassert.StatusCode(t, w, http.StatusInternalServerError)
 }
 
 func TestUsersGamesDelete(t *testing.T) {
@@ -363,9 +347,7 @@ func TestUsersGamesDelete(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusOK)
-	}
+	gassert.StatusOK(t, w)
 }
 
 func TestUsersGamesDeleteUserDoesNotOwnGame(t *testing.T) {
@@ -401,9 +383,7 @@ func TestUsersGamesDeleteUserDoesNotOwnGame(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusBadRequest {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusBadRequest)
-	}
+	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
 
 func TestUsersGamesDeleteServiceError(t *testing.T) {
@@ -443,7 +423,5 @@ func TestUsersGamesDeleteServiceError(t *testing.T) {
 
 	srv.ServeHTTP(w, r)
 
-	if w.Code != http.StatusInternalServerError {
-		t.Fatalf("Got (%d) for HTTP StatusCode, expected (%d)", w.Code, http.StatusInternalServerError)
-	}
+	gassert.StatusCode(t, w, http.StatusInternalServerError)
 }
