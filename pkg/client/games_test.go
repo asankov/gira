@@ -2,8 +2,6 @@ package client_test
 
 import (
 	"net/http"
-	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/asankov/gira/internal/fixtures"
@@ -47,21 +45,12 @@ func TestGetGames(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path != "/games" {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-				if r.Header.Get(models.XAuthToken) != token {
-					w.WriteHeader(http.StatusBadRequest)
-					return
-				}
-
-				w.WriteHeader(http.StatusOK)
-				if _, err := w.Write(fixtures.MarshalBytes(t, gameResponse)); err != nil {
-					t.Fatalf("error while writing response - %v", err)
-				}
-			}))
+			ts := fixtures.NewTestServer(t).
+				Path("/games").
+				Data(gameResponse).
+				Return(http.StatusOK).
+				Token(token).
+				Build()
 			defer ts.Close()
 
 			cl := newClient(t, ts.URL)
@@ -83,25 +72,13 @@ func TestGetGames(t *testing.T) {
 }
 
 func TestGetGamesExcludeAssigned(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/games" || r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if !strings.Contains(r.URL.RawQuery, "excludeAssigned=true") {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if r.Header.Get(models.XAuthToken) != token {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write(fixtures.MarshalBytes(t, gameResponse)); err != nil {
-			t.Fatalf("error while writing response: %v", err)
-		}
-	}))
+	ts := fixtures.NewTestServer(t).
+		Path("/games").
+		Data(gameResponse).
+		Return(http.StatusOK).
+		Token(token).
+		Query("excludeAssigned=true").
+		Build()
 	defer ts.Close()
 
 	cl := newClient(t, ts.URL)
@@ -139,9 +116,10 @@ func TestGetGamesHTTPError(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(testCase.returnCode)
-			}))
+			ts := fixtures.NewTestServer(t).
+				Path("/games").
+				Return(testCase.returnCode).
+				Build()
 			defer ts.Close()
 
 			cl, err := client.New(ts.URL)
@@ -157,19 +135,13 @@ func TestGetGamesHTTPError(t *testing.T) {
 }
 
 func TestCreateGame(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/games" || r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if r.Header.Get(models.XAuthToken) != token {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if _, err := w.Write(fixtures.MarshalBytes(t, game)); err != nil {
-			t.Fatalf("error while writing response: %v", err)
-		}
-	}))
+	ts := fixtures.NewTestServer(t).
+		Path("/games").
+		Method(http.MethodPost).
+		Data(game).
+		Return(http.StatusOK).
+		Token(token).
+		Build()
 	defer ts.Close()
 
 	cl := newClient(t, ts.URL)
@@ -203,9 +175,11 @@ func TestCreateGameHTTPError(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(testCase.returnCode)
-			}))
+			ts := fixtures.NewTestServer(t).
+				Path("/games").
+				Method(http.MethodPost).
+				Return(testCase.returnCode).
+				Build()
 			defer ts.Close()
 
 			cl, err := client.New(ts.URL)
