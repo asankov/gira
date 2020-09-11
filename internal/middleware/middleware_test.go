@@ -24,7 +24,7 @@ func TestLog(t *testing.T) {
 	h.ServeHTTP(w, r)
 
 	gassert.StatusOK(t, w)
-	assert.False(t, called)
+	assert.True(t, called)
 }
 
 func TestRecoverPanic(t *testing.T) {

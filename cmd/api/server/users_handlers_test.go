@@ -349,9 +349,9 @@ func TestUserGet(t *testing.T) {
 	fixtures.Decode(t, w.Body, &userResponse)
 	gotUser := userResponse.User
 
-	assert.Equal(t, w, gotUser.ID, expectedUser.ID)
-	assert.Equal(t, w, gotUser.Email, expectedUser.Email)
-	assert.Equal(t, w, gotUser.Username, expectedUser.Username)
+	assert.Equal(t, gotUser.ID, expectedUser.ID)
+	assert.Equal(t, gotUser.Email, expectedUser.Email)
+	assert.Equal(t, gotUser.Username, expectedUser.Username)
 }
 
 func TestUserGetUnathorized(t *testing.T) {

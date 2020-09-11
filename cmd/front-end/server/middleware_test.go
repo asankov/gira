@@ -26,7 +26,7 @@ func TestSecureHeaders(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	h.ServeHTTP(w, r)
 
-	assert.False(t, called)
+	assert.True(t, called)
 	assert.Equal(t, "deny", w.Header().Get("X-Frame-Options"))
 	assert.Equal(t, "1; mode-block", w.Header().Get("X-XSS-Protection"))
 }

@@ -134,7 +134,8 @@ func TestGetGameByID(t *testing.T) {
 
 	var game *models.Game
 	fixtures.Decode(t, w.Body, &game)
-	assert.Equal(t, game.Name, actualGame)
+
+	assert.Equal(t, game.Name, actualGame.Name)
 }
 
 func TestGetGameByIDDBError(t *testing.T) {
