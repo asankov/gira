@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/golang/mock v1.4.4
 	github.com/golangcollege/sessions v1.2.0
+	github.com/google/go-cmp v0.5.2
 	github.com/gorilla/mux v1.7.4
 	github.com/hashicorp/go-multierror v1.1.0
 	github.com/justinas/alice v1.2.0
