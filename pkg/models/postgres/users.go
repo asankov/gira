@@ -27,7 +27,6 @@ type UserModel struct {
 // Insert inserts a new user with the given parameters into the database
 // and return the created user ot an error if such occurred.
 func (m *UserModel) Insert(user *models.User) (*models.User, error) {
-	// TODO: hash password
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
 	if err != nil {
 		return nil, fmt.Errorf("error while hashing password: %w", err)
@@ -66,13 +65,6 @@ func (m *UserModel) Authenticate(email, password string) (*models.User, error) {
 		return nil, ErrWrongPassword
 	}
 	return &usr, nil
-}
-
-// TODO: marked for deletion
-// Get fetches the user with the given ID from the database
-// and returns the user or an error if such occurred.
-func (m *UserModel) Get(id string) (*models.User, error) {
-	return nil, nil
 }
 
 // AssociateTokenWithUser associated the given token with the given userID

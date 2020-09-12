@@ -5,9 +5,6 @@ import (
 	"net/http"
 )
 
-// TODO: this whole file is copied from cmd/api/middleware.go
-// find a way to refactor it and reduce the duplication
-
 type contextTokenKeyType string
 
 var (
