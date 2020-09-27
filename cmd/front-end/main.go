@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"net/http"
@@ -58,6 +59,10 @@ func run() error {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: s,
+		TLSConfig: &tls.Config{
+			CurvePreferences:         []tls.CurveID{tls.CurveP256},
+			PreferServerCipherSuites: true,
+		},
 	}
 
 	if *enforceHTTPS {
