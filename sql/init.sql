@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS USER_GAMES (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES USERS(id),
   game_id INTEGER REFERENCES GAMES(id),
-  status game_status DEFAULT 'To Do'
+  status game_status DEFAULT 'To Do',
   current_progress INTEGER DEFAULT 0,
   final_progress INTEGER DEFAULT 100
 );
