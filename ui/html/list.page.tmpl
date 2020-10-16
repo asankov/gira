@@ -36,7 +36,7 @@
                 <span id="status-{{.ID}}" class="status">{{.Status}}</span>
                 <select id="status-dropdown-{{.ID}}" name="status" class="hidden">
                     {{range $status := $.Statuses}}
-                    <option value="{{$status}}" {{if eq $status $userGame.Status }}selected{{end}}>{{$status}}</option>
+                    <option value="{{$status}}" {{if eq $status $userGame.Status }}selected disabled{{end}}>{{$status}}</option>
                     {{end}}
                 </select>
                 <span id="edit-status-button-{{.ID}}" class="button edit-status-button" data-game-id="{{.ID}}"
