@@ -33,6 +33,20 @@ func (m *UserGamesModelMock) EXPECT() *UserGamesModelMockMockRecorder {
 	return m.recorder
 }
 
+// ChangeGameProgress mocks base method
+func (m *UserGamesModelMock) ChangeGameProgress(arg0, arg1 string, arg2 *models.UserGameProgress) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeGameProgress", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeGameProgress indicates an expected call of ChangeGameProgress
+func (mr *UserGamesModelMockMockRecorder) ChangeGameProgress(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeGameProgress", reflect.TypeOf((*UserGamesModelMock)(nil).ChangeGameProgress), arg0, arg1, arg2)
+}
+
 // ChangeGameStatus mocks base method
 func (m *UserGamesModelMock) ChangeGameStatus(arg0, arg1 string, arg2 models.Status) error {
 	m.ctrl.T.Helper()
