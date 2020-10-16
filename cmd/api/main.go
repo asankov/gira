@@ -18,7 +18,7 @@ import (
 
 func main() {
 	if err := run(); err != nil {
-		logrus.Panic("error while running server: " + err.Error())
+		logrus.Fatalln("error while running server: " + err.Error())
 	}
 }
 
