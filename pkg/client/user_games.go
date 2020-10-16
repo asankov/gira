@@ -62,33 +62,16 @@ func (c *Client) LinkGameToUser(gameID, token string) (*models.UserGame, error) 
 }
 
 func (c *Client) ChangeGameStatus(gameID, token string, status models.Status) error {
-	body, err := json.Marshal(models.ChangeGameStatusRequest{Status: status})
-	if err != nil {
-		return fmt.Errorf("error while marshalling body: %w", err)
-	}
+	return c.changeGame(gameID, token, &models.ChangeGameStatusRequest{Status: status})
 
-	req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/users/games/%s", c.addr, gameID), bytes.NewBuffer((body)))
-	if err != nil {
-		return fmt.Errorf("error while building HTTP request")
-	}
-	req.Header.Add(models.XAuthToken, token)
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	if res.StatusCode != http.StatusOK {
-		if res.StatusCode == http.StatusUnauthorized {
-			return ErrNoAuthorization
-		}
-		return ErrChangingGameStatus
-	}
-
-	// TODO: return real response
-	return nil
 }
 
 func (c *Client) ChangeGameProgress(gameID, token string, progress *models.UserGameProgress) error {
-	body, err := json.Marshal(models.ChangeGameStatusRequest{Progress: progress})
+	return c.changeGame(gameID, token, &models.ChangeGameStatusRequest{Progress: progress})
+}
+
+func (c *Client) changeGame(gameID, token string, changeGameReq *models.ChangeGameStatusRequest) error {
+	body, err := json.Marshal(changeGameReq)
 	if err != nil {
 		return fmt.Errorf("error while marshalling body: %w", err)
 	}
