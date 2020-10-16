@@ -27,19 +27,34 @@
         <th>Progress</th>
         <th></th>
     </tr>
-    {{range .UserGames}}
+    {{range $userGame := .UserGames}}
     <tr>
         <td>{{.ID}}</td>
         <td>{{.Game.Name}}</td>
-        <td>{{.Status}}</td>
+        <td>
+            <form action="/games/status" method="POST">
+                <input type="hidden" name="game" value="{{.ID}}">
+                <span id="status-{{.ID}}" class="status">{{.Status}}</span>
+                <select id="status-dropdown-{{.ID}}" name="status" class="hidden">
+                    {{range $status := $.Statuses}}
+                    <option value="{{$status}}" {{if eq $status $userGame.Status }}selected{{end}}>{{$status}}</option>
+                    {{end}}
+                </select>
+                <span id="edit-status-button-{{.ID}}" class="button edit-status-button" data-game-id="{{.ID}}"
+                    class="button">✎</span>
+                <button type="submit" id="save-status-button-{{.ID}}" class="button hidden">💾</button>
+            </form>
+        </td>
         <td>
             <form action="/games/progress" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">
 
-                <input type="text" id="input-current-progress" name="currentProgress" class="hidden" value="{{.Progress.Current}}">
+                <input type="text" id="input-current-progress" name="currentProgress" class="hidden"
+                    value="{{.Progress.Current}}">
                 <span id="current-progress">{{.Progress.Current}}</span>
                 /
-                <input type="text" id="input-final-progress" name="finalProgress" class="hidden"value="{{.Progress.Final}}">
+                <input type="text" id="input-final-progress" name="finalProgress" class="hidden"
+                    value="{{.Progress.Final}}">
                 <span id="final-progress">{{.Progress.Final}} </span>
 
                 <span id="edit-button" class="button">✎</span>
@@ -47,19 +62,6 @@
             </form>
         </td>
         <td>
-            <form action="/games/status" method="POST">
-                <input type="hidden" name="game" value="{{.ID}}">
-                {{ if eq .Status "To Do" }}
-                <button type="submit" name="status" value="In Progress"> In Progress </button>
-                <button type="submit" name="status" value="Done"> Done </button>
-                {{ else if eq .Status "In Progress"}}
-                <button type="submit" name="status" value="To Do"> To Do </button>
-                <button type="submit" name="status" value="Done"> Done </button>
-                {{ else if eq .Status "Done"}}
-                <button type="submit" name="status" value="To Do"> To Do </button>
-                <button type="submit" name="status" value="In Progress"> In Progress </button>
-                {{ end }}
-            </form>
             <form action="/games/delete" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">
                 <button type="submit" style="color: red"> Delete </button>
@@ -90,4 +92,16 @@
         document.getElementById('final-progress').classList.add('hidden');
         document.getElementById('edit-button').classList.add('hidden');
     });
+
+    const editStatusButtons = document.getElementsByClassName('edit-status-button')
+    for (let i = 0; i < editStatusButtons.length; i++) {
+        editStatusButtons[i].addEventListener('click', (e) => {
+            const gameId = e.target.dataset.gameId
+            document.getElementById(`status-${gameId}`).classList.add('hidden')
+            document.getElementById(`edit-status-button-${gameId}`).classList.add('hidden')
+
+            document.getElementById(`save-status-button-${gameId}`).classList.remove('hidden')
+            document.getElementById(`status-dropdown-${gameId}`).classList.remove('hidden')
+        })
+    }
 </script>

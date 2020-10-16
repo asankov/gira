@@ -157,6 +157,7 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 		data := TemplateData{
 			Flash:     flash,
 			UserGames: mapToGames(gamesResponse),
+			Statuses:  models.AllStatuses,
 		}
 
 		s.render(w, r, data, listGamesPage)

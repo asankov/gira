@@ -31,6 +31,13 @@ var (
 	StatusInProgress Status = "In Progress"
 	// StatusDone is the Done status of the game
 	StatusDone Status = "Done"
+
+	// AllStatuses is collection of all statuses
+	AllStatuses = []Status{
+		StatusTODO,
+		StatusInProgress,
+		StatusDone,
+	}
 )
 
 // UserGame is the representation of a user game relation
