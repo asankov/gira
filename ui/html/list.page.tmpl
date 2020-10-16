@@ -7,6 +7,7 @@
         <th>ID</th>
         <th>Name</th>
         <th>Status</th>
+        <th>Progress</th>
         <th></th>
     </tr>
     {{range .UserGames}}
@@ -14,6 +15,7 @@
         <td>{{.ID}}</td>
         <td>{{.Game.Name}}</td>
         <td>{{.Status}}</td>
+        <td>{{.Progress.Current}}/{{.Progress.Final}}</td>
         <td>
             <form action="/games/status" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">

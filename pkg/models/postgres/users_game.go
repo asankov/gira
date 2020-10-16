@@ -11,8 +11,8 @@ type UserGamesModel struct {
 	DB *sql.DB
 }
 
-func (m *UserGamesModel) LinkGameToUser(userID, gameID string) error {
-	if _, err := m.DB.Exec(`INSERT INTO USER_GAMES(user_id, game_id) VALUES ($1, $2)`, userID, gameID); err != nil {
+func (m *UserGamesModel) LinkGameToUser(userID, gameID string, progress *models.UserGameProgress) error {
+	if _, err := m.DB.Exec(`INSERT INTO USER_GAMES(user_id, game_id, current_progress, final_progress) VALUES ($1, $2, $3, $4)`, userID, gameID, progress.Current, progress.Final); err != nil {
 		return err
 	}
 	return nil
@@ -26,7 +26,7 @@ func (m *UserGamesModel) DeleteUserGame(userGameID string) error {
 }
 
 func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error) {
-	rows, err := m.DB.Query(`SELECT ug.id, g.id AS user_game_id, g.name, ug.status FROM USER_GAMES ug JOIN GAMES g ON ug.game_id = g.id where user_id = $1`, userID)
+	rows, err := m.DB.Query(`SELECT ug.id, g.id AS user_game_id, g.name, ug.status, ug.current_progress, ug.final_progress FROM USER_GAMES ug JOIN GAMES g ON ug.game_id = g.id where user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -35,10 +35,11 @@ func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error)
 	userGames := []*models.UserGame{}
 	for rows.Next() {
 		var userGame = models.UserGame{
-			Game: &models.Game{},
+			Game:     &models.Game{},
+			Progress: &models.UserGameProgress{},
 		}
 
-		if err = rows.Scan(&userGame.ID, &userGame.Game.ID, &userGame.Game.Name, &userGame.Status); err != nil {
+		if err = rows.Scan(&userGame.ID, &userGame.Game.ID, &userGame.Game.Name, &userGame.Status, &userGame.Progress.Current, &userGame.Progress.Final); err != nil {
 			return nil, fmt.Errorf("error while reading games from the database: %w", err)
 		}
 

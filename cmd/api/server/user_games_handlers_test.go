@@ -112,38 +112,66 @@ func TestUsersGamesGetInternalError(t *testing.T) {
 }
 
 func TestUserGamesPost(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	testCases := []struct {
+		Name              string
+		ProgressInRequest *models.UserGameProgress
+		ExpectedProgress  *models.UserGameProgress
+	}{
+		{
+			Name: "Progress.Final is 100 and Progress.Current is 0, if nothing is passed",
+			ExpectedProgress: &models.UserGameProgress{
+				Current: 0,
+				Final:   100,
+			},
+		},
+		{
+			Name: "Progress.Final and Progress.Current are equal to what is passed",
+			ProgressInRequest: &models.UserGameProgress{
+				Current: 2,
+				Final:   50,
+			},
+			ExpectedProgress: &models.UserGameProgress{
+				Current: 2,
+				Final:   50,
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
-	userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
-	userModelMock := fixtures.NewUserModelMock(ctrl)
-	srv := newServer(t, &Options{
-		Authenticator:  authenticatorMock,
-		UserModel:      userModelMock,
-		UserGamesModel: userGamesModelMock,
-	})
-	authenticatorMock.EXPECT().
-		DecodeToken(gomock.Eq(token)).
-		Return(nil, nil)
-	userModelMock.EXPECT().
-		GetUserByToken(gomock.Eq(token)).
-		Return(&models.User{
-			ID: "12",
-		}, nil)
+			authenticatorMock := fixtures.NewAuthenticatorMock(ctrl)
+			userGamesModelMock := fixtures.NewUserGamesModelMock(ctrl)
+			userModelMock := fixtures.NewUserModelMock(ctrl)
+			srv := newServer(t, &Options{
+				Authenticator:  authenticatorMock,
+				UserModel:      userModelMock,
+				UserGamesModel: userGamesModelMock,
+			})
+			authenticatorMock.EXPECT().
+				DecodeToken(gomock.Eq(token)).
+				Return(nil, nil)
+			userModelMock.EXPECT().
+				GetUserByToken(gomock.Eq(token)).
+				Return(&models.User{
+					ID: "12",
+				}, nil)
 
-	gameID := "666"
-	userGamesModelMock.EXPECT().
-		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID)).
-		Return(nil)
+			gameID := "666"
+			userGamesModelMock.EXPECT().
+				LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID), gomock.Eq(testCase.ExpectedProgress)).
+				Return(nil)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshal(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}}))
-	r.Header.Add(models.XAuthToken, token)
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/users/games", fixtures.Marshal(t, &models.UserGameRequest{Game: &models.Game{ID: gameID}, Progress: testCase.ProgressInRequest}))
+			r.Header.Add(models.XAuthToken, token)
 
-	srv.ServeHTTP(w, r)
+			srv.ServeHTTP(w, r)
 
-	gassert.StatusOK(t, w)
+			gassert.StatusOK(t, w)
+		})
+	}
 }
 
 func TestUsersGamesPostInternalError(t *testing.T) {
@@ -169,7 +197,7 @@ func TestUsersGamesPostInternalError(t *testing.T) {
 
 	gameID := "666"
 	userGamesModelMock.EXPECT().
-		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID)).
+		LinkGameToUser(gomock.Eq("12"), gomock.Eq(gameID), gomock.Any()).
 		Return(errors.New("error returned on purpose"))
 
 	w := httptest.NewRecorder()
