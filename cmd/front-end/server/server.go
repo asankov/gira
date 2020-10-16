@@ -47,6 +47,7 @@ type APIClient interface {
 	LoginUser(user *models.User) (*models.UserLoginResponse, error)
 	CreateGame(game *models.Game, token string) (*models.Game, error)
 	ChangeGameStatus(gameID, token string, status models.Status) error
+	ChangeGameProgress(gameID, token string, progress *models.UserGameProgress) error
 	GetUserGames(token string) (map[models.Status][]*models.UserGame, error)
 	GetGames(token string, options *client.GetGamesOptions) ([]*models.Game, error)
 }

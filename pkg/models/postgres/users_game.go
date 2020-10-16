@@ -84,7 +84,7 @@ func (m *UserGamesModel) ChangeGameStatus(userID, userGameID string, status mode
 }
 
 func (m *UserGamesModel) ChangeGameProgress(userID, userGameID string, progress *models.UserGameProgress) error {
-	if _, err := m.DB.Exec("UPDATE USER_GAMES SET current_progress =  $1, final_progress = $2 WHERE id = $2 AND user_id = $3", progress.Current, progress.Final, userGameID, userID); err != nil {
+	if _, err := m.DB.Exec("UPDATE USER_GAMES SET current_progress =  $1, final_progress = $2 WHERE id = $3 AND user_id = $4", progress.Current, progress.Final, userGameID, userID); err != nil {
 		return fmt.Errorf("error while updating game progress: %w", err)
 	}
 	return nil

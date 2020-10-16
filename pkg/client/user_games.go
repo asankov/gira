@@ -89,7 +89,7 @@ func (c *Client) changeGame(gameID, token string, changeGameReq *models.ChangeGa
 		if res.StatusCode == http.StatusUnauthorized {
 			return ErrNoAuthorization
 		}
-		return ErrChangingGameStatus
+		return ErrChangingGame
 	}
 
 	// TODO: return real response
