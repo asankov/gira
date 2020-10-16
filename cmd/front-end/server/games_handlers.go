@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models"
@@ -82,6 +83,50 @@ func (s *Server) handleGamesChangeStatus() http.HandlerFunc {
 		}
 
 		if err := s.Client.ChangeGameStatus(gameID, token, models.Status(status)); err != nil {
+			s.Log.Errorln(err)
+			// TODO: render error page
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("Location", "/games")
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
+func (s *Server) handleGamesChangeProgress() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := getToken(r)
+		_ = token
+
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		gameID := r.PostForm.Get("game")
+		if gameID == "" {
+			http.Error(w, "'game' is required", http.StatusBadRequest)
+			return
+		}
+
+		cur, fin := r.PostForm.Get("currentProgress"), r.PostForm.Get("finalProgress")
+		if cur == "" || fin == "" {
+			http.Error(w, "'currentProgress' and 'finalProgress' is required", http.StatusBadRequest)
+			return
+		}
+
+		currentProgress, err := strconv.Atoi(cur)
+		if err != nil {
+			http.Error(w, "'currentProgress' should be a valid integer", http.StatusBadRequest)
+			return
+		}
+		finalProgress, err := strconv.Atoi(fin)
+		if err != nil {
+			http.Error(w, "'finalProgress' should be a valid integer", http.StatusBadRequest)
+			return
+		}
+		if err := s.Client.ChangeGameProgress(gameID, token, &models.UserGameProgress{Current: currentProgress, Final: finalProgress}); err != nil {
 			s.Log.Errorln(err)
 			// TODO: render error page
 			http.Error(w, err.Error(), http.StatusInternalServerError)

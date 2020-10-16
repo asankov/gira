@@ -167,7 +167,7 @@ func TestChangeGameStatusHTTPError(t *testing.T) {
 		{
 			name:         "Other error",
 			responseCode: http.StatusInternalServerError,
-			expectedErr:  client.ErrChangingGameStatus,
+			expectedErr:  client.ErrChangingGame,
 		},
 	}
 	for _, testCase := range testCases {

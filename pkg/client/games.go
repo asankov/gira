@@ -19,8 +19,8 @@ var (
 	ErrNoAuthorization = errors.New("no authorization is present")
 	// ErrLinkingGame is returned when an error occurred while linking game to user
 	ErrLinkingGame = errors.New("error while linking game to user")
-	// ErrChangingGameStatus is returned when an error ocurred while changing status of game
-	ErrChangingGameStatus = errors.New("error while changing game status")
+	// ErrChangingGame is returned when an error ocurred while changing status of game
+	ErrChangingGame = errors.New("error while changing game")
 	// ErrDeletingGame is returned when an error ocurred while deleting a game
 	ErrDeletingGame = errors.New("error while deleting game")
 )
