@@ -97,7 +97,6 @@ func (s *Server) handleGamesChangeStatus() http.HandlerFunc {
 func (s *Server) handleGamesChangeProgress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := getToken(r)
-		_ = token
 
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
