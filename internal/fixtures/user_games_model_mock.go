@@ -107,15 +107,15 @@ func (mr *UserGamesModelMockMockRecorder) GetUserGamesGrouped(arg0 interface{}) 
 }
 
 // LinkGameToUser mocks base method
-func (m *UserGamesModelMock) LinkGameToUser(arg0, arg1 string) error {
+func (m *UserGamesModelMock) LinkGameToUser(arg0, arg1 string, arg2 *models.UserGameProgress) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LinkGameToUser", arg0, arg1)
+	ret := m.ctrl.Call(m, "LinkGameToUser", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LinkGameToUser indicates an expected call of LinkGameToUser
-func (mr *UserGamesModelMockMockRecorder) LinkGameToUser(arg0, arg1 interface{}) *gomock.Call {
+func (mr *UserGamesModelMockMockRecorder) LinkGameToUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkGameToUser", reflect.TypeOf((*UserGamesModelMock)(nil).LinkGameToUser), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkGameToUser", reflect.TypeOf((*UserGamesModelMock)(nil).LinkGameToUser), arg0, arg1, arg2)
 }

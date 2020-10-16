@@ -36,10 +36,11 @@ var (
 // UserGame is the representation of a user game relation
 // in the database.
 type UserGame struct {
-	ID     string `json:"id,omitempty"`
-	User   *User  `json:"user,omitempty"`
-	Game   *Game  `json:"game,omitempty"`
-	Status Status `json:"status,omitempty"`
+	ID       string            `json:"id,omitempty"`
+	User     *User             `json:"user,omitempty"`
+	Game     *Game             `json:"game,omitempty"`
+	Status   Status            `json:"status,omitempty"`
+	Progress *UserGameProgress `json:"progress,omitempty"`
 }
 
 // UserLoginResponse is the response that is returned
@@ -54,8 +55,14 @@ type UserResponse struct {
 	User *User `json:"user"`
 }
 
+type UserGameProgress struct {
+	Current int `json:"current,omitempty"`
+	Final   int `json:"final,omitempty"`
+}
+
 type UserGameRequest struct {
-	Game *Game `json:"game"`
+	Game     *Game             `json:"game"`
+	Progress *UserGameProgress `json:"progress,omitempty"`
 }
 
 type UserGamesResponse struct {
