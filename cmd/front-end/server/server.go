@@ -26,6 +26,7 @@ type TemplateData struct {
 	User      *models.User
 	Games     []*models.Game
 	UserGames []*models.UserGame
+	Statuses  []models.Status
 
 	Error string
 	Flash string
