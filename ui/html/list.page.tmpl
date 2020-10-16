@@ -2,6 +2,22 @@
 {{define "title"}}Games{{end}}
 {{define "main"}}
 {{if .UserGames}}
+<style>
+    #input-current-progress.active,
+    #input-final-progress.active {
+        width: 30px;
+        display: inline;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .button {
+        cursor: pointer;
+    }
+</style>
+
 <table>
     <tr>
         <th>ID</th>
@@ -15,7 +31,14 @@
         <td>{{.ID}}</td>
         <td>{{.Game.Name}}</td>
         <td>{{.Status}}</td>
-        <td>{{.Progress.Current}}/{{.Progress.Final}}</td>
+        <td>
+            <input type="text" id="input-current-progress" class="hidden" value="{{.Progress.Current}}">
+            <span id="current-progress">{{.Progress.Current}}</span> /
+            <input type="text" id="input-final-progress" class="hidden" value="{{.Progress.Final}}">
+            <span id="final-progress">{{.Progress.Final}} </span>
+            <span id="edit-button" class="button">✎</span>
+            <span id="save-button" class="button hidden">💾</span>
+        </td>
         <td>
             <form action="/games/status" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">
@@ -45,3 +68,19 @@
     <input type="submit" value="+" style="float: right;"></button>
 </a>
 {{end}}
+
+<script>
+    const btn = document.getElementById('edit-button')
+    btn.addEventListener('click', function () {
+        document.getElementById('input-current-progress').classList.add('active');
+        document.getElementById('input-current-progress').classList.remove('hidden');
+        document.getElementById('input-final-progress').classList.add('active');
+        document.getElementById('input-final-progress').classList.add('hidden');
+        document.getElementById('save-button').classList.add('active');
+        document.getElementById('save-button').classList.remove('hidden');
+
+        document.getElementById('current-progress').classList.add('hidden');
+        document.getElementById('final-progress').classList.add('hidden');
+        document.getElementById('edit-button').classList.add('hidden');
+    });
+</script>
