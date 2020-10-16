@@ -5,8 +5,9 @@
 <style>
     #input-current-progress.active,
     #input-final-progress.active {
-        width: 30px;
+        width: 50px;
         display: inline;
+        padding: 0.5em;
     }
 
     .hidden {
@@ -32,12 +33,18 @@
         <td>{{.Game.Name}}</td>
         <td>{{.Status}}</td>
         <td>
-            <input type="text" id="input-current-progress" class="hidden" value="{{.Progress.Current}}">
-            <span id="current-progress">{{.Progress.Current}}</span> /
-            <input type="text" id="input-final-progress" class="hidden" value="{{.Progress.Final}}">
-            <span id="final-progress">{{.Progress.Final}} </span>
-            <span id="edit-button" class="button">✎</span>
-            <span id="save-button" class="button hidden">💾</span>
+            <form action="/games/progress" method="POST">
+                <input type="hidden" name="game" value="{{.ID}}">
+
+                <input type="text" id="input-current-progress" name="currentProgress" class="hidden" value="{{.Progress.Current}}">
+                <span id="current-progress">{{.Progress.Current}}</span>
+                /
+                <input type="text" id="input-final-progress" name="finalProgress" class="hidden"value="{{.Progress.Final}}">
+                <span id="final-progress">{{.Progress.Final}} </span>
+
+                <span id="edit-button" class="button">✎</span>
+                <button type="submit" id="save-button" class="button hidden">💾</span>
+            </form>
         </td>
         <td>
             <form action="/games/status" method="POST">
