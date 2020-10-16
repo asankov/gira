@@ -3,8 +3,7 @@
 {{define "main"}}
 {{if .UserGames}}
 <style>
-    #input-current-progress.active,
-    #input-final-progress.active {
+    .input-progress.active {
         width: 50px;
         display: inline;
         padding: 0.5em;
@@ -49,16 +48,16 @@
             <form action="/games/progress" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">
 
-                <input type="text" id="input-current-progress" name="currentProgress" class="hidden"
+                <input type="text" id="input-current-progress-{{.ID}}" name="currentProgress" class="hidden input-progress"
                     value="{{.Progress.Current}}">
-                <span id="current-progress">{{.Progress.Current}}</span>
+                <span id="current-progress-{{.ID}}">{{.Progress.Current}}</span>
                 /
-                <input type="text" id="input-final-progress" name="finalProgress" class="hidden"
+                <input type="text" id="input-final-progress-{{.ID}}" name="finalProgress" class="hidden input-progress"
                     value="{{.Progress.Final}}">
-                <span id="final-progress">{{.Progress.Final}} </span>
+                <span id="final-progress-{{.ID}}">{{.Progress.Final}} </span>
 
-                <span id="edit-button" class="button">✎</span>
-                <button type="submit" id="save-button" class="button hidden">💾</span>
+                <span id="edit-progress-button-{{.ID}}" class="button edit-progress-button" data-game-id="{{.ID}}">✎</span>
+                <button type="submit" id="save-progress-button-{{.ID}}" class="button hidden">💾</span>
             </form>
         </td>
         <td>
@@ -79,19 +78,22 @@
 {{end}}
 
 <script>
-    const btn = document.getElementById('edit-button')
-    btn.addEventListener('click', function () {
-        document.getElementById('input-current-progress').classList.add('active');
-        document.getElementById('input-current-progress').classList.remove('hidden');
-        document.getElementById('input-final-progress').classList.add('active');
-        document.getElementById('input-final-progress').classList.add('hidden');
-        document.getElementById('save-button').classList.add('active');
-        document.getElementById('save-button').classList.remove('hidden');
+    const editProgressButtons = document.getElementsByClassName('edit-progress-button')
+    for (let i = 0; i < editProgressButtons.length; i++) {
+        editProgressButtons[i].addEventListener('click', (e) => {
+            const gameId = e.target.dataset.gameId
+            document.getElementById(`input-current-progress-${gameId}`).classList.add('active');
+            document.getElementById(`input-current-progress-${gameId}`).classList.remove('hidden');
+            document.getElementById(`input-final-progress-${gameId}`).classList.add('active');
+            document.getElementById(`input-final-progress-${gameId}`).classList.add('hidden');
+            document.getElementById(`save-progress-button-${gameId}`).classList.add('active');
+            document.getElementById(`save-progress-button-${gameId}`).classList.remove('hidden');
 
-        document.getElementById('current-progress').classList.add('hidden');
-        document.getElementById('final-progress').classList.add('hidden');
-        document.getElementById('edit-button').classList.add('hidden');
-    });
+            document.getElementById(`current-progress-${gameId}`).classList.add('hidden');
+            document.getElementById(`final-progress-${gameId}`).classList.add('hidden');
+            document.getElementById(`edit-progress-button-${gameId}`).classList.add('hidden');
+        })
+    }
 
     const editStatusButtons = document.getElementsByClassName('edit-status-button')
     for (let i = 0; i < editStatusButtons.length; i++) {
