@@ -84,10 +84,22 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 			return
 		}
 
-		if err := s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, req.Status); err != nil {
-			s.Log.Errorf("Error while changing game status: %v", err)
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
+		if req.Status != "" {
+			s.Log.Infoln("updating status")
+			if err := s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, req.Status); err != nil {
+				s.Log.Errorf("Error while changing game status: %v", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		if req.Progress != nil {
+			s.Log.Infoln("updating progress")
+			if err := s.UserGamesModel.ChangeGameProgress(user.ID, userGameID, req.Progress); err != nil {
+				s.Log.Errorf("Error while changing game progress: %v", err)
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
 		}
 
 		// TODO: better response

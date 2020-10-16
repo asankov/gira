@@ -82,5 +82,6 @@ type ErrorResponse struct {
 }
 
 type ChangeGameStatusRequest struct {
-	Status Status `json:"status"`
+	Status   Status            `json:"status,omitempty"`
+	Progress *UserGameProgress `json:"progress,omitempty"`
 }

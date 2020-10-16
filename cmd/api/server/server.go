@@ -27,6 +27,7 @@ type UserModel interface {
 type UserGamesModel interface {
 	LinkGameToUser(userID, gameID string, progress *models.UserGameProgress) error
 	ChangeGameStatus(userID, userGameID string, status models.Status) error
+	ChangeGameProgress(userID, userGameID string, progress *models.UserGameProgress) error
 	GetAvailableGamesFor(userID string) ([]*models.Game, error)
 	GetUserGames(userID string) ([]*models.UserGame, error)
 	GetUserGamesGrouped(userID string) (map[models.Status][]*models.UserGame, error)
