@@ -87,6 +87,32 @@ func (c *Client) ChangeGameStatus(gameID, token string, status models.Status) er
 	return nil
 }
 
+func (c *Client) ChangeGameProgress(gameID, token string, progress *models.UserGameProgress) error {
+	body, err := json.Marshal(models.ChangeGameStatusRequest{Progress: progress})
+	if err != nil {
+		return fmt.Errorf("error while marshalling body: %w", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/users/games/%s", c.addr, gameID), bytes.NewBuffer((body)))
+	if err != nil {
+		return fmt.Errorf("error while building HTTP request")
+	}
+	req.Header.Add(models.XAuthToken, token)
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	if res.StatusCode != http.StatusOK {
+		if res.StatusCode == http.StatusUnauthorized {
+			return ErrNoAuthorization
+		}
+		return ErrChangingGameStatus
+	}
+
+	// TODO: return real response
+	return nil
+}
+
 func (c *Client) DeleteUserGame(gameID, token string) error {
 	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/users/games/%s", c.addr, gameID), nil)
 	if err != nil {

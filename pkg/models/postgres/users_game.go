@@ -83,6 +83,13 @@ func (m *UserGamesModel) ChangeGameStatus(userID, userGameID string, status mode
 	return nil
 }
 
+func (m *UserGamesModel) ChangeGameProgress(userID, userGameID string, progress *models.UserGameProgress) error {
+	if _, err := m.DB.Exec("UPDATE USER_GAMES SET current_progress =  $1, final_progress = $2 WHERE id = $2 AND user_id = $3", progress.Current, progress.Final, userGameID, userID); err != nil {
+		return fmt.Errorf("error while updating game progress: %w", err)
+	}
+	return nil
+}
+
 func (m *UserGamesModel) GetAvailableGamesFor(userID string) ([]*models.Game, error) {
 	rows, err := m.DB.Query(`SELECT id, name FROM games WHERE id NOT IN (SELECT game_id FROM user_games WHERE user_id = $1)`, userID)
 	if err != nil {
