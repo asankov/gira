@@ -22,11 +22,12 @@ var (
 
 // TemplateData is the struct that holds all the data that can be passed to the template renderer to render
 type TemplateData struct {
-	Game      *models.Game
-	User      *models.User
-	Games     []*models.Game
-	UserGames []*models.UserGame
-	Statuses  []models.Status
+	Game       *models.Game
+	User       *models.User
+	Games      []*models.Game
+	UserGames  []*models.UserGame
+	Statuses   []models.Status
+	Franchises []*models.Franchise
 
 	Error string
 	Flash string
@@ -51,6 +52,7 @@ type APIClient interface {
 	ChangeGameProgress(gameID, token string, progress *models.UserGameProgress) error
 	GetUserGames(token string) (map[models.Status][]*models.UserGame, error)
 	GetGames(token string, options *client.GetGamesOptions) ([]*models.Game, error)
+	GetFranchises(token string) ([]*models.Franchise, error)
 }
 
 // Server is the struct that holds all the dependencies

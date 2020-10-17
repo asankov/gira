@@ -4,6 +4,14 @@
 <form action="/games" method="POST">
     <label for="name">Name:</label>
     <input type="text" id="name" name="name" required>
+    <label for="franchise">Franchise:</label>
+    <select name="franchiseId" id="franchise">
+        <option value="" selected disabled>---</option>
+        {{range .Franchises}}
+        <option value="{{.ID}}">{{.Name}}</option>
+        {{end}}
+    </select>
+    <br>
     <input type="submit" value="Create">
 </form>
 {{end}}

@@ -34,6 +34,13 @@ type UserGamesModel interface {
 	DeleteUserGame(userGameID string) error
 }
 
+// FranchiseModel is the interface to interact with the Franchise provider (DB, service, etc.)
+
+type FranchiseModel interface {
+	Insert(franchise *models.Franchise) (*models.Franchise, error)
+	All() ([]*models.Franchise, error)
+}
+
 // Authenticator is the interface to interact with the Authenticator (DB, OIDC provider, etc.)
 type Authenticator interface {
 	DecodeToken(token string) (*models.User, error)
@@ -49,6 +56,7 @@ type Server struct {
 	GameModel
 	UserModel
 	UserGamesModel
+	FranchiseModel
 }
 
 // Options is the struct used to construct a server
@@ -59,6 +67,7 @@ type Options struct {
 	GameModel
 	UserModel
 	UserGamesModel
+	FranchiseModel
 }
 
 // New returns a new Server, based on opts.
@@ -72,6 +81,7 @@ func New(opts *Options) (*Server, error) {
 		GameModel:      opts.GameModel,
 		UserModel:      opts.UserModel,
 		UserGamesModel: opts.UserGamesModel,
+		FranchiseModel: opts.FranchiseModel,
 	}, nil
 }
 

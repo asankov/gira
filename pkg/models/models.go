@@ -3,8 +3,10 @@ package models
 // Game is the representation of a game
 // in the database.
 type Game struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Franchise   string `json:"franchise"`
+	FranshiseID string `json:"franchiseId"`
 }
 
 type GamesResponse struct {
@@ -91,4 +93,13 @@ type ErrorResponse struct {
 type ChangeGameStatusRequest struct {
 	Status   Status            `json:"status,omitempty"`
 	Progress *UserGameProgress `json:"progress,omitempty"`
+}
+
+type Franchise struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type FranchisesResponse struct {
+	Franchises []*Franchise `json:"franchises"`
 }

@@ -26,7 +26,19 @@ func (m *UserGamesModel) DeleteUserGame(userGameID string) error {
 }
 
 func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error) {
-	rows, err := m.DB.Query(`SELECT ug.id, g.id AS user_game_id, g.name, ug.status, ug.current_progress, ug.final_progress FROM USER_GAMES ug JOIN GAMES g ON ug.game_id = g.id where user_id = $1`, userID)
+	rows, err := m.DB.Query(`
+		SELECT
+			ug.id,
+			g.id AS user_game_id,
+			g.name,
+			ug.status,
+			ug.current_progress,
+			ug.final_progress,
+			f.name
+		FROM USER_GAMES ug
+			JOIN GAMES g ON ug.game_id = g.id
+			LEFT JOIN FRANCHISES f ON f.id = g.franchise_id
+		WHERE user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +51,11 @@ func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error)
 			Progress: &models.UserGameProgress{},
 		}
 
-		if err = rows.Scan(&userGame.ID, &userGame.Game.ID, &userGame.Game.Name, &userGame.Status, &userGame.Progress.Current, &userGame.Progress.Final); err != nil {
+		var fName sql.NullString
+		if err = rows.Scan(&userGame.ID, &userGame.Game.ID, &userGame.Game.Name, &userGame.Status, &userGame.Progress.Current, &userGame.Progress.Final, &fName); err != nil {
 			return nil, fmt.Errorf("error while reading games from the database: %w", err)
 		}
+		userGame.Game.Franchise = fName.String
 
 		userGames = append(userGames, &userGame)
 	}
@@ -91,7 +105,7 @@ func (m *UserGamesModel) ChangeGameProgress(userID, userGameID string, progress 
 }
 
 func (m *UserGamesModel) GetAvailableGamesFor(userID string) ([]*models.Game, error) {
-	rows, err := m.DB.Query(`SELECT id, name FROM games WHERE id NOT IN (SELECT game_id FROM user_games WHERE user_id = $1)`, userID)
+	rows, err := m.DB.Query(`SELECT g.id, g.name, f.name AS franchise_name FROM games g LEFT JOIN FRANCHISES f ON f.id = g.franchise_id WHERE g.id NOT IN (SELECT game_id FROM user_games WHERE user_id = $1)`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -101,9 +115,11 @@ func (m *UserGamesModel) GetAvailableGamesFor(userID string) ([]*models.Game, er
 	for rows.Next() {
 		var game = models.Game{}
 
-		if err = rows.Scan(&game.ID, &game.Name); err != nil {
+		var fName sql.NullString
+		if err = rows.Scan(&game.ID, &game.Name, &fName); err != nil {
 			return nil, fmt.Errorf("error while reading games from the database: %w", err)
 		}
+		game.Franchise = fName.String
 
 		games = append(games, &game)
 	}

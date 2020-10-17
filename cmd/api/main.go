@@ -52,6 +52,7 @@ func run() error {
 		GameModel:      &postgres.GameModel{DB: db},
 		UserModel:      &postgres.UserModel{DB: db},
 		UserGamesModel: &postgres.UserGamesModel{DB: db},
+		FranchiseModel: &postgres.FranchiseModel{DB: db},
 		Authenticator:  auth.NewAutheniticator(*secret),
 	}
 
