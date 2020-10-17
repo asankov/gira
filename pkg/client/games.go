@@ -79,12 +79,6 @@ func (c *Client) GetGames(token string, options *GetGamesOptions) ([]*models.Gam
 	return games.Games, nil
 }
 
-// GetGameByID returns the game with the given ID.
-func (c *Client) GetGameByID(id string) (*models.Game, error) {
-	return nil, nil
-
-}
-
 // CreateGame creates a new game from the passed model.
 func (c *Client) CreateGame(game *models.Game, token string) (*models.Game, error) {
 	body, err := json.Marshal(game)
