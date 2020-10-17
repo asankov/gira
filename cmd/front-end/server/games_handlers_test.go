@@ -2,6 +2,7 @@ package server_test
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -435,6 +436,101 @@ func TestGamesChangeStatusPostError(t *testing.T) {
 
 			w := httptest.NewRecorder()
 			r := testCase.request()
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
+			srv.ServeHTTP(w, r)
+
+			assert.StatusCode(t, w, http.StatusBadRequest)
+		})
+	}
+}
+
+func TestGamesChangeProgress(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		ChangeGameProgress(gomock.Eq(game.ID), gomock.Eq(token), gomock.Eq(&models.UserGameProgress{
+			Current: 10,
+			Final:   100,
+		})).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+
+	form := url.Values{}
+	form.Add("game", game.ID)
+	form.Add("currentProgress", fmt.Sprintf("%d", 10))
+	form.Add("finalProgress", fmt.Sprintf("%d", 100))
+	r := httptest.NewRequest(http.MethodPost, "/games/progress", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	assert.Redirect(t, w, "/games")
+}
+
+func TestGamesChangeProgressPostError(t *testing.T) {
+	testCases := []struct {
+		Name    string
+		Current string
+		Final   string
+		GameID  string
+	}{
+		{
+			Name:    "Game is missing",
+			Current: "10",
+			Final:   "100",
+		},
+		{
+			Name:    "Current is missing",
+			Current: "",
+			Final:   "100",
+			GameID:  "1",
+		},
+		{
+			Name:    "Final is missing",
+			Current: "10",
+			Final:   "",
+			GameID:  "1",
+		},
+		{
+			Name:    "Current is not a valid int",
+			Current: "invalid",
+			Final:   "100",
+			GameID:  "1",
+		},
+		{
+			Name:    "Final is not a valid int",
+			Current: "10",
+			Final:   "invalid",
+			GameID:  "1",
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			srv := newServer(nil, nil)
+
+			w := httptest.NewRecorder()
+
+			form := url.Values{}
+			form.Add("game", testCase.GameID)
+			form.Add("currentProgress", testCase.Current)
+			form.Add("finalProgress", testCase.Final)
+			r := httptest.NewRequest(http.MethodPost, "/games/progress", strings.NewReader(form.Encode()))
+			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 			r.AddCookie(&http.Cookie{
 				Name:  "token",
 				Value: token,
