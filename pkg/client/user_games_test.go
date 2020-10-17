@@ -188,6 +188,23 @@ func TestChangeGameStatusHTTPError(t *testing.T) {
 	}
 }
 
+func TestChangeGameProgress(t *testing.T) {
+	ts := fixtures.NewTestServer(t).
+		Path(fmt.Sprintf("/users/games/%s", game.ID)).
+		Method(http.MethodPatch).
+		Token(token).
+		Build()
+	defer ts.Close()
+
+	cl := newClient(t, ts.URL)
+
+	err := cl.ChangeGameProgress(game.ID, token, &models.UserGameProgress{
+		Current: 10,
+		Final:   100,
+	})
+	assert.NoError(t, err)
+}
+
 func TestDeleteGame(t *testing.T) {
 	ts := fixtures.NewTestServer(t).
 		Path(fmt.Sprintf("/users/games/%s", game.ID)).
