@@ -93,6 +93,16 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 		}
 
 		if req.Progress != nil {
+			if req.Status == "" {
+				if req.Progress.Current == req.Progress.Final {
+					_ = s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, models.StatusDone)
+				} else if req.Progress.Current > 0 {
+					_ = s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, models.StatusInProgress)
+				} else if req.Progress.Current == 0 {
+					_ = s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, models.StatusTODO)
+				}
+			}
+
 			if err := s.UserGamesModel.ChangeGameProgress(user.ID, userGameID, req.Progress); err != nil {
 				s.Log.Errorf("Error while changing game progress: %v", err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
