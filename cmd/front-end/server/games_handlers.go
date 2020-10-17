@@ -29,7 +29,10 @@ func (s *Server) handleGamesAdd() http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		s.render(w, r, TemplateData{Games: games}, addGamePage)
+
+		s.render(w, r, TemplateData{
+			Games: games,
+		}, addGamePage)
 	}
 }
 
@@ -174,7 +177,17 @@ func mapToGames(userGames map[models.Status][]*models.UserGame) []*models.UserGa
 
 func (s *Server) handleGameCreateView() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, emptyTemplateData, createGamePage)
+		token := getToken(r)
+
+		franchises, err := s.Client.GetFranchises(token)
+		if err != nil {
+			s.Log.Warnf("Error while fetching franchises: %w", err)
+			franchises = []*models.Franchise{}
+		}
+
+		s.render(w, r, TemplateData{
+			Franchises: franchises,
+		}, createGamePage)
 	}
 }
 
@@ -191,9 +204,11 @@ func (s *Server) handleGameCreate() http.HandlerFunc {
 			return
 		}
 
+		franchiseID := r.PostForm.Get("franchiseId")
+
 		token := getToken(r)
 
-		if _, err := s.Client.CreateGame(&models.Game{Name: name}, token); err != nil {
+		if _, err := s.Client.CreateGame(&models.Game{Name: name, FranshiseID: franchiseID}, token); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

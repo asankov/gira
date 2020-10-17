@@ -29,7 +29,7 @@
     {{range $userGame := .UserGames}}
     <tr>
         <td>{{.ID}}</td>
-        <td>{{.Game.Name}}</td>
+        <td>{{.Game.Name}} {{if .Game.Franchise}} ({{.Game.Franchise}}) {{end}}</td>
         <td>
             <form action="/games/status" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">

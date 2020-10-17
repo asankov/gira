@@ -11,9 +11,9 @@ import (
 
 var (
 	// ErrNameAlreadyExists is the error that is returned, when a game with that name already exists in the database
-	ErrNameAlreadyExists = errors.New("game with that name already exists in the database")
+	ErrNameAlreadyExists = errors.New("model with that name already exists in the database")
 	// ErrNoRecord is returned when a game with that criteria does not exist in the database
-	ErrNoRecord = errors.New("such game does not exist in the database")
+	ErrNoRecord = errors.New("such model does not exist in the database")
 )
 
 // GameModel wraps an sql.DB connection pool.
@@ -25,7 +25,14 @@ type GameModel struct {
 // It returns the ID of the created game, or error if such occurred.
 // If a game with the same name already exists, an ErrNameAlreadyExists is returned
 func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
-	if _, err := m.DB.Exec(`INSERT INTO GAMES (name) VALUES ($1)`, game.Name); err != nil {
+	var err error
+	if game.FranshiseID == "" {
+		_, err = m.DB.Exec(`INSERT INTO GAMES (name) VALUES ($1)`, game.Name)
+	} else {
+		_, err = m.DB.Exec(`INSERT INTO GAMES (name, franchise_id) VALUES ($1, $2)`, game.Name, game.FranshiseID)
+	}
+
+	if err != nil {
 		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "games_name_key"`) {
 			return nil, ErrNameAlreadyExists
 		}
@@ -33,9 +40,11 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 	}
 
 	var g models.Game
-	if err := m.DB.QueryRow(`SELECT * FROM GAMES G WHERE G.NAME = $1`, game.Name).Scan(&g.ID, &g.Name); err != nil {
+	var fID sql.NullString
+	if err := m.DB.QueryRow(`SELECT G.ID, G.NAME, G.FRANCHISE_ID FROM GAMES G WHERE G.NAME = $1`, game.Name).Scan(&g.ID, &g.Name, &fID); err != nil {
 		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
 	}
+	g.FranshiseID = fID.String
 
 	return &g, nil
 }
@@ -45,7 +54,7 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 func (m *GameModel) Get(id string) (*models.Game, error) {
 	var g models.Game
 
-	if err := m.DB.QueryRow(`SELECT id, name FROM GAMES g WHERE g.id = $1`, id).Scan(&g.ID, &g.Name); err != nil {
+	if err := m.DB.QueryRow(`SELECT g.id, g.name, g.franchise_id, f.name FROM GAMES g WHERE g.id = $1 JOIN FRANCHISES f ON f.id = g.franchise_id`, id).Scan(&g.ID, &g.Name, &g.FranshiseID, &g.Franchise); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNoRecord
 		}
@@ -57,7 +66,7 @@ func (m *GameModel) Get(id string) (*models.Game, error) {
 
 // All fetches all games from the database and returns them, or an error if such occurred.
 func (m *GameModel) All() ([]*models.Game, error) {
-	rows, err := m.DB.Query(`SELECT id, name FROM GAMES`)
+	rows, err := m.DB.Query(`SELECT g.id, g.name, g.franchise_id, f.name AS frachise_name FROM GAMES g LEFT JOIN FRANCHISES f ON f.id = g.franchise_id`)
 	if err != nil {
 		return nil, fmt.Errorf("error while fetching games from the database: %w", err)
 	}
@@ -67,9 +76,12 @@ func (m *GameModel) All() ([]*models.Game, error) {
 	for rows.Next() {
 		var game models.Game
 
-		if err = rows.Scan(&game.ID, &game.Name); err != nil {
+		var fID, fName sql.NullString
+		if err = rows.Scan(&game.ID, &game.Name, &fID, &fName); err != nil {
 			return nil, fmt.Errorf("error while reading games from the database: %w", err)
 		}
+		game.Franchise = fName.String
+		game.FranshiseID = fID.String
 
 		games = append(games, &game)
 	}
