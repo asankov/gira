@@ -83,18 +83,15 @@ func (c *Client) GetGames(token string, options *GetGamesOptions) ([]*models.Gam
 func (c *Client) CreateGame(game *models.Game, token string) (*models.Game, error) {
 	body, err := json.Marshal(game)
 	if err != nil {
-		fmt.Println(err)
 		return nil, ErrCreatingGame
 	}
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/games", c.addr), bytes.NewBuffer(body))
 	if err != nil {
-		fmt.Println(err)
 		return nil, fmt.Errorf("error while building HTTP request")
 	}
 	req.Header.Add(models.XAuthToken, token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		return nil, ErrCreatingGame
 	}
 

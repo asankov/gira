@@ -181,12 +181,19 @@ func (s *Server) handleGameCreateView() http.HandlerFunc {
 
 		franchises, err := s.Client.GetFranchises(token)
 		if err != nil {
-			s.Log.Warnf("Error while fetching franchises: %w", err)
+			s.Log.Warnf("Error while fetching franchises: %v", err)
 			franchises = []*models.Franchise{}
 		}
 
+		selectedFranchiseIDquery, _ := r.URL.Query()["selectedFranchise"]
+		var selectedFranchiseID string
+		if len(selectedFranchiseIDquery) > 0 {
+			selectedFranchiseID = selectedFranchiseIDquery[0]
+		}
+
 		s.render(w, r, TemplateData{
-			Franchises: franchises,
+			Franchises:          franchises,
+			SelectedFranchiseID: selectedFranchiseID,
 		}, createGamePage)
 	}
 }

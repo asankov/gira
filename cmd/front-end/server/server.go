@@ -29,8 +29,9 @@ type TemplateData struct {
 	Statuses   []models.Status
 	Franchises []*models.Franchise
 
-	Error string
-	Flash string
+	SelectedFranchiseID string
+	Error               string
+	Flash               string
 }
 
 // Renderer is the interface that will be used to interact with the part of the program
@@ -53,6 +54,7 @@ type APIClient interface {
 	GetUserGames(token string) (map[models.Status][]*models.UserGame, error)
 	GetGames(token string, options *client.GetGamesOptions) ([]*models.Game, error)
 	GetFranchises(token string) ([]*models.Franchise, error)
+	CreateFranchise(req *client.CreateFranchiseRequest, token string) (*client.CreateFranchiseResponse, error)
 }
 
 // Server is the struct that holds all the dependencies
