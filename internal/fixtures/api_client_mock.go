@@ -62,6 +62,21 @@ func (mr *APIClientMockMockRecorder) ChangeGameStatus(arg0, arg1, arg2 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeGameStatus", reflect.TypeOf((*APIClientMock)(nil).ChangeGameStatus), arg0, arg1, arg2)
 }
 
+// CreateFranchise mocks base method
+func (m *APIClientMock) CreateFranchise(arg0 *client.CreateFranchiseRequest, arg1 string) (*client.CreateFranchiseResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFranchise", arg0, arg1)
+	ret0, _ := ret[0].(*client.CreateFranchiseResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFranchise indicates an expected call of CreateFranchise
+func (mr *APIClientMockMockRecorder) CreateFranchise(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFranchise", reflect.TypeOf((*APIClientMock)(nil).CreateFranchise), arg0, arg1)
+}
+
 // CreateGame mocks base method
 func (m *APIClientMock) CreateGame(arg0 *models.Game, arg1 string) (*models.Game, error) {
 	m.ctrl.T.Helper()
@@ -104,6 +119,21 @@ func (m *APIClientMock) DeleteUserGame(arg0, arg1 string) error {
 func (mr *APIClientMockMockRecorder) DeleteUserGame(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserGame", reflect.TypeOf((*APIClientMock)(nil).DeleteUserGame), arg0, arg1)
+}
+
+// GetFranchises mocks base method
+func (m *APIClientMock) GetFranchises(arg0 string) ([]*models.Franchise, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFranchises", arg0)
+	ret0, _ := ret[0].([]*models.Franchise)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFranchises indicates an expected call of GetFranchises
+func (mr *APIClientMockMockRecorder) GetFranchises(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFranchises", reflect.TypeOf((*APIClientMock)(nil).GetFranchises), arg0)
 }
 
 // GetGames mocks base method
