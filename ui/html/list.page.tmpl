@@ -46,21 +46,26 @@
             </form>
         </td>
         <td>
-            <form action="/games/progress" method="POST">
-                <input type="hidden" name="game" value="{{.ID}}">
+            <div>
+                <form action="/games/progress" method="POST">
+                    <input type="hidden" name="game" value="{{.ID}}">
 
-                <input type="text" id="input-current-progress-{{.ID}}" name="currentProgress"
-                    class="hidden progress-input" value="{{.Progress.Current}}">
-                <span id="current-progress-{{.ID}}" class="progress">{{.Progress.Current}}</span>
-                /
-                <input type="text" id="input-final-progress-{{.ID}}" name="finalProgress" class="hidden progress-input"
-                    value="{{.Progress.Final}}">
-                <span id="final-progress-{{.ID}}" class="progress">{{.Progress.Final}} </span>
+                    <input type="text" id="input-current-progress-{{.ID}}" name="currentProgress"
+                        class="hidden progress-input" value="{{.Progress.Current}}">
+                    <span id="current-progress-{{.ID}}" class="progress">{{.Progress.Current}}</span>
+                    /
+                    <input type="text" id="input-final-progress-{{.ID}}" name="finalProgress"
+                        class="hidden progress-input" value="{{.Progress.Final}}">
+                    <span id="final-progress-{{.ID}}" class="progress">{{.Progress.Final}} </span>
 
-                <span id="edit-progress-button-{{.ID}}" class="button edit-button edit-progress-button"
-                    data-game-id="{{.ID}}">✎</span>
-                <button type="submit" id="save-progress-button-{{.ID}}" class="button save-button hidden">💾</span>
-            </form>
+                    <span id="edit-progress-button-{{.ID}}" class="button edit-button edit-progress-button"
+                        data-game-id="{{.ID}}">✎</span>
+                    <button type="submit" id="save-progress-button-{{.ID}}" class="button save-button hidden">💾</span>
+                </form>
+            </div>
+            <div>
+                <progress value="{{.Progress.Current}}" max="{{.Progress.Final}}"></progress>
+            </div>
         </td>
         <td>
             <form action="/games/delete" method="POST">
