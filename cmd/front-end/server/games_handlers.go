@@ -185,9 +185,9 @@ func (s *Server) handleGameCreateView() http.HandlerFunc {
 			franchises = []*models.Franchise{}
 		}
 
-		selectedFranchiseIDquery, _ := r.URL.Query()["selectedFranchise"]
+		selectedFranchiseIDquery, ok := r.URL.Query()["selectedFranchise"]
 		var selectedFranchiseID string
-		if len(selectedFranchiseIDquery) > 0 {
+		if !ok || len(selectedFranchiseIDquery) > 0 {
 			selectedFranchiseID = selectedFranchiseIDquery[0]
 		}
 
