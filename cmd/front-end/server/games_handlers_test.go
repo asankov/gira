@@ -85,30 +85,61 @@ func TestHandleHomeRendererError(t *testing.T) {
 }
 
 func TestHandleCreateView(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	testCases := []struct {
+		Name            string
+		Franchises      []*models.Franchise
+		FranchisesError error
+	}{
+		{
+			Name:            "GetFranchises returns empty array of franchises and no error",
+			Franchises:      []*models.Franchise{},
+			FranchisesError: nil,
+		},
+		{
+			Name: "GetFranchises returns array of franchises and no error",
+			Franchises: []*models.Franchise{
+				{
+					ID:   "1",
+					Name: "Batman",
+				},
+			},
+			FranchisesError: nil,
+		},
+		{
+			Name:            "GetFranchises returns error",
+			Franchises:      nil,
+			FranchisesError: errors.New("GetFranchises error"),
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	rendererMock := fixtures.NewRendererMock(ctrl)
-	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+			rendererMock := fixtures.NewRendererMock(ctrl)
+			apiClientMock := fixtures.NewAPIClientMock(ctrl)
 
-	srv := newServer(apiClientMock, rendererMock)
+			srv := newServer(apiClientMock, rendererMock)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodGet, "/games/new", nil)
-	r.AddCookie(&http.Cookie{
-		Name:  "token",
-		Value: token,
-	})
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/games/new", nil)
+			r.AddCookie(&http.Cookie{
+				Name:  "token",
+				Value: token,
+			})
 
-	apiClientMock.EXPECT().GetUser(gomock.Eq(token)).Return(user, nil)
+			apiClientMock.EXPECT().GetUser(gomock.Eq(token)).Return(user, nil)
+			apiClientMock.EXPECT().GetFranchises(gomock.Eq(token)).Return(testCase.Franchises, testCase.FranchisesError)
 
-	rendererMock.EXPECT().
-		Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
-		Return(nil)
+			rendererMock.EXPECT().
+				Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
+				Return(nil)
 
-	srv.ServeHTTP(w, r)
+			srv.ServeHTTP(w, r)
 
-	assert.StatusOK(t, w)
+			assert.StatusOK(t, w)
+		})
+	}
 }
 
 func TestGamesAdd(t *testing.T) {

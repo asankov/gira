@@ -187,7 +187,7 @@ func (s *Server) handleGameCreateView() http.HandlerFunc {
 
 		selectedFranchiseIDquery, ok := r.URL.Query()["selectedFranchise"]
 		var selectedFranchiseID string
-		if !ok || len(selectedFranchiseIDquery) > 0 {
+		if ok && len(selectedFranchiseIDquery) > 0 {
 			selectedFranchiseID = selectedFranchiseIDquery[0]
 		}
 
