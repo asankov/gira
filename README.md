@@ -11,10 +11,8 @@ $ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=gira
 ```
 Initialize the database:
 ```
-$ docker exec -it postgres sh
-# psql -U gira
-## \c gira;
-## <content of init.sql>
+$ go get -u github.com/pressly/goose/cmd/goose
+$ goose -dir sql/ postgres 'host=localhost port=5432 user=gira dbname=gira password=password sslmode=disable' up
 ```
 
 Now, run the front-end and api services:
