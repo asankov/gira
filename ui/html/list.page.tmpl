@@ -16,6 +16,10 @@
     .button {
         cursor: pointer;
     }
+
+    .franchise {
+        font-size: 14px;
+    }
 </style>
 
 <table>
@@ -29,7 +33,16 @@
     {{range $userGame := .UserGames}}
     <tr>
         <td>{{.ID}}</td>
-        <td>{{.Game.Name}} {{if .Game.Franchise}} ({{.Game.Franchise}}) {{end}}</td>
+        <td>
+            <div>
+                {{.Game.Name}}
+            </div>
+            {{if .Game.Franchise}}
+            <div class="franchise">
+                Franchise: {{.Game.Franchise}}
+            </div>
+            {{end}}
+        </td>
         <td>
             <form action="/games/status" method="POST">
                 <input type="hidden" name="game" value="{{.ID}}">
