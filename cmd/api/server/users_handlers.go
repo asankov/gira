@@ -37,6 +37,9 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			return
 		}
 
+		if user.Username == "" {
+			user.Username = user.Email
+		}
 		if err := validateUser(&user); err != nil {
 			s.respondError(w, r, err, http.StatusBadRequest)
 			return
