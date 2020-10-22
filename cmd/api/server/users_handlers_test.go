@@ -40,31 +40,58 @@ func newServer(t *testing.T, opts *Options) *Server {
 }
 
 func TestUserCreate(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	testCases := []struct {
+		Name          string
+		UserInRequest models.User
+		ExpectedUser  models.User
+	}{
+		{
+			Name:          "Pass username, email and password",
+			UserInRequest: expectedUser,
+			ExpectedUser:  expectedUser,
+		},
+		{
+			Name: "Pass enail and password, username gets filled automatically",
+			UserInRequest: models.User{
+				Email:    "test@mail.com",
+				Password: "pass",
+			},
+			ExpectedUser: models.User{
+				Username: "test@mail.com",
+				Email:    "test@mail.com",
+				Password: "pass",
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	userModel := fixtures.NewUserModelMock(ctrl)
-	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := newServer(t, &Options{
-		UserModel:     userModel,
-		Authenticator: authenticator,
-	})
+			userModel := fixtures.NewUserModelMock(ctrl)
+			authenticator := fixtures.NewAuthenticatorMock(ctrl)
+			srv := newServer(t, &Options{
+				UserModel:     userModel,
+				Authenticator: authenticator,
+			})
 
-	userModel.EXPECT().
-		Insert(&expectedUser).
-		Return(&expectedUser, nil)
+			userModel.EXPECT().
+				Insert(&testCase.ExpectedUser).
+				Return(&testCase.ExpectedUser, nil)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, expectedUser))
-	srv.ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/users", fixtures.Marshal(t, testCase.UserInRequest))
+			srv.ServeHTTP(w, r)
 
-	gassert.StatusOK(t, w)
+			gassert.StatusOK(t, w)
 
-	var user models.User
-	fixtures.Decode(t, w.Body, &user)
+			var user models.User
+			fixtures.Decode(t, w.Body, &user)
 
-	assert.Equal(t, user.Email, expectedUser.Email)
-	assert.Equal(t, user.Username, expectedUser.Username)
+			assert.Equal(t, user.Email, testCase.ExpectedUser.Email)
+			assert.Equal(t, user.Username, testCase.ExpectedUser.Username)
+		})
+	}
 }
 
 func TestUserCreateValidationError(t *testing.T) {
@@ -72,13 +99,6 @@ func TestUserCreateValidationError(t *testing.T) {
 		name string
 		user *models.User
 	}{
-		{
-			name: "No username",
-			user: &models.User{
-				Email:    "test@test.com",
-				Password: "t3$t",
-			},
-		},
 		{
 			name: "No email",
 			user: &models.User{
