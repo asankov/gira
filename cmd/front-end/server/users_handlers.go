@@ -71,10 +71,13 @@ func (s *Server) handleUserSignup() http.HandlerFunc {
 			return
 		}
 
-		username, email, password := r.PostForm.Get("username"), r.PostForm.Get("email"), r.PostForm.Get("password")
+		email, password := r.PostForm.Get("email"), r.PostForm.Get("password")
+		if email == "" || password == "" {
+			http.Error(w, "email and password are required", http.StatusBadRequest)
+			return
+		}
 
 		if _, err := s.Client.CreateUser(&models.User{
-			Username: username,
 			Email:    email,
 			Password: password,
 		}); err != nil {
