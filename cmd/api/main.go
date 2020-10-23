@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/asankov/gira/cmd/api/server"
 	"github.com/sirupsen/logrus"
@@ -33,12 +34,6 @@ func run() error {
 	logL := flag.String("log_level", "info", "the level of logging")
 	flag.Parse()
 
-	db, err := openDB(*dbHost, *dbPort, *dbUser, *dbName, *dbPass)
-	if err != nil {
-		return fmt.Errorf("error while opening DB: %w", err)
-	}
-	defer db.Close()
-
 	log := logrus.New()
 	logLevel, err := logrus.ParseLevel(*logL)
 	if err != nil {
@@ -46,6 +41,12 @@ func run() error {
 	}
 	log.SetLevel(logLevel)
 	logrus.SetLevel(logLevel)
+
+	db, err := openDB(*dbHost, *dbPort, *dbUser, *dbName, *dbPass)
+	if err != nil {
+		return fmt.Errorf("error while opening DB: %w", err)
+	}
+	defer db.Close()
 
 	s := &server.Server{
 		Log:            log,
@@ -64,18 +65,33 @@ func run() error {
 	return nil
 }
 
-func openDB(host string, port int, user string, dbName string, dbPass string) (*sql.DB, error) {
+func openDB(host string, port int, user string, dbName string, dbPass string) (db *sql.DB, err error) {
 	connString := fmt.Sprintf("host=%s port=%d user=%s dbname=%s", host, port, user, dbName)
 	if dbPass != "" {
 		connString += fmt.Sprintf(" password=%s", dbPass)
 	}
 	connString += " sslmode=disable"
-	fmt.Println("connString")
-	fmt.Println(connString)
+	logrus.Debugf("DB connection string: %s", connString)
+
+	pings := 0
+	for db, err = openDBWithConnString(connString); err != nil; db, err = openDBWithConnString(connString) {
+		pings++
+		time.Sleep(time.Duration(pings) * time.Second)
+		logrus.Infof("retrying DB connections...%d\n", pings)
+		if pings > 10 {
+			return nil, err
+		}
+	}
+
+	return db, nil
+}
+
+func openDBWithConnString(connString string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", connString)
 	if err != nil {
 		return nil, fmt.Errorf("error while opening connection to db: %w", err)
 	}
+
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("error while pinging db: %w", err)
 	}
