@@ -5,23 +5,16 @@
 Gira is like Jira, but for tracking your video games progress
 
 ### How to run
-First, run a PostgreSQL database:
+Via Docker compose:
 ```
-$ docker run --name postgres -e POSTGRES_PASSWORD=password -e POSTGRES_USER=gira -p 5432:5432 -d postgres
+ $ docker-compose -f docker/docker-compose.yml up
 ```
-Initialize the database:
+Then, initialize the database:
 ```
 $ go get -u github.com/pressly/goose/cmd/goose
 $ goose -dir sql/ postgres 'host=localhost port=5432 user=gira dbname=gira password=password sslmode=disable' up
 ```
-
-Now, run the front-end and api services:
-```
-$ go run cmd/front-end/main.go
-$ go run cmd/api/main.go -db_pass password
-```
-
-TODO: simplify this via Docker compose
+Now you should be able to open the browser on [localhost:4000](localhost:4000) and see the UI.
 
 ### License
 This work is licensed under MIT license. For more info see [LICENSE.md](LICENSE.md)
