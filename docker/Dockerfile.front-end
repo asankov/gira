@@ -11,6 +11,7 @@ RUN go build -o front-end ./cmd/front-end
 FROM alpine:latest
 
 COPY --from=builder /app/front-end .
+COPY --from=builder /app/ui ./ui
 
 ENV PORT ""
 ENV BACK_END_ADDR ""
