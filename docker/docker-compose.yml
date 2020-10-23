@@ -1,9 +1,53 @@
 version: '3'
+
+networks:
+  gira-network:
+    driver: bridge
+
 services:
+  front-end:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.front-end
+    ports:
+      - "4000:4000"
+    expose:
+      - "4000"
+    networks:
+      - gira-network
+    environment:
+      - PORT=4000
+      - BACK_END_ADDR=http://api:4001
+      - SESSION_SECRET="sessi0nsecR3t"
+  api:
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.api
+    depends_on:
+      - postgres
+    ports:
+      - "4001:4001"
+    expose:
+      - "4001"
+    networks:
+      - gira-network
+    environment:
+      - PORT=4001
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=gira
+      - DB_PASS=password
+      - DB_NAME=gira
+      - SESSION_SECRET="sessi0nsecRE7"
   postgres:
     image: postgres:latest
     ports:
       - '5432:5432'
     environment:
-      - POSTGRES_USER=antonsankov
+      - POSTGRES_USER=gira
       - POSTGRES_PASSWORD=password
+    expose:
+      - "5432"
+    restart: on-failure
+    networks:
+      - gira-network
