@@ -58,7 +58,7 @@ jobs:
           uses: docker/build-push-action@v1
           with:
             tags: latest
-            registry: docker.pkg.github.com
+            registry: ghcr.io
             tag_with_sha: true
             username: ${{ secrets.GHCR_USERNAME }}
             password: ${{ secrets.GHCR_PASSWORD }}
