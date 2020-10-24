@@ -3,20 +3,14 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
 	"github.com/gorilla/mux"
 )
 
-func (s *Server) handleUsersGamesGet() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := userFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+func (s *Server) handleUsersGamesGet() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 
 		games, err := s.UserGamesModel.GetUserGamesGrouped(user.ID)
 		if err != nil {
@@ -31,13 +25,8 @@ func (s *Server) handleUsersGamesGet() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleUsersGamesPost() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := userFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
+func (s *Server) handleUsersGamesPost() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 
 		req := models.UserGameRequest{
 			Progress: &models.UserGameProgress{
@@ -62,13 +51,8 @@ func (s *Server) handleUsersGamesPost() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := userFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
+func (s *Server) handleUsersGamesPatch() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 
 		args := mux.Vars(r)
 		userGameID := args["id"]
@@ -105,13 +89,8 @@ func (s *Server) handleUsersGamesPatch() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleUsersGamesDelete() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := userFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
+func (s *Server) handleUsersGamesDelete() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 
 		args := mux.Vars(r)
 		userGameID := args["id"]
@@ -136,30 +115,4 @@ func (s *Server) handleUsersGamesDelete() http.HandlerFunc {
 
 		s.respondError(w, r, errors.New(http.StatusText(http.StatusBadRequest)), http.StatusBadRequest)
 	}
-}
-
-func userFromRequest(r *http.Request) (*models.User, error) {
-	usr := r.Context().Value(contextUserKey)
-	if usr == nil {
-		return nil, fmt.Errorf("No user found in request")
-	}
-	user, ok := usr.(*models.User)
-	if !ok {
-		return nil, fmt.Errorf("No user found in request")
-	}
-
-	return user, nil
-}
-
-func tokenFromRequest(r *http.Request) (string, error) {
-	tkn := r.Context().Value(contextTokenKey)
-	if tkn == nil {
-		return "", fmt.Errorf("No token found in request")
-	}
-	token, ok := tkn.(string)
-	if !ok {
-		return "", fmt.Errorf("No token found in request")
-	}
-
-	return token, nil
 }

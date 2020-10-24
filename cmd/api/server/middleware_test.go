@@ -47,7 +47,7 @@ func TestRequireLogin(t *testing.T) {
 	r.Header.Set(models.XAuthToken, token)
 
 	nextHandlerCalled := false
-	h := srv.requireLogin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	h := srv.requireLogin(authorizedHandler(func(w http.ResponseWriter, r *http.Request, u *models.User, token string) {
 		nextHandlerCalled = true
 	}))
 
@@ -104,7 +104,7 @@ func TestRequireLoginError(t *testing.T) {
 			testCase.setup(authenticator, userModel, r)
 
 			nextHandlerCalled := false
-			h := srv.requireLogin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			h := srv.requireLogin(authorizedHandler(func(w http.ResponseWriter, r *http.Request, u *models.User, token string) {
 				nextHandlerCalled = true
 			}))
 
