@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-func (s *Server) handleFranchisesGet() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleFranchisesGet() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 		franchises, err := s.FranchiseModel.All()
 
 		if err != nil {
@@ -25,8 +25,8 @@ func (s *Server) handleFranchisesGet() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleFranchisesCreate() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleFranchisesCreate() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 		var franchise models.Franchise
 
 		if err := json.NewDecoder(r.Body).Decode(&franchise); err != nil {

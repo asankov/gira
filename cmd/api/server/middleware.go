@@ -1,19 +1,14 @@
 package server
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
 )
 
-type contextUserKeyType string
-type contextTokenKeyType string
+type authorizedHandler func(http.ResponseWriter, *http.Request, *models.User, string)
 
-var contextUserKey contextUserKeyType
-var contextTokenKey contextTokenKeyType
-
-func (s *Server) requireLogin(next http.Handler) http.Handler {
+func (s *Server) requireLogin(next authorizedHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get(models.XAuthToken)
 		if token == "" {
@@ -35,9 +30,6 @@ func (s *Server) requireLogin(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), contextUserKey, user)
-		ctx = context.WithValue(ctx, contextTokenKey, token)
-
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next(w, r, user, token)
 	})
 }

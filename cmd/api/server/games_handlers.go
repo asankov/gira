@@ -20,8 +20,8 @@ var (
 	errIDNotAllowed = errors.New("'id' is not allowed parameter")
 )
 
-func (s *Server) handleGamesCreate() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGamesCreate() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 		var game models.Game
 
 		if err := json.NewDecoder(r.Body).Decode(&game); err != nil {
@@ -49,15 +49,12 @@ func (s *Server) handleGamesCreate() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleGamesGet() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := userFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		var games []*models.Game
+func (s *Server) handleGamesGet() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
+		var (
+			games []*models.Game
+			err   error
+		)
 		if _, ok := r.URL.Query()["excludeAssigned"]; ok {
 			games, err = s.UserGamesModel.GetAvailableGamesFor(user.ID)
 		} else {
@@ -74,8 +71,8 @@ func (s *Server) handleGamesGet() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleGamesGetByID() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *Server) handleGamesGetByID() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 		args := mux.Vars(r)
 		id := args["id"]
 		if id == "" {

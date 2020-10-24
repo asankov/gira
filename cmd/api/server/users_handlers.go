@@ -155,19 +155,8 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleUserLogout() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := userFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		token, err := tokenFromRequest(r)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+func (s *Server) handleUserLogout() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
 
 		if err := s.UserModel.InvalidateToken(user.ID, token); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
