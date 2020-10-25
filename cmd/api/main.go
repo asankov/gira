@@ -1,11 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/asankov/gira/cmd/api/server"
 	"github.com/sirupsen/logrus"
@@ -31,6 +29,7 @@ func run() error {
 	dbPass := flag.String("db_pass", "", "the password for the database")
 	dbName := flag.String("db_name", "gira", "the name of the database")
 	secret := flag.String("token_string", "9^ahslgndb&ahas2ey*hasdh732rbusd", "secret to be used for encoding and decoding JWT tokens")
+	useSSL := flag.Bool("use_ssl", false, "whether or not to use SSL when connecting to DB")
 	logL := flag.String("log_level", "info", "the level of logging")
 	flag.Parse()
 
@@ -42,7 +41,14 @@ func run() error {
 	log.SetLevel(logLevel)
 	logrus.SetLevel(logLevel)
 
-	db, err := openDB(*dbHost, *dbPort, *dbUser, *dbName, *dbPass)
+	db, err := server.NewDB(&server.DBOptions{
+		Host:   *dbHost,
+		Port:   *dbPort,
+		User:   *dbUser,
+		DBName: *dbName,
+		DBPass: *dbPass,
+		UseSSL: *useSSL,
+	})
 	if err != nil {
 		return fmt.Errorf("error while opening DB: %w", err)
 	}
@@ -63,38 +69,4 @@ func run() error {
 	}
 
 	return nil
-}
-
-func openDB(host string, port int, user string, dbName string, dbPass string) (db *sql.DB, err error) {
-	connString := fmt.Sprintf("host=%s port=%d user=%s dbname=%s", host, port, user, dbName)
-	if dbPass != "" {
-		connString += fmt.Sprintf(" password=%s", dbPass)
-	}
-	connString += " sslmode=disable"
-	logrus.Debugf("DB connection string: %s", connString)
-
-	pings := 0
-	for db, err = openDBWithConnString(connString); err != nil; db, err = openDBWithConnString(connString) {
-		pings++
-		time.Sleep(time.Duration(pings) * time.Second)
-		logrus.Infof("retrying DB connections...%d\n", pings)
-		if pings > 10 {
-			return nil, err
-		}
-	}
-
-	return db, nil
-}
-
-func openDBWithConnString(connString string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", connString)
-	if err != nil {
-		return nil, fmt.Errorf("error while opening connection to db: %w", err)
-	}
-
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error while pinging db: %w", err)
-	}
-
-	return db, nil
 }
