@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 
 	"github.com/asankov/gira/cmd/api/server"
 	"github.com/sirupsen/logrus"
@@ -63,10 +62,9 @@ func run() error {
 		Authenticator:  auth.NewAutheniticator(*secret),
 	}
 
-	logrus.Infoln(fmt.Sprintf("listening on port %d", *port))
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", *port), s); err != nil {
+	if err := s.Start(*port); err != nil {
 		return fmt.Errorf("error while serving: %v", err)
 	}
 
-	return nil
+	return s.Start(*port)
 }

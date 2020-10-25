@@ -144,7 +144,6 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 			return
 		}
 
-		// TODO: persist the token, so we can invalidate it
 		if err := s.UserModel.AssociateTokenWithUser(usr.ID, token); err != nil {
 			s.Log.Errorf("Error while associating token with user %s: %v", usr.ID, err)
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
