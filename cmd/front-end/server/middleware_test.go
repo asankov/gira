@@ -35,11 +35,9 @@ func TestRequireLogin(t *testing.T) {
 	srv := &Server{}
 
 	called := false
-	h := srv.requireLogin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	h := srv.requireLogin(authorizedHandler(func(w http.ResponseWriter, r *http.Request, token string) {
 		called = true
 
-		token, ok := r.Context().Value(contextTokenKey).(string)
-		require.True(t, ok)
 		assert.Equal(t, token, tokenValue)
 	}))
 
@@ -57,7 +55,7 @@ func TestRequireLoginNoUser(t *testing.T) {
 	srv := &Server{}
 
 	called := false
-	h := srv.requireLogin(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	h := srv.requireLogin(authorizedHandler(func(w http.ResponseWriter, r *http.Request, token string) {
 		called = true
 	}))
 

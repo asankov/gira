@@ -8,9 +8,8 @@ import (
 	"github.com/asankov/gira/pkg/client"
 )
 
-func (s *Server) handleFranchisesAddPost() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		token := getToken(r)
+func (s *Server) handleFranchisesAddPost() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, token string) {
 
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
