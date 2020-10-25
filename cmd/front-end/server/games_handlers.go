@@ -11,8 +11,12 @@ import (
 
 func (s *Server) handleHome() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: pass token to resolve #132
-		s.render(w, r, emptyTemplateData, homePage, "")
+		var token string
+		if cookie, err := r.Cookie("token"); err == nil {
+			token = cookie.Value
+		}
+
+		s.render(w, r, emptyTemplateData, homePage, token)
 	}
 }
 
