@@ -64,6 +64,36 @@ func TestHandleHome(t *testing.T) {
 	assert.StatusOK(t, w)
 }
 
+func TestHandleHomeLoggedInUser(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	renderer := fixtures.NewRendererMock(ctrl)
+	apiClient := fixtures.NewAPIClientMock(ctrl)
+
+	srv := newServer(apiClient, renderer)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+
+	apiClient.EXPECT().
+		GetUser(gomock.Eq(token)).
+		Return(user, nil)
+	renderer.EXPECT().
+		Render(gomock.Eq(w), gomock.Any(), gomock.Eq(server.TemplateData{
+			User: user,
+		}), gomock.Any()).
+		Return(nil)
+
+	srv.ServeHTTP(w, r)
+
+	assert.StatusOK(t, w)
+}
+
 func TestHandleHomeRendererError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
