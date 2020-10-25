@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
@@ -35,7 +36,6 @@ type UserGamesModel interface {
 }
 
 // FranchiseModel is the interface to interact with the Franchise provider (DB, service, etc.)
-
 type FranchiseModel interface {
 	Insert(franchise *models.Franchise) (*models.Franchise, error)
 	All() ([]*models.Franchise, error)
@@ -85,6 +85,13 @@ func New(opts *Options) (*Server, error) {
 	}, nil
 }
 
+// ServeHTTP implement the http.Handler inteface
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.routes().ServeHTTP(w, r)
+}
+
+// Start starts the server listenning on the given port
+func (s *Server) Start(port int) error {
+	s.Log.Infoln(fmt.Sprintf("listening on port %d", port))
+	return http.ListenAndServe(fmt.Sprintf(":%d", port), s)
 }
