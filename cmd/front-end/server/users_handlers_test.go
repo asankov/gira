@@ -126,3 +126,86 @@ func TestUserLoginClientError(t *testing.T) {
 
 	gassert.StatusCode(t, w, http.StatusBadRequest)
 }
+
+func TestUserLogout(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		LogoutUser(gomock.Eq(token)).
+		Return(nil)
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/users/logout", nil)
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
+	srv.ServeHTTP(w, r)
+
+	gassert.Redirect(t, w, "/")
+}
+
+func TestUserSignup(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	apiClientMock := fixtures.NewAPIClientMock(ctrl)
+	srv := newServer(apiClientMock, nil)
+
+	apiClientMock.EXPECT().
+		CreateUser(gomock.Eq(&models.User{
+			Email:    email,
+			Password: password,
+		})).
+		Return(nil, nil)
+
+	w := httptest.NewRecorder()
+	form := url.Values{}
+	form.Add("email", email)
+	form.Add("password", password)
+	r := httptest.NewRequest(http.MethodPost, "/users/create", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	srv.ServeHTTP(w, r)
+
+	gassert.Redirect(t, w, "/")
+}
+
+func TestUserSignupNoCredentials(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Email    string
+		Password string
+	}{
+		{
+			Name:     "No email",
+			Password: "pass",
+		},
+		{
+			Name:  "No password",
+			Email: "test@test.com",
+		},
+		{
+			Name: "No email and password",
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+
+			srv := newServer(nil, nil)
+
+			w := httptest.NewRecorder()
+			form := url.Values{}
+			form.Add("email", testCase.Email)
+			form.Add("password", testCase.Password)
+			r := httptest.NewRequest(http.MethodPost, "/users/create", strings.NewReader(form.Encode()))
+			r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+			srv.ServeHTTP(w, r)
+
+			gassert.StatusCode(t, w, http.StatusBadRequest)
+		})
+	}
+}
