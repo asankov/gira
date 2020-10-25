@@ -13,7 +13,6 @@ import (
 func (s *Server) routes() http.Handler {
 	r := mux.NewRouter()
 
-	standartMiddleware := alice.New(middleware.RecoverPanic(s.Log), middleware.LogRequest(s.Log), s.secureHeaders)
 	dynamicMiddleware := alice.New(s.Session.Enable)
 
 	r.HandleFunc("/", s.handleHome()).Methods(http.MethodGet)
@@ -28,7 +27,7 @@ func (s *Server) routes() http.Handler {
 
 	r.Handle("/franchises/add", dynamicMiddleware.Then(s.requireLogin(s.handleFranchisesAddPost()))).Methods(http.MethodPost)
 
-	r.Handle("/users/signup", standartMiddleware.Then(s.handleUserSignupForm())).Methods(http.MethodGet)
+	r.Handle("/users/signup", dynamicMiddleware.Then(s.handleUserSignupForm())).Methods(http.MethodGet)
 	r.Handle("/users/create", dynamicMiddleware.Then(s.handleUserSignup())).Methods(http.MethodPost)
 
 	r.Handle("/users/login", s.handleUserLoginForm()).Methods(http.MethodGet)
@@ -38,5 +37,6 @@ func (s *Server) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static", fileServer))
 
+	standartMiddleware := alice.New(middleware.RecoverPanic(s.Log), middleware.LogRequest(s.Log), s.secureHeaders)
 	return standartMiddleware.Then(r)
 }
