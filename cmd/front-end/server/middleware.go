@@ -1,15 +1,10 @@
 package server
 
 import (
-	"context"
 	"net/http"
 )
 
-type contextTokenKeyType string
-
-var (
-	contextTokenKey contextTokenKeyType
-)
+type authorizedHandler func(http.ResponseWriter, *http.Request, string)
 
 func (s *Server) secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +15,7 @@ func (s *Server) secureHeaders(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) requireLogin(next http.Handler) http.Handler {
+func (s *Server) requireLogin(next authorizedHandler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := r.Cookie("token")
 		if err != nil {
@@ -29,8 +24,6 @@ func (s *Server) requireLogin(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), contextTokenKey, token.Value)
-
-		next.ServeHTTP(w, r.WithContext(ctx))
+		next(w, r, token.Value)
 	})
 }

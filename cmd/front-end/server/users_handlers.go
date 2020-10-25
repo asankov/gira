@@ -9,13 +9,13 @@ import (
 
 func (s *Server) handleUserSignupForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, emptyTemplateData, signupUserPage)
+		s.render(w, r, emptyTemplateData, signupUserPage, "")
 	}
 }
 
 func (s *Server) handleUserLoginForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		s.render(w, r, emptyTemplateData, loginUserPage)
+		s.render(w, r, emptyTemplateData, loginUserPage, "")
 	}
 }
 
@@ -48,10 +48,8 @@ func (s *Server) handleUserLogin() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleUserLogout() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		token := getToken(r)
-
+func (s *Server) handleUserLogout() authorizedHandler {
+	return func(w http.ResponseWriter, r *http.Request, token string) {
 		if err := s.Client.LogoutUser(token); err != nil {
 			// TODO: render error page
 			s.Log.Printf("Error while logging-out user: %v", err)
@@ -83,7 +81,7 @@ func (s *Server) handleUserSignup() http.HandlerFunc {
 		}); err != nil {
 			s.Log.Errorf("Error while creating user: %v %v", err, err == nil)
 			if errResponse, ok := err.(*client.ErrorResponse); ok {
-				s.render(w, r, TemplateData{Error: errResponse.Error()}, signupUserPage)
+				s.render(w, r, TemplateData{Error: errResponse.Error()}, signupUserPage, "")
 				return
 			}
 			http.Error(w, err.Error(), http.StatusBadRequest)
