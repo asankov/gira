@@ -13,4 +13,4 @@ integration_tests:
 	# give the DB time to start
 	sleep 15
 	~/go/bin/goose -dir sql/ postgres 'host=localhost port=21665 user=gira dbname=gira password=password sslmode=disable' up
-	go test cmd/integrationtests/*.go -tags integration_tests
+	go test -v cmd/integrationtests/*.go -tags integration_tests
