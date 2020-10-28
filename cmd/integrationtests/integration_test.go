@@ -3,7 +3,6 @@
 package integrationtests
 
 import (
-	// to register PostreSQL driver
 	"testing"
 	"time"
 
@@ -11,9 +10,11 @@ import (
 	"github.com/asankov/gira/internal/auth"
 	"github.com/asankov/gira/pkg/client"
 	"github.com/asankov/gira/pkg/models/postgres"
-	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+
+	// to register PostgreSQL driver
+	_ "github.com/lib/pq"
 )
 
 func setup(t *testing.T) *client.Client {
