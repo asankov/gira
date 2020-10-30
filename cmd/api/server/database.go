@@ -79,6 +79,7 @@ func NewDB(opts *DBOptions) (db *sql.DB, err error) {
 		return nil, err
 	}
 
+	logrus.Debugf("DB connection string: %s", connString)
 	pings := 0
 	for db, err = openDB(connString); err != nil; db, err = openDB(connString) {
 		pings++
