@@ -90,11 +90,11 @@ func TestFranchisesCreate(t *testing.T) {
 		GetUserByToken(token).
 		Return(user, nil)
 	franchiseModel.EXPECT().
-		Insert(&franchiseBatman).
+		Insert(&models.Franchise{Name: "Batman"}).
 		Return(&franchiseBatman, nil)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/franchises", fixtures.Marshal(t, franchiseBatman))
+	r := httptest.NewRequest(http.MethodPost, "/franchises", fixtures.Marshal(t, models.Franchise{Name: "Batman"}))
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
