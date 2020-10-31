@@ -75,7 +75,7 @@ func (c *Client) CreateFranchise(req *CreateFranchiseRequest, token string) (*Cr
 			if err := json.NewDecoder(res.Body).Decode(&jsonErr); err != nil {
 				return nil, ErrCreatingFranchise
 			}
-			return nil, jsonErr
+			return nil, errors.New(jsonErr.Error)
 		}
 		return nil, ErrCreatingFranchise
 	}

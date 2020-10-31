@@ -50,7 +50,9 @@ func (s *Server) handleGamesAddPost() authorizedHandler {
 
 		gameID := r.PostForm.Get("game")
 		if gameID == "" {
-			http.Error(w, "'game' is required", http.StatusBadRequest)
+			s.Session.Put(r, "error", "Game is required")
+			w.Header().Add("Location", "/games/add")
+			w.WriteHeader(http.StatusSeeOther)
 			return
 		}
 
@@ -210,7 +212,10 @@ func (s *Server) handleGameCreate() authorizedHandler {
 		franchiseID := r.PostForm.Get("franchiseId")
 
 		if _, err := s.Client.CreateGame(&models.Game{Name: name, FranshiseID: franchiseID}, token); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			s.Session.Put(r, "error", err.Error())
+
+			w.Header().Add("Location", "/games/new")
+			w.WriteHeader(http.StatusSeeOther)
 			return
 		}
 

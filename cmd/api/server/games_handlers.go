@@ -30,18 +30,18 @@ func (s *Server) handleGamesCreate() authorizedHandler {
 		}
 
 		if err := validateGame(&game); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			s.respondError(w, r, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		g, err := s.GameModel.Insert(&game)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNameAlreadyExists) {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				s.respondError(w, r, err.Error(), http.StatusBadRequest)
 				return
 			}
 			s.Log.Errorf("Error while inserting game into database: %v", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			s.internalError(w, r)
 			return
 		}
 
@@ -63,7 +63,7 @@ func (s *Server) handleGamesGet() authorizedHandler {
 
 		if err != nil {
 			s.Log.Errorf("Error while fetching games from the database: %v", err)
-			http.Error(w, "error fetching games", http.StatusInternalServerError)
+			s.internalError(w, r)
 			return
 		}
 
@@ -83,11 +83,11 @@ func (s *Server) handleGamesGetByID() authorizedHandler {
 		game, err := s.GameModel.Get(id)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNoRecord) {
-				http.NotFound(w, r)
+				s.respondError(w, r, "Game not found", http.StatusNotFound)
 				return
 			}
 			s.Log.Errorf("Error while fetching game from the database: %v", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			s.internalError(w, r)
 			return
 		}
 
