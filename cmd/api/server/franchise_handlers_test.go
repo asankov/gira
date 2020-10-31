@@ -106,32 +106,59 @@ func TestFranchisesCreate(t *testing.T) {
 }
 
 func TestFranchisesCreateValidationError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	testCases := []struct {
+		name      string
+		franchise *models.Franchise
+	}{
+		{
+			name:      "Empty name",
+			franchise: &models.Franchise{},
+		},
+		{
+			name: "Filled ID",
+			franchise: &models.Franchise{
+				ID:   "123",
+				Name: "Batman",
+			},
+		},
+		{
+			name: "Empty name and filled ID",
+			franchise: &models.Franchise{
+				ID: "123",
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	userModel := fixtures.NewUserModelMock(ctrl)
-	authenticator := fixtures.NewAuthenticatorMock(ctrl)
-	srv := newServer(t, &Options{
-		Authenticator: authenticator,
-		UserModel:     userModel,
-	})
+			userModel := fixtures.NewUserModelMock(ctrl)
+			authenticator := fixtures.NewAuthenticatorMock(ctrl)
+			srv := newServer(t, &Options{
+				Authenticator: authenticator,
+				UserModel:     userModel,
+			})
 
-	authenticator.EXPECT().
-		DecodeToken(gomock.Eq(token)).
-		Return(user, nil)
-	userModel.
-		EXPECT().
-		GetUserByToken(token).
-		Return(user, nil)
+			authenticator.EXPECT().
+				DecodeToken(gomock.Eq(token)).
+				Return(user, nil)
+			userModel.
+				EXPECT().
+				GetUserByToken(token).
+				Return(user, nil)
 
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/franchises", fixtures.Marshal(t, &models.Franchise{}))
-	r.Header.Set(models.XAuthToken, token)
-	srv.ServeHTTP(w, r)
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/franchises", fixtures.Marshal(t, testCase.franchise))
+			r.Header.Set(models.XAuthToken, token)
+			srv.ServeHTTP(w, r)
 
-	gassert.StatusCode(t, w, http.StatusBadRequest)
-	// TODO: assert body once we start returning JSON
-	// require.Equal(t, franchiseBatman, res)
+			gassert.StatusCode(t, w, http.StatusBadRequest)
+			var err models.ErrorResponse
+			fixtures.Decode(t, w.Body, &err)
+			require.NotEmpty(t, err.Error, "Error returned from server should not be empty")
+		})
+	}
 }
 
 func TestFranchisesCreateDBError(t *testing.T) {
@@ -155,15 +182,16 @@ func TestFranchisesCreateDBError(t *testing.T) {
 		GetUserByToken(token).
 		Return(user, nil)
 	franchiseModel.EXPECT().
-		Insert(&franchiseBatman).
+		Insert(&models.Franchise{Name: "Batman"}).
 		Return(nil, postgres.ErrNameAlreadyExists)
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest(http.MethodPost, "/franchises", fixtures.Marshal(t, franchiseBatman))
+	r := httptest.NewRequest(http.MethodPost, "/franchises", fixtures.Marshal(t, models.Franchise{Name: "Batman"}))
 	r.Header.Set(models.XAuthToken, token)
 	srv.ServeHTTP(w, r)
 
 	gassert.StatusCode(t, w, http.StatusBadRequest)
-	// TODO: assert body once we start returning JSON
-	// require.Equal(t, franchiseBatman, res)
+	var err models.ErrorResponse
+	fixtures.Decode(t, w.Body, &err)
+	require.NotEmpty(t, err.Error, "Error returned from server should not be empty")
 }

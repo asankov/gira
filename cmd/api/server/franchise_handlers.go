@@ -16,8 +16,7 @@ func (s *Server) handleFranchisesGet() authorizedHandler {
 
 		if err != nil {
 			s.Log.Errorf("Error while fetching franchises from the database: %v", err)
-			// TODO: json
-			http.Error(w, "error fetching franchises", http.StatusInternalServerError)
+			s.internalError(w, r)
 			return
 		}
 
@@ -30,23 +29,23 @@ func (s *Server) handleFranchisesCreate() authorizedHandler {
 		var franchise models.Franchise
 
 		if err := json.NewDecoder(r.Body).Decode(&franchise); err != nil {
-			http.Error(w, "error decoding body", http.StatusBadRequest)
+			s.respondError(w, r, "Error decoding body", http.StatusBadRequest)
 			return
 		}
 
 		if err := validateFranchise(&franchise); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			s.respondError(w, r, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		g, err := s.FranchiseModel.Insert(&franchise)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNameAlreadyExists) {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				s.respondError(w, r, "Franchise with the same name already exists", http.StatusBadRequest)
 				return
 			}
 			s.Log.Errorf("Error while inserting game into database: %v", err)
-			http.Error(w, "internal error", http.StatusInternalServerError)
+			s.internalError(w, r)
 			return
 		}
 
@@ -56,6 +55,9 @@ func (s *Server) handleFranchisesCreate() authorizedHandler {
 
 func validateFranchise(franchise *models.Franchise) error {
 	var err *multierror.Error
+	if franchise.ID != "" {
+		err = multierror.Append(err, errIDNotAllowed)
+	}
 	if franchise.Name == "" {
 		err = multierror.Append(err, errNameRequired)
 	}
