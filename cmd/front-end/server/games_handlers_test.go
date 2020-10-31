@@ -56,7 +56,7 @@ func TestHandleHome(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 	renderer.EXPECT().
-		Render(gomock.Eq(w), gomock.Any(), gomock.Any(), gomock.Any()).
+		Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(nil)
 
 	srv.ServeHTTP(w, r)
@@ -84,7 +84,7 @@ func TestHandleHomeLoggedInUser(t *testing.T) {
 		GetUser(gomock.Eq(token)).
 		Return(user, nil)
 	renderer.EXPECT().
-		Render(gomock.Eq(w), gomock.Any(), gomock.Eq(server.TemplateData{
+		Render(gomock.Any(), gomock.Any(), gomock.Eq(server.TemplateData{
 			User: user,
 		}), gomock.Any()).
 		Return(nil)
@@ -106,7 +106,7 @@ func TestHandleHomeRendererError(t *testing.T) {
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 
 	renderer.EXPECT().
-		Render(gomock.Eq(w), gomock.Any(), gomock.Any(), gomock.Any()).
+		Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
 		Return(errors.New("error while rendering page"))
 
 	srv.ServeHTTP(w, r)
@@ -317,51 +317,23 @@ func TestGamesAddPost(t *testing.T) {
 }
 
 func TestGamesAddPostFormError(t *testing.T) {
-	testCases := []struct {
-		name       string
-		getRequest func() *http.Request
-	}{
-		{
-			name: "Error parsing form",
-			getRequest: func() *http.Request {
-				r := httptest.NewRequest(http.MethodPost, "/games/add", nil)
-				r.Body = nil
-				r.AddCookie(&http.Cookie{
-					Name:  "token",
-					Value: token,
-				})
-				return r
-			},
-		},
-		{
-			name: "Validation error",
-			getRequest: func() *http.Request {
-				form := url.Values{}
-				r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
-				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-				r.AddCookie(&http.Cookie{
-					Name:  "token",
-					Value: token,
-				})
-				return r
-			},
-		},
-	}
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+	srv := newServer(nil, nil)
 
-			srv := newServer(nil, nil)
+	w := httptest.NewRecorder()
+	form := url.Values{}
+	r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: token,
+	})
 
-			w := httptest.NewRecorder()
+	srv.ServeHTTP(w, r)
 
-			srv.ServeHTTP(w, testCase.getRequest())
-
-			assert.StatusCode(t, w, http.StatusBadRequest)
-		})
-	}
+	assert.Redirect(t, w, "/games/add")
 }
 
 func TestGamesAddPostClientError(t *testing.T) {
