@@ -257,6 +257,11 @@ func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateDat
 		data.Flash = flash
 	}
 
+	err := s.Session.PopString(r, "error")
+	if err != "" {
+		data.Error = err
+	}
+
 	if token != "" {
 		usr, err := s.Client.GetUser(token)
 		if err != nil {
