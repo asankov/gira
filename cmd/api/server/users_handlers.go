@@ -180,7 +180,6 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 
 func (s *Server) internalError(w http.ResponseWriter, r *http.Request) {
 	s.respondError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-	return
 }
 
 func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err string, statusCode int) {

@@ -54,9 +54,6 @@ func (c *Client) LinkGameToUser(gameID, token string) (*models.UserGame, error) 
 		if res.StatusCode == http.StatusUnauthorized {
 			return nil, ErrNoAuthorization
 		}
-		if res.StatusCode == http.StatusBadRequest {
-			// var jsonErr models.ErrorResponse
-		}
 		return nil, ErrLinkingGame
 	}
 

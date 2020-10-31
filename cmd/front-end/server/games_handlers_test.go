@@ -700,7 +700,7 @@ func TestGamesCreateServiceError(t *testing.T) {
 	})
 	srv.ServeHTTP(w, r)
 
-	assert.StatusCode(t, w, http.StatusInternalServerError)
+	assert.Redirect(t, w, "/games/new")
 }
 
 func TestGamesGet(t *testing.T) {
