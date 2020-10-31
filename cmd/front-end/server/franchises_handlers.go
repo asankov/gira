@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/asankov/gira/pkg/client"
+	"github.com/asankov/gira/pkg/models"
 )
 
 func (s *Server) handleFranchisesAddPost() authorizedHandler {
@@ -26,6 +27,14 @@ func (s *Server) handleFranchisesAddPost() authorizedHandler {
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
+			var jsonError models.ErrorResponse
+			if errors.As(err, &jsonError) {
+				// TODO: make .Put(r, "error", ...) and handle this in s.render
+				s.Session.Put(r, "flash", jsonError.Error())
+				w.Header().Add("Location", "/games/new")
 				w.WriteHeader(http.StatusSeeOther)
 				return
 			}
