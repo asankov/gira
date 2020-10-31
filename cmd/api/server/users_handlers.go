@@ -29,11 +29,11 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			if err == io.EOF {
-				s.respondError(w, r, errUserIsRequired, http.StatusBadRequest)
+				s.respondError(w, r, errUserIsRequired.Error(), http.StatusBadRequest)
 				return
 			}
 			s.Log.Errorf("Error while parsing body: %v", err)
-			s.respondError(w, r, errParsingBody, http.StatusBadRequest)
+			s.respondError(w, r, errParsingBody.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -41,14 +41,14 @@ func (s *Server) handleUserCreate() http.HandlerFunc {
 			user.Username = user.Email
 		}
 		if err := validateUser(&user); err != nil {
-			s.respondError(w, r, err, http.StatusBadRequest)
+			s.respondError(w, r, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		userResponse, err := s.UserModel.Insert(&user)
 		if err != nil {
 			if err == postgres.ErrEmailAlreadyExists || err == postgres.ErrUsernameAlreadyExists {
-				s.respondError(w, r, err, http.StatusBadRequest)
+				s.respondError(w, r, err.Error(), http.StatusBadRequest)
 				return
 			}
 			s.Log.Errorf("Error while inserting user into the DB: %v", err)
@@ -64,13 +64,13 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get(models.XAuthToken)
 		if token == "" {
-			s.respondError(w, r, errExpectedToken, http.StatusUnauthorized)
+			s.respondError(w, r, errExpectedToken.Error(), http.StatusUnauthorized)
 			return
 		}
 
 		if _, err := s.Authenticator.DecodeToken(token); err != nil {
 			if errors.Is(err, auth.ErrInvalidSignature) || errors.Is(err, auth.ErrTokenExpired) {
-				s.respondError(w, r, errInvalidToken, http.StatusUnauthorized)
+				s.respondError(w, r, errInvalidToken.Error(), http.StatusUnauthorized)
 				return
 			}
 			s.Log.Errorf("Error while authenticating user: %v", err)
@@ -80,7 +80,7 @@ func (s *Server) handleUserGet() http.HandlerFunc {
 
 		user, err := s.UserModel.GetUserByToken(token)
 		if err != nil {
-			s.respondError(w, r, errInvalidToken, http.StatusUnauthorized)
+			s.respondError(w, r, errInvalidToken.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -178,6 +178,11 @@ func (s *Server) respond(w http.ResponseWriter, r *http.Request, data interface{
 	}
 }
 
-func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err error, statusCode int) {
-	s.respond(w, r, models.ErrorResponse{Error: err.Error()}, statusCode)
+func (s *Server) internalError(w http.ResponseWriter, r *http.Request) {
+	s.respondError(w, r, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+	return
+}
+
+func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err string, statusCode int) {
+	s.respond(w, r, models.ErrorResponse{Error: err}, statusCode)
 }

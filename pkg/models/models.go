@@ -87,7 +87,7 @@ type UserGameResponse struct {
 // ErrorResponse is the generic error response returned from the API,
 // when an error of any kind occurred.
 type ErrorResponse struct {
-	Error string `json:"error"`
+	Error string `json:"error,omitempty"`
 }
 
 type ChangeGameStatusRequest struct {

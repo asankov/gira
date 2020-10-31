@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/asankov/gira/pkg/models"
@@ -113,6 +112,6 @@ func (s *Server) handleUsersGamesDelete() authorizedHandler {
 			}
 		}
 
-		s.respondError(w, r, errors.New(http.StatusText(http.StatusBadRequest)), http.StatusBadRequest)
+		s.respondError(w, r, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	}
 }
