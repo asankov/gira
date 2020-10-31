@@ -32,8 +32,7 @@ func (s *Server) handleFranchisesAddPost() authorizedHandler {
 			}
 			var jsonError models.ErrorResponse
 			if errors.As(err, &jsonError) {
-				// TODO: make .Put(r, "error", ...) and handle this in s.render
-				s.Session.Put(r, "flash", jsonError.Error())
+				s.Session.Put(r, "error", jsonError.Error())
 				w.Header().Add("Location", "/games/new")
 				w.WriteHeader(http.StatusSeeOther)
 				return
