@@ -184,5 +184,5 @@ func (s *Server) internalError(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) respondError(w http.ResponseWriter, r *http.Request, err string, statusCode int) {
-	s.respond(w, r, models.ErrorResponse{Error: err}, statusCode)
+	s.respond(w, r, models.ErrorResponse{ErrorMsg: err}, statusCode)
 }
