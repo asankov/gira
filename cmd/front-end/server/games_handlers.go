@@ -144,8 +144,6 @@ func (s *Server) handleGamesChangeProgress() authorizedHandler {
 func (s *Server) handleGamesGet() authorizedHandler {
 	return func(w http.ResponseWriter, r *http.Request, token string) {
 
-		flash := s.Session.PopString(r, "flash")
-
 		gamesResponse, err := s.Client.GetUserGames(token)
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
@@ -158,7 +156,6 @@ func (s *Server) handleGamesGet() authorizedHandler {
 		}
 
 		data := TemplateData{
-			Flash:     flash,
 			UserGames: mapToGames(gamesResponse),
 			Statuses:  models.AllStatuses,
 		}
@@ -255,6 +252,11 @@ func (s *Server) handleGamesDelete() authorizedHandler {
 	}
 }
 func (s *Server) render(w http.ResponseWriter, r *http.Request, data TemplateData, page string, token string) {
+	flash := s.Session.PopString(r, "flash")
+	if flash != "" {
+		data.Flash = flash
+	}
+
 	if token != "" {
 		usr, err := s.Client.GetUser(token)
 		if err != nil {

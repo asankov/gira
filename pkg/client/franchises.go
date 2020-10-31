@@ -70,6 +70,13 @@ func (c *Client) CreateFranchise(req *CreateFranchiseRequest, token string) (*Cr
 		if res.StatusCode == http.StatusUnauthorized {
 			return nil, ErrNoAuthorization
 		}
+		if res.StatusCode == http.StatusBadRequest {
+			var jsonErr models.ErrorResponse
+			if err := json.NewDecoder(res.Body).Decode(&jsonErr); err != nil {
+				return nil, ErrCreatingFranchise
+			}
+			return nil, jsonErr
+		}
 		return nil, ErrCreatingFranchise
 	}
 
