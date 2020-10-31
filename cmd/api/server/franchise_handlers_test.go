@@ -156,7 +156,7 @@ func TestFranchisesCreateValidationError(t *testing.T) {
 			gassert.StatusCode(t, w, http.StatusBadRequest)
 			var err models.ErrorResponse
 			fixtures.Decode(t, w.Body, &err)
-			require.NotEmpty(t, err.ErrorMsg, "Error returned from server should not be empty")
+			require.NotEmpty(t, err.Error, "Error returned from server should not be empty")
 		})
 	}
 }
@@ -193,5 +193,5 @@ func TestFranchisesCreateDBError(t *testing.T) {
 	gassert.StatusCode(t, w, http.StatusBadRequest)
 	var err models.ErrorResponse
 	fixtures.Decode(t, w.Body, &err)
-	require.NotEmpty(t, err.ErrorMsg, "Error returned from server should not be empty")
+	require.NotEmpty(t, err.Error, "Error returned from server should not be empty")
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/asankov/gira/pkg/client"
-	"github.com/asankov/gira/pkg/models"
 )
 
 func (s *Server) handleFranchisesAddPost() authorizedHandler {
@@ -30,14 +29,9 @@ func (s *Server) handleFranchisesAddPost() authorizedHandler {
 				w.WriteHeader(http.StatusSeeOther)
 				return
 			}
-			var jsonError models.ErrorResponse
-			if errors.As(err, &jsonError) {
-				s.Session.Put(r, "error", jsonError.Error())
-				w.Header().Add("Location", "/games/new")
-				w.WriteHeader(http.StatusSeeOther)
-				return
-			}
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			s.Session.Put(r, "error", err.Error())
+			w.Header().Add("Location", "/games/new")
+			w.WriteHeader(http.StatusSeeOther)
 			return
 		}
 
