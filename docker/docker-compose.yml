@@ -8,6 +8,7 @@ services:
   front-end:
     build:
       context: ..
+      # TODO: remove this
       dockerfile: ./docker/Dockerfile.front-end
     ports:
       - "4000:4000"
