@@ -1,4 +1,4 @@
-module github.com/asankov/gira
+module github.com/gira-games/api
 
 go 1.13
 
