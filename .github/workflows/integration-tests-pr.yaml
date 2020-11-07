@@ -1,0 +1,41 @@
+name: Image build and integration tests - PR
+on:
+  pull_request:
+
+jobs:
+  push_image_ghcr:
+    name: Build Gira API image and push to GitHub Container Registry
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v2
+        - name: Build and push Docker images
+          uses: docker/build-push-action@v1
+          with:
+            registry: ghcr.io
+            tag_with_sha: true
+            username: ${{ secrets.GHCR_USERNAME }}
+            password: ${{ secrets.GHCR_PASSWORD }}
+            dockerfile: docker/Dockerfile.api
+            repository: gira-games/api
+  test:
+    name: Run the integrations tests with Go ${{ matrix.go-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.15, 1.14]
+    needs: [push_image_ghcr]
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set go
+      uses: actions/setup-go@v1
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Run the tests with Go ${{ matrix.go-version }}
+      run: |
+        go get github.com/gira-games/integration-tests
+        cd ~/go/pkg/mod/github.com/gira-games/integration-tests*
+        # TODO: add version
+        go test ./... -v
