@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/asankov/gira/cmd/api/database"
+
 	"github.com/asankov/gira/cmd/api/server"
 	"github.com/sirupsen/logrus"
 
@@ -40,7 +42,7 @@ func run() error {
 	log.SetLevel(logLevel)
 	logrus.SetLevel(logLevel)
 
-	db, err := server.NewDB(&server.DBOptions{
+	db, err := database.NewDB(&database.DBOptions{
 		Host:   *dbHost,
 		Port:   *dbPort,
 		User:   *dbUser,
