@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/asankov/gira/pkg/models"
-	"github.com/asankov/gira/pkg/models/postgres"
+	"github.com/gira-games/api/pkg/models"
+	"github.com/gira-games/api/pkg/models/postgres"
 	"github.com/gorilla/mux"
 	"github.com/hashicorp/go-multierror"
 )

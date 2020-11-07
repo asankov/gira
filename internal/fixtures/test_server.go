@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	models "github.com/asankov/gira/pkg/models"
+	models "github.com/gira-games/api/pkg/models"
 )
 
 type ServerBuilder struct {

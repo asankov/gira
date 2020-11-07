@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/asankov/gira/internal/middleware"
+	"github.com/gira-games/api/internal/middleware"
 
 	"github.com/justinas/alice"
 

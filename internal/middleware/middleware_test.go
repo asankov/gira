@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	gassert "github.com/asankov/gira/internal/fixtures/assert"
+	gassert "github.com/gira-games/api/internal/fixtures/assert"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/sirupsen/logrus"

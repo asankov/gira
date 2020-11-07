@@ -8,10 +8,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	gassert "github.com/asankov/gira/internal/fixtures/assert"
+	gassert "github.com/gira-games/api/internal/fixtures/assert"
 
-	"github.com/asankov/gira/internal/fixtures"
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/internal/fixtures"
+	"github.com/gira-games/api/pkg/models"
 	"github.com/golang/mock/gomock"
 	"github.com/sirupsen/logrus"
 )

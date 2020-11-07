@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 
-	"github.com/asankov/gira/internal/fixtures"
+	"github.com/gira-games/api/internal/fixtures"
 	"github.com/stretchr/testify/require"
 )
 

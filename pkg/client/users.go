@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 )
 
 // ErrorResponse - this is duplicated with api/server/users_handlers.go

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 )
 
 type UserGamesModel struct {

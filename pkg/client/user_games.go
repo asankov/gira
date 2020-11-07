@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 )
 
 // GetUserGames returns all the games for the given user.

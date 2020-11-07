@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 )
 
 type FranchiseModel struct {

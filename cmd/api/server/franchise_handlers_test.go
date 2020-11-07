@@ -5,16 +5,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/asankov/gira/pkg/models/postgres"
+	"github.com/gira-games/api/pkg/models/postgres"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	gassert "github.com/asankov/gira/internal/fixtures/assert"
+	gassert "github.com/gira-games/api/internal/fixtures/assert"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 
-	"github.com/asankov/gira/internal/fixtures"
+	"github.com/gira-games/api/internal/fixtures"
 	"github.com/golang/mock/gomock"
 )
 

@@ -4,13 +4,13 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/asankov/gira/cmd/api/database"
+	"github.com/gira-games/api/cmd/api/database"
 
-	"github.com/asankov/gira/cmd/api/server"
+	"github.com/gira-games/api/cmd/api/server"
 	"github.com/sirupsen/logrus"
 
-	"github.com/asankov/gira/internal/auth"
-	"github.com/asankov/gira/pkg/models/postgres"
+	"github.com/gira-games/api/internal/auth"
+	"github.com/gira-games/api/pkg/models/postgres"
 
 	// to register PostreSQL driver
 	_ "github.com/lib/pq"

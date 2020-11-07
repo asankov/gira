@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/asankov/gira/pkg/models"
+	"github.com/gira-games/api/pkg/models"
 )
 
 var (
