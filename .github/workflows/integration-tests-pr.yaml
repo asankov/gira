@@ -37,5 +37,5 @@ jobs:
       run: |
         go get github.com/gira-games/integration-tests
         cd ~/go/pkg/mod/github.com/gira-games/integration-tests*
-        # TODO: add version
-        go test ./... -v
+        API_VERSION=sha-$(echo $GITHUB_SHA | cut -c1-7)
+        go test ./... -v -api-version $API_VERSION
