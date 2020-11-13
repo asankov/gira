@@ -17,13 +17,11 @@ CREATE TABLE USERS (
   hashed_password CHAR(60) NOT NULL
 );
 
-CREATE TYPE GAME_STATUS AS ENUM ('To Do', 'In Progress', 'Done');
-
 CREATE TABLE USER_GAMES (
   id SERIAL PRIMARY KEY,
   user_id INTEGER REFERENCES USERS(id),
   game_id INTEGER REFERENCES GAMES(id),
-  status game_status DEFAULT 'To Do',
+  status VARCHAR(255) DEFAULT 'To Do',
   current_progress INTEGER DEFAULT 0,
   final_progress INTEGER DEFAULT 100
 );
