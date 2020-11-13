@@ -33,5 +33,7 @@ func (s *Server) routes() http.Handler {
 	r.Handle("/franchises", s.requireLogin(s.handleFranchisesGet())).Methods(http.MethodGet)
 	r.Handle("/franchises", s.requireLogin(s.handleFranchisesCreate())).Methods(http.MethodPost)
 
+	r.Handle("/statuses", s.requireLogin(s.handleStatusesGet())).Methods(http.MethodGet)
+
 	return standartMiddleware.Then(r)
 }
