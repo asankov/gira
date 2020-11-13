@@ -1,5 +1,9 @@
 package models
 
+import (
+	"fmt"
+)
+
 // Game is the representation of a game
 // in the database.
 type Game struct {
@@ -41,6 +45,22 @@ var (
 		StatusDone,
 	}
 )
+
+// Validate shows whether the status is a valid status
+// and returns an error if not.
+func (s Status) Validate() error {
+	for _, status := range AllStatuses {
+		if s == status {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s is not a valid status", s)
+}
+
+// StatusesResponse is the response that is returned from the Statuses API
+type StatusesResponse struct {
+	Statuses []Status `json:"statuses,omitempty"`
+}
 
 // UserGame is the representation of a user game relation
 // in the database.

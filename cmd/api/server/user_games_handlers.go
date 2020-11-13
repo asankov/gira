@@ -68,6 +68,10 @@ func (s *Server) handleUsersGamesPatch() authorizedHandler {
 		}
 
 		if req.Status != "" {
+			if err := req.Status.Validate(); err != nil {
+				s.respondError(w, r, err.Error(), http.StatusBadRequest)
+				return
+			}
 			if err := s.UserGamesModel.ChangeGameStatus(user.ID, userGameID, req.Status); err != nil {
 				s.Log.Errorf("Error while changing game status: %v", err)
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
