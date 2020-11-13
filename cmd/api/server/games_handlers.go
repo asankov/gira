@@ -34,6 +34,7 @@ func (s *Server) handleGamesCreate() authorizedHandler {
 			return
 		}
 
+		game.UserID = user.ID
 		g, err := s.GameModel.Insert(&game)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNameAlreadyExists) {
@@ -51,15 +52,11 @@ func (s *Server) handleGamesCreate() authorizedHandler {
 
 func (s *Server) handleGamesGet() authorizedHandler {
 	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
-		var (
-			games []*models.Game
-			err   error
-		)
+		var getGamesFunc func(userID string) ([]*models.Game, error) = s.GameModel.AllForUser
 		if _, ok := r.URL.Query()["excludeAssigned"]; ok {
-			games, err = s.UserGamesModel.GetAvailableGamesFor(user.ID)
-		} else {
-			games, err = s.GameModel.All()
+			getGamesFunc = s.UserGamesModel.GetAvailableGamesFor
 		}
+		games, err := getGamesFunc(user.ID)
 
 		if err != nil {
 			s.Log.Errorf("Error while fetching games from the database: %v", err)

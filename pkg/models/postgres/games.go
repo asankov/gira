@@ -66,7 +66,16 @@ func (m *GameModel) Get(id string) (*models.Game, error) {
 
 // All fetches all games from the database and returns them, or an error if such occurred.
 func (m *GameModel) All() ([]*models.Game, error) {
-	rows, err := m.DB.Query(`SELECT g.id, g.name, g.franchise_id, f.name AS frachise_name FROM GAMES g LEFT JOIN FRANCHISES f ON f.id = g.franchise_id`)
+	return m.gamesFromQuery(`SELECT g.id, g.name, g.franchise_id, f.name AS frachise_name FROM GAMES g LEFT JOIN FRANCHISES f ON f.id = g.franchise_id`)
+}
+
+// AllForUser fetches all games for the given user from the database and returns them, or an error if such occurred.
+func (m *GameModel) AllForUser(userID string) ([]*models.Game, error) {
+	return m.gamesFromQuery(`SELECT g.id, g.name, g.franchise_id, f.name AS frachise_name FROM GAMES g LEFT JOIN FRANCHISES f ON f.id = g.franchise_id`, userID)
+}
+
+func (m *GameModel) gamesFromQuery(query string, args ...interface{}) ([]*models.Game, error) {
+	rows, err := m.DB.Query(query, args)
 	if err != nil {
 		return nil, fmt.Errorf("error while fetching games from the database: %w", err)
 	}

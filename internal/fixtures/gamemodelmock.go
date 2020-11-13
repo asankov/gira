@@ -48,6 +48,21 @@ func (mr *GameModelMockMockRecorder) All() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*GameModelMock)(nil).All))
 }
 
+// AllForUser mocks base method
+func (m *GameModelMock) AllForUser(arg0 string) ([]*models.Game, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AllForUser", arg0)
+	ret0, _ := ret[0].([]*models.Game)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AllForUser indicates an expected call of AllForUser
+func (mr *GameModelMockMockRecorder) AllForUser(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllForUser", reflect.TypeOf((*GameModelMock)(nil).AllForUser), arg0)
+}
+
 // Get mocks base method
 func (m *GameModelMock) Get(arg0 string) (*models.Game, error) {
 	m.ctrl.T.Helper()

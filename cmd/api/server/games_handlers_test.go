@@ -43,7 +43,7 @@ func TestGetGames(t *testing.T) {
 		Return(user, nil)
 	gameModel.
 		EXPECT().
-		All().
+		AllForUser(user.ID).
 		Return(gamesResponse, nil)
 	userModel.
 		EXPECT().
@@ -84,7 +84,7 @@ func TestGetGamesErr(t *testing.T) {
 		Return(user, nil)
 	gameModel.
 		EXPECT().
-		All().
+		AllForUser(user.ID).
 		Return(nil, errors.New("this is an intentional error"))
 	userModel.
 		EXPECT().

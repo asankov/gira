@@ -11,6 +11,7 @@ import (
 // GameModel is the interface to interact with the Games provider (DB, service, etc.)
 type GameModel interface {
 	All() ([]*models.Game, error)
+	AllForUser(userID string) ([]*models.Game, error)
 	Get(id string) (*models.Game, error)
 	Insert(game *models.Game) (*models.Game, error)
 }

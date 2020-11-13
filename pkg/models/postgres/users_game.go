@@ -38,7 +38,7 @@ func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error)
 		FROM USER_GAMES ug
 			JOIN GAMES g ON ug.game_id = g.id
 			LEFT JOIN FRANCHISES f ON f.id = g.franchise_id
-		WHERE user_id = $1`, userID)
+		WHERE ug.user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,14 @@ func (m *UserGamesModel) ChangeGameProgress(userID, userGameID string, progress 
 }
 
 func (m *UserGamesModel) GetAvailableGamesFor(userID string) ([]*models.Game, error) {
-	rows, err := m.DB.Query(`SELECT g.id, g.name, f.name AS franchise_name FROM games g LEFT JOIN FRANCHISES f ON f.id = g.franchise_id WHERE g.id NOT IN (SELECT game_id FROM user_games WHERE user_id = $1)`, userID)
+	rows, err := m.DB.Query(`
+		SELECT 
+			g.id, 
+			g.name, 
+			f.name AS franchise_name 
+		FROM games g 
+			LEFT JOIN FRANCHISES f ON f.id = g.franchise_id 
+			WHERE g.id NOT IN (SELECT game_id FROM user_games u WHERE u.user_id = $1) AND g.user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}

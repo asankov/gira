@@ -11,6 +11,8 @@ type Game struct {
 	Name        string `json:"name"`
 	Franchise   string `json:"franchise"`
 	FranshiseID string `json:"franchiseId"`
+
+	UserID string
 }
 
 type GamesResponse struct {
