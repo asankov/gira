@@ -40,6 +40,4 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Run integration tests with Go ${{ matrix.go-version }}
       run: |
-        go get github.com/gira-games/integration-tests
-        cd ~/go/pkg/mod/github.com/gira-games/integration-tests*
-        go test ./... -v -api-version latest
+        go test -v cmd/integrationtests/*.go -tags integration_tests
