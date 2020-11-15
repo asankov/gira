@@ -4,9 +4,11 @@ on:
 
 jobs:
   push_image_ghcr:
-    name: Build Gira API image and push to GitHub Container Registry
+    name: Build Gira ${{ matrix.service }} image and push to GitHub Container Registry
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        service: ['api', 'front-end']
     steps:
         - name: Checkout code
           uses: actions/checkout@v2
@@ -18,7 +20,7 @@ jobs:
             username: ${{ secrets.GHCR_USERNAME }}
             password: ${{ secrets.GHCR_PASSWORD }}
             dockerfile: docker/Dockerfile.api
-            repository: gira-games/api
+            repository: gira/${{ matrix.service }}
   test:
     name: Run the integrations tests with Go ${{ matrix.go-version }}
     runs-on: ubuntu-latest
@@ -35,7 +37,5 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Run the tests with Go ${{ matrix.go-version }}
       run: |
-        go get github.com/gira-games/integration-tests
-        cd ~/go/pkg/mod/github.com/gira-games/integration-tests*
         API_VERSION=sha-$(echo $GITHUB_SHA | cut -c1-7)
-        go test ./... -v -api-version $API_VERSION
+        go test -v cmd/integrationtests/*.go -api-version $API_VERSION -tags integration_tests
