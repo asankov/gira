@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gira-games/client/pkg/client"
+	"github.com/asankov/gira/pkg/client"
 
 	"github.com/asankov/gira/cmd/front-end/server"
 	"github.com/asankov/gira/internal/fixtures"

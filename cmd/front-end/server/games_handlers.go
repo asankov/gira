@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gira-games/client/pkg/client"
+	"github.com/asankov/gira/pkg/client"
 )
 
 func (s *Server) handleHome() http.HandlerFunc {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gira-games/client/pkg/client"
+	"github.com/asankov/gira/pkg/client"
 
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/internal/fixtures/assert"

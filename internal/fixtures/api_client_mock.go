@@ -6,7 +6,7 @@ package fixtures
 
 import (
 	context "context"
-	client "github.com/gira-games/client/pkg/client"
+	client "github.com/asankov/gira/pkg/client"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

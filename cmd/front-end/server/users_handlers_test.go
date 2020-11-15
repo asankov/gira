@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gira-games/client/pkg/client"
+	"github.com/asankov/gira/pkg/client"
 
 	"github.com/stretchr/testify/require"
 

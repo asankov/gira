@@ -2,13 +2,59 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/asankov/gira/pkg/models"
 )
+
+// User is the representation of a user
+type User struct {
+	ID             string `json:"id,omitempty"`
+	Username       string `json:"username,omitempty"`
+	Email          string `json:"email,omitempty"`
+	Password       string `json:"password,omitempty"`
+	HashedPassword []byte `json:"-"`
+}
+
+type GetUserRequest struct {
+	Token string
+}
+
+type GetUserResponse struct {
+	ID       string `json:"id,omitempty"`
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
+}
+
+type CreateUserRequest struct {
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
+type CreateUserResponse struct {
+	ID       string `json:"id,omitempty"`
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
+}
+
+type LoginUserRequest struct {
+	Username string `json:"username,omitempty"`
+	Email    string `json:"email,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
+// UserLoginResponse is the response that is returned
+// when a user is logged in.
+type UserLoginResponse struct {
+	Token string `json:"token"`
+}
+
+type LogoutUserRequest struct {
+	Token string
+}
 
 // ErrorResponse - this is duplicated with api/server/users_handlers.go
 type ErrorResponse struct {
@@ -19,13 +65,13 @@ func (e *ErrorResponse) Error() string {
 	return e.Err
 }
 
-func (c *Client) GetUser(token string) (*models.User, error) {
+func (c *Client) GetUser(ctx context.Context, request *GetUserRequest) (*GetUserResponse, error) {
 	url := fmt.Sprintf("%s/users", c.addr)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error while building request")
 	}
-	req.Header.Set(models.XAuthToken, token)
+	req.Header.Set(XAuthToken, request.Token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("error while calling %s: %w", url, err)
@@ -33,7 +79,9 @@ func (c *Client) GetUser(token string) (*models.User, error) {
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
 	}
-	var userResponse *models.UserResponse
+	var userResponse struct {
+		User *GetUserResponse `json:"user"`
+	}
 	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
 		return nil, fmt.Errorf("error while decoding body: %w", err)
 	}
@@ -41,8 +89,8 @@ func (c *Client) GetUser(token string) (*models.User, error) {
 	return userResponse.User, nil
 }
 
-func (c *Client) CreateUser(user *models.User) (*models.User, error) {
-	body, err := json.Marshal(user)
+func (c *Client) CreateUser(ctx context.Context, request *CreateUserRequest) (*CreateUserResponse, error) {
+	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("error while building body: %w", err)
 	}
@@ -56,7 +104,7 @@ func (c *Client) CreateUser(user *models.User) (*models.User, error) {
 		// return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
 	}
 
-	var userResponse *models.User
+	var userResponse *CreateUserResponse
 	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
 		return nil, fmt.Errorf("error while decoidng body: %w", err)
 	}
@@ -64,8 +112,8 @@ func (c *Client) CreateUser(user *models.User) (*models.User, error) {
 	return userResponse, nil
 }
 
-func (c *Client) LoginUser(user *models.User) (*models.UserLoginResponse, error) {
-	body, err := json.Marshal(user)
+func (c *Client) LoginUser(ctx context.Context, request *LoginUserRequest) (*UserLoginResponse, error) {
+	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("error while building body: %w", err)
 	}
@@ -75,10 +123,10 @@ func (c *Client) LoginUser(user *models.User) (*models.UserLoginResponse, error)
 		return nil, fmt.Errorf("error while calling %s: %w", url, err)
 	}
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("error response from server: %d - %s", res.StatusCode, parseErrorBody(res))
+		return nil, &ErrorResponse{Err: parseErrorBody(res)}
 	}
 
-	var userResponse *models.UserLoginResponse
+	var userResponse *UserLoginResponse
 	if err := json.NewDecoder(res.Body).Decode(&userResponse); err != nil {
 		return nil, fmt.Errorf("error while decoidng body: %w", err)
 	}
@@ -86,13 +134,13 @@ func (c *Client) LoginUser(user *models.User) (*models.UserLoginResponse, error)
 	return userResponse, nil
 }
 
-func (c *Client) LogoutUser(token string) error {
+func (c *Client) LogoutUser(ctx context.Context, request *LogoutUserRequest) error {
 	url := fmt.Sprintf("%s/users/logout", c.addr)
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
 		return fmt.Errorf("error while building request")
 	}
-	req.Header.Set(models.XAuthToken, token)
+	req.Header.Set(XAuthToken, request.Token)
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("error while calling %s: %w", url, err)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gira-games/client/pkg/client"
+	"github.com/asankov/gira/pkg/client"
 )
 
 func (s *Server) handleUserSignupForm() http.HandlerFunc {

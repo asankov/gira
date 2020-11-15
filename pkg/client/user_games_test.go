@@ -1,42 +1,41 @@
 package client_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/client"
-	"github.com/asankov/gira/pkg/models"
 	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
 )
 
 var (
-	usersGameResponse = map[models.Status][]*models.UserGame{
-		models.StatusTODO: {
+	usersGameResponse = map[client.Status][]*client.UserGame{
+		"TODO": {
 			{
 				ID: "1",
-				User: &models.User{
+				User: &client.User{
 					ID: "1",
 				},
-				Game: &models.Game{
+				Game: &client.Game{
 					ID: "2",
 				},
-				Status: models.StatusTODO,
+				Status: "TODO",
 			},
 		},
-		models.StatusInProgress: {
+		"In progress": {
 			{
 				ID: "2",
-				User: &models.User{
+				User: &client.User{
 					ID: "1",
 				},
-				Game: &models.Game{
+				Game: &client.Game{
 					ID: "3",
 				},
-				Status: models.StatusInProgress,
+				Status: "In progress",
 			},
 		},
 	}
@@ -51,9 +50,9 @@ func TestGetUserGames(t *testing.T) {
 	defer ts.Close()
 
 	cl := newClient(t, ts.URL)
-	userGames, err := cl.GetUserGames(token)
+	resp, err := cl.GetUserGames(context.Background(), &client.GetUserGamesRequest{Token: token})
 	assert.NoError(t, err)
-	assert.True(t, cmp.Equal(userGames, usersGameResponse))
+	assert.True(t, cmp.Equal(resp.UserGames, usersGameResponse))
 }
 
 func TestGetUserGameHTTPError(t *testing.T) {
@@ -84,7 +83,7 @@ func TestGetUserGameHTTPError(t *testing.T) {
 			defer ts.Close()
 
 			cl := newClient(t, ts.URL)
-			_, err := cl.GetUserGames(token)
+			_, err := cl.GetUserGames(context.Background(), &client.GetUserGamesRequest{Token: token})
 			assert.Error(t, err, testCase.expectedErr)
 		})
 	}
@@ -100,7 +99,10 @@ func TestLinkGameToUser(t *testing.T) {
 
 	cl := newClient(t, ts.URL)
 
-	_, err := cl.LinkGameToUser("12", token)
+	err := cl.LinkGameToUser(context.Background(), &client.LinkGameToUserRequest{
+		Token:  token,
+		GameID: "12",
+	})
 	assert.NoError(t, err)
 }
 
@@ -133,7 +135,10 @@ func TestLinkGameToUserHTTPError(t *testing.T) {
 
 			cl := newClient(t, ts.URL)
 
-			_, err := cl.LinkGameToUser("12", token)
+			err := cl.LinkGameToUser(context.Background(), &client.LinkGameToUserRequest{
+				Token:  token,
+				GameID: "12",
+			})
 			assert.Error(t, err, testCase.expectedErr)
 		})
 	}
@@ -149,7 +154,13 @@ func TestChangeGameStatus(t *testing.T) {
 
 	cl := newClient(t, ts.URL)
 
-	err := cl.ChangeGameStatus(game.ID, token, models.StatusDone)
+	err := cl.UpdateGameProgress(context.Background(), &client.UpdateGameProgressRequest{
+		GameID: game.ID,
+		Token:  token,
+		Update: client.UpdateGameProgressChange{
+			Status: "DONE",
+		},
+	})
 	assert.NoError(t, err)
 }
 
@@ -182,7 +193,13 @@ func TestChangeGameStatusHTTPError(t *testing.T) {
 
 			cl := newClient(t, ts.URL)
 
-			err := cl.ChangeGameStatus(game.ID, token, models.StatusTODO)
+			err := cl.UpdateGameProgress(context.Background(), &client.UpdateGameProgressRequest{
+				GameID: game.ID,
+				Token:  token,
+				Update: client.UpdateGameProgressChange{
+					Status: "TODO",
+				},
+			})
 			assert.Error(t, err, testCase.expectedErr)
 		})
 	}
@@ -198,9 +215,16 @@ func TestChangeGameProgress(t *testing.T) {
 
 	cl := newClient(t, ts.URL)
 
-	err := cl.ChangeGameProgress(game.ID, token, &models.UserGameProgress{
-		Current: 10,
-		Final:   100,
+	err := cl.UpdateGameProgress(context.Background(), &client.UpdateGameProgressRequest{
+		GameID: game.ID,
+		Token:  token,
+		Update: client.UpdateGameProgressChange{
+			Status: "DONE",
+			Progress: &client.UserGameProgress{
+				Current: 10,
+				Final:   100,
+			},
+		},
 	})
 	assert.NoError(t, err)
 }
@@ -215,7 +239,7 @@ func TestDeleteGame(t *testing.T) {
 
 	cl := newClient(t, ts.URL)
 
-	err := cl.DeleteUserGame(game.ID, token)
+	err := cl.DeleteUserGame(context.Background(), &client.DeleteUserGameRequest{Token: token, GameID: game.ID})
 	assert.NoError(t, err)
 }
 
@@ -248,7 +272,7 @@ func TestDeleteGameHTTPError(t *testing.T) {
 
 			cl := newClient(t, ts.URL)
 
-			err := cl.DeleteUserGame(game.ID, token)
+			err := cl.DeleteUserGame(context.Background(), &client.DeleteUserGameRequest{Token: token, GameID: game.ID})
 			assert.Error(t, err, testCase.expectedErr)
 		})
 	}

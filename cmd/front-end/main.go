@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gira-games/client/pkg/client"
+	"github.com/asankov/gira/pkg/client"
 
 	"github.com/asankov/gira/cmd/front-end/templates"
 	"github.com/sirupsen/logrus"

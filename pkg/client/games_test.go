@@ -1,27 +1,25 @@
 package client_test
 
 import (
+	"context"
+	"errors"
 	"net/http"
 	"testing"
 
-	gassert "github.com/asankov/gira/internal/fixtures/assert"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
 	"github.com/asankov/gira/internal/fixtures"
 	"github.com/asankov/gira/pkg/client"
-	"github.com/asankov/gira/pkg/models"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
 	token = "my-token"
-	game  = &models.Game{
+	game  = &client.Game{
 		ID:   "1",
 		Name: "A",
 	}
-	gameResponse = models.GamesResponse{
-		Games: []*models.Game{game},
+	gameResponse = client.GetGamesResponse{
+		Games: []*client.Game{game},
 	}
 )
 
@@ -33,39 +31,21 @@ func newClient(t *testing.T, url string) *client.Client {
 }
 
 func TestGetGames(t *testing.T) {
-	testCases := []struct {
-		name    string
-		options *client.GetGamesOptions
-	}{
-		{
-			name:    "Empty options",
-			options: &client.GetGamesOptions{},
-		},
-		{
-			name:    "Nil options",
-			options: nil,
-		},
-	}
+	ts := fixtures.NewTestServer(t).
+		Path("/games").
+		Data(gameResponse).
+		Token(token).
+		Build()
+	defer ts.Close()
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			ts := fixtures.NewTestServer(t).
-				Path("/games").
-				Data(gameResponse).
-				Token(token).
-				Build()
-			defer ts.Close()
+	cl := newClient(t, ts.URL)
 
-			cl := newClient(t, ts.URL)
+	games, err := cl.GetGames(context.Background(), &client.GetGamesRequest{Token: token})
 
-			games, err := cl.GetGames(token, testCase.options)
-
-			require.NoError(t, err)
-			assert.Equal(t, 1, len(games))
-			assert.Equal(t, game.ID, games[0].ID)
-			assert.Equal(t, game.Name, games[0].Name)
-		})
-	}
+	require.NoError(t, err)
+	require.Equal(t, 1, len(games.Games))
+	assert.Equal(t, game.ID, games.Games[0].ID)
+	assert.Equal(t, game.Name, games.Games[0].Name)
 }
 
 func TestGetGamesExcludeAssigned(t *testing.T) {
@@ -79,12 +59,12 @@ func TestGetGamesExcludeAssigned(t *testing.T) {
 
 	cl := newClient(t, ts.URL)
 
-	games, err := cl.GetGames(token, &client.GetGamesOptions{ExcludeAssigned: true})
+	games, err := cl.GetGames(context.Background(), &client.GetGamesRequest{Token: token, ExcludeAssigned: true})
 
 	require.NoError(t, err)
-	assert.Equal(t, 1, len(games))
-	assert.Equal(t, game.ID, games[0].ID)
-	assert.Equal(t, game.Name, games[0].Name)
+	require.Equal(t, 1, len(games.Games))
+	assert.Equal(t, game.ID, games.Games[0].ID)
+	assert.Equal(t, game.Name, games.Games[0].Name)
 }
 
 func TestGetGamesHTTPError(t *testing.T) {
@@ -115,9 +95,9 @@ func TestGetGamesHTTPError(t *testing.T) {
 			cl, err := client.New(ts.URL)
 			require.NoError(t, err)
 
-			games, err := cl.GetGames(token, nil)
+			games, err := cl.GetGames(context.Background(), &client.GetGamesRequest{Token: token})
 			assert.Nil(t, games)
-			gassert.Error(t, err, testCase.expectedErr)
+			assert.True(t, errors.Is(err, testCase.expectedErr))
 		})
 	}
 }
@@ -134,11 +114,12 @@ func TestCreateGame(t *testing.T) {
 
 	cl := newClient(t, ts.URL)
 
-	createdGame, err := cl.CreateGame(game, token)
+	res, err := cl.CreateGame(context.Background(), &client.CreateGameRequest{Token: token, Game: game})
 
 	require.NoError(t, err)
-	assert.Equal(t, game.ID, createdGame.ID)
-	assert.Equal(t, game.Name, createdGame.Name)
+	assert.Equal(t, game.ID, res.Game.ID)
+	assert.Equal(t, game.Name, res.Game.Name)
+	assert.Empty(t, res.Game.FranchiseID)
 }
 
 func TestCreateGameHTTPError(t *testing.T) {
@@ -170,9 +151,9 @@ func TestCreateGameHTTPError(t *testing.T) {
 			cl, err := client.New(ts.URL)
 			require.NoError(t, err)
 
-			createdGame, err := cl.CreateGame(game, token)
+			createdGame, err := cl.CreateGame(context.Background(), &client.CreateGameRequest{Token: token, Game: game})
 			assert.Nil(t, createdGame)
-			gassert.Error(t, err, testCase.expectedErr)
+			assert.True(t, errors.Is(err, testCase.expectedErr))
 		})
 	}
 }
