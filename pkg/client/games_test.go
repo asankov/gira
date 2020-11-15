@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"testing"
 
-	gassert "github.com/gira-games/api/internal/fixtures/assert"
+	gassert "github.com/asankov/gira/internal/fixtures/assert"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gira-games/api/internal/fixtures"
-	"github.com/gira-games/api/pkg/client"
-	"github.com/gira-games/api/pkg/models"
+	"github.com/asankov/gira/internal/fixtures"
+	"github.com/asankov/gira/pkg/client"
+	"github.com/asankov/gira/pkg/models"
 )
 
 var (

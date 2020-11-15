@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gira-games/api/pkg/models"
+	"github.com/asankov/gira/pkg/models"
 )
 
 var (

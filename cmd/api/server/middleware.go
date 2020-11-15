@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/gira-games/api/pkg/models"
+	"github.com/asankov/gira/pkg/models"
 )
 
 type authorizedHandler func(http.ResponseWriter, *http.Request, *models.User, string)

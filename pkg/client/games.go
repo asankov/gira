@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gira-games/api/pkg/models"
+	"github.com/asankov/gira/pkg/models"
 )
 
 var (

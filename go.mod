@@ -1,9 +1,11 @@
-module github.com/gira-games/api
+module github.com/asankov/gira
 
 go 1.13
 
 require (
+	github.com/gira-games/client v1.2.0
 	github.com/golang/mock v1.4.4
+	github.com/golangcollege/sessions v1.2.0
 	github.com/google/go-cmp v0.5.2
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/go-multierror v1.1.0

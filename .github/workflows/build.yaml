@@ -7,11 +7,12 @@ on:
 
 jobs:
   api:
-    name: Build Gira API with Go ${{ matrix.go-version }}
+    name: Build Gira {{ matrix.service }} with Go ${{ matrix.go-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         go-version: [1.15, 1.14, 1.13]
+        service: ['api', 'front-end']
 
     steps:
     - uses: actions/checkout@v1
@@ -21,4 +22,4 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Build Gira API service
       run: |
-        go build ./cmd/api
+        go build ./cmd/{{ matrix.service }}
