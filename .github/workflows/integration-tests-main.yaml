@@ -23,7 +23,7 @@ jobs:
             username: ${{ secrets.GHCR_USERNAME }}
             password: ${{ secrets.GHCR_PASSWORD }}
             dockerfile: docker/Dockerfile.api
-            repository: gira/${{ matrix.service }}
+            repository: asankov/gira/${{ matrix.service }}
   test:
     name: Run the integrations tests with Go ${{ matrix.go-version }}
     runs-on: ubuntu-latest
