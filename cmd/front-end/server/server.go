@@ -26,7 +26,6 @@ type TemplateData struct {
 	Game       *client.Game
 	User       *client.User
 	Games      []*client.Game
-	UserGames  []*client.UserGame
 	Statuses   []client.Status
 	Franchises []*client.Franchise
 
@@ -49,8 +48,6 @@ type APIClient interface {
 	GetGames(context.Context, *client.GetGamesRequest) (*client.GetGamesResponse, error)
 	CreateGame(context.Context, *client.CreateGameRequest) (*client.CreateGameResponse, error)
 
-	GetUserGames(context.Context, *client.GetUserGamesRequest) (*client.GetUserGamesResponse, error)
-	LinkGameToUser(context.Context, *client.LinkGameToUserRequest) error
 	UpdateGameProgress(context.Context, *client.UpdateGameProgressRequest) error
 	DeleteUserGame(context.Context, *client.DeleteUserGameRequest) error
 

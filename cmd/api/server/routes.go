@@ -15,20 +15,22 @@ func (s *Server) routes() http.Handler {
 
 	r := mux.NewRouter()
 
+	// GET /games returns all games for the authorized user
 	r.Handle("/games", s.requireLogin(s.handleGamesGet())).Methods(http.MethodGet)
-	r.Handle("/games/{id}", s.requireLogin(s.handleGamesGetByID())).Methods(http.MethodGet)
+	// POST /games creates a game for the authenticated user
 	r.Handle("/games", s.requireLogin(s.handleGamesCreate())).Methods(http.MethodPost)
+	// GET /games/{id} returns the requested game for the authorized user
+	r.Handle("/games/{id}", s.requireLogin(s.handleGamesGetByID())).Methods(http.MethodGet)
+	// PATCH /games/{id} changes the status or progress of the given games for the authenticated user
+	r.Handle("/games/{id}", s.requireLogin(s.handleUsersGamesPatch())).Methods(http.MethodPatch)
+	// DELETE /games/{id} deletes the given game for the authenticated user
+	r.Handle("/games/{id}", s.requireLogin(s.handleUsersGamesDelete())).Methods(http.MethodDelete)
 
 	r.HandleFunc("/users", s.handleUserGet()).Methods(http.MethodGet)
 	r.HandleFunc("/users", s.handleUserCreate()).Methods(http.MethodPost)
 	r.HandleFunc("/users/login", s.handleUserLogin()).Methods(http.MethodPost)
 
 	r.Handle("/users/logout", s.requireLogin(s.handleUserLogout())).Methods(http.MethodPost)
-
-	r.Handle("/users/games", s.requireLogin(s.handleUsersGamesGet())).Methods(http.MethodGet)
-	r.Handle("/users/games", s.requireLogin(s.handleUsersGamesPost())).Methods(http.MethodPost)
-	r.Handle("/users/games/{id}", s.requireLogin(s.handleUsersGamesPatch())).Methods(http.MethodPatch)
-	r.Handle("/users/games/{id}", s.requireLogin(s.handleUsersGamesDelete())).Methods(http.MethodDelete)
 
 	r.Handle("/franchises", s.requireLogin(s.handleFranchisesGet())).Methods(http.MethodGet)
 	r.Handle("/franchises", s.requireLogin(s.handleFranchisesCreate())).Methods(http.MethodPost)

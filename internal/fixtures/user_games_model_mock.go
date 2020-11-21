@@ -34,7 +34,7 @@ func (m *UserGamesModelMock) EXPECT() *UserGamesModelMockMockRecorder {
 }
 
 // ChangeGameProgress mocks base method
-func (m *UserGamesModelMock) ChangeGameProgress(arg0, arg1 string, arg2 *models.UserGameProgress) error {
+func (m *UserGamesModelMock) ChangeGameProgress(arg0, arg1 string, arg2 *models.GameProgress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeGameProgress", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -90,38 +90,8 @@ func (mr *UserGamesModelMockMockRecorder) GetAvailableGamesFor(arg0 interface{})
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableGamesFor", reflect.TypeOf((*UserGamesModelMock)(nil).GetAvailableGamesFor), arg0)
 }
 
-// GetUserGames mocks base method
-func (m *UserGamesModelMock) GetUserGames(arg0 string) ([]*models.UserGame, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserGames", arg0)
-	ret0, _ := ret[0].([]*models.UserGame)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserGames indicates an expected call of GetUserGames
-func (mr *UserGamesModelMockMockRecorder) GetUserGames(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGames", reflect.TypeOf((*UserGamesModelMock)(nil).GetUserGames), arg0)
-}
-
-// GetUserGamesGrouped mocks base method
-func (m *UserGamesModelMock) GetUserGamesGrouped(arg0 string) (map[models.Status][]*models.UserGame, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserGamesGrouped", arg0)
-	ret0, _ := ret[0].(map[models.Status][]*models.UserGame)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserGamesGrouped indicates an expected call of GetUserGamesGrouped
-func (mr *UserGamesModelMockMockRecorder) GetUserGamesGrouped(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGamesGrouped", reflect.TypeOf((*UserGamesModelMock)(nil).GetUserGamesGrouped), arg0)
-}
-
 // LinkGameToUser mocks base method
-func (m *UserGamesModelMock) LinkGameToUser(arg0, arg1 string, arg2 *models.UserGameProgress) error {
+func (m *UserGamesModelMock) LinkGameToUser(arg0, arg1 string, arg2 *models.GameProgress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LinkGameToUser", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)

@@ -153,35 +153,6 @@ func (mr *APIClientMockMockRecorder) GetUser(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*APIClientMock)(nil).GetUser), arg0, arg1)
 }
 
-// GetUserGames mocks base method
-func (m *APIClientMock) GetUserGames(arg0 context.Context, arg1 *client.GetUserGamesRequest) (*client.GetUserGamesResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserGames", arg0, arg1)
-	ret0, _ := ret[0].(*client.GetUserGamesResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserGames indicates an expected call of GetUserGames
-func (mr *APIClientMockMockRecorder) GetUserGames(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserGames", reflect.TypeOf((*APIClientMock)(nil).GetUserGames), arg0, arg1)
-}
-
-// LinkGameToUser mocks base method
-func (m *APIClientMock) LinkGameToUser(arg0 context.Context, arg1 *client.LinkGameToUserRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LinkGameToUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// LinkGameToUser indicates an expected call of LinkGameToUser
-func (mr *APIClientMockMockRecorder) LinkGameToUser(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkGameToUser", reflect.TypeOf((*APIClientMock)(nil).LinkGameToUser), arg0, arg1)
-}
-
 // LoginUser mocks base method
 func (m *APIClientMock) LoginUser(arg0 context.Context, arg1 *client.LoginUserRequest) (*client.UserLoginResponse, error) {
 	m.ctrl.T.Helper()

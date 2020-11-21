@@ -52,11 +52,7 @@ func (s *Server) handleGamesCreate() authorizedHandler {
 
 func (s *Server) handleGamesGet() authorizedHandler {
 	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
-		var getGamesFunc func(userID string) ([]*models.Game, error) = s.GameModel.AllForUser
-		if _, ok := r.URL.Query()["excludeAssigned"]; ok {
-			getGamesFunc = s.UserGamesModel.GetAvailableGamesFor
-		}
-		games, err := getGamesFunc(user.ID)
+		games, err := s.GameModel.AllForUser(user.ID)
 
 		if err != nil {
 			s.Log.Errorf("Error while fetching games from the database: %v", err)

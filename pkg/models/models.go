@@ -7,12 +7,19 @@ import (
 // Game is the representation of a game
 // in the database.
 type Game struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Franchise   string `json:"franchise"`
-	FranchiseID string `json:"franchiseId"`
+	ID          string        `json:"id"`
+	Name        string        `json:"name,omitempty"`
+	Franchise   string        `json:"franchise,omitempty"`
+	FranchiseID string        `json:"franchiseId,omitempty"`
+	Status      Status        `json:"status,omitempty"`
+	Progress    *GameProgress `json:"progress,omitempty"`
 
-	UserID string
+	UserID string `json:"-"`
+}
+
+type GameProgress struct {
+	Current int `json:"current"`
+	Final   int `json:"final,omitempty"`
 }
 
 type GamesResponse struct {
@@ -64,16 +71,6 @@ type StatusesResponse struct {
 	Statuses []Status `json:"statuses,omitempty"`
 }
 
-// UserGame is the representation of a user game relation
-// in the database.
-type UserGame struct {
-	ID       string            `json:"id,omitempty"`
-	User     *User             `json:"user,omitempty"`
-	Game     *Game             `json:"game,omitempty"`
-	Status   Status            `json:"status,omitempty"`
-	Progress *UserGameProgress `json:"progress,omitempty"`
-}
-
 // UserLoginResponse is the response that is returned
 // when a user is logged in.
 type UserLoginResponse struct {
@@ -86,14 +83,9 @@ type UserResponse struct {
 	User *User `json:"user"`
 }
 
-type UserGameProgress struct {
-	Current int `json:"current,omitempty"`
-	Final   int `json:"final,omitempty"`
-}
-
 type UserGameRequest struct {
-	Game     *Game             `json:"game"`
-	Progress *UserGameProgress `json:"progress,omitempty"`
+	Game     *Game         `json:"game"`
+	Progress *GameProgress `json:"progress,omitempty"`
 }
 
 type UserGamesResponse struct {
@@ -113,13 +105,15 @@ type ErrorResponse struct {
 }
 
 type ChangeGameStatusRequest struct {
-	Status   Status            `json:"status,omitempty"`
-	Progress *UserGameProgress `json:"progress,omitempty"`
+	Status   Status        `json:"status,omitempty"`
+	Progress *GameProgress `json:"progress,omitempty"`
 }
 
 type Franchise struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+
+	UserID string `json:"-"`
 }
 
 type FranchisesResponse struct {

@@ -10,10 +10,12 @@ import (
 
 // GameModel is the interface to interact with the Games provider (DB, service, etc.)
 type GameModel interface {
-	All() ([]*models.Game, error)
 	AllForUser(userID string) ([]*models.Game, error)
 	Get(id string) (*models.Game, error)
 	Insert(game *models.Game) (*models.Game, error)
+	DeleteGame(userID, gameID string) error
+	ChangeGameStatus(userID, gameID string, status models.Status) error
+	ChangeGameProgress(userID, gameID string, progress *models.GameProgress) error
 }
 
 // UserModel is the interface to interact with the User provider (DB, service, etc.)
@@ -27,19 +29,17 @@ type UserModel interface {
 
 // UserGamesModel is the interface to interact with the Users-Games relationship provider (DB, service, etc.)
 type UserGamesModel interface {
-	LinkGameToUser(userID, gameID string, progress *models.UserGameProgress) error
+	LinkGameToUser(userID, gameID string, progress *models.GameProgress) error
 	ChangeGameStatus(userID, userGameID string, status models.Status) error
-	ChangeGameProgress(userID, userGameID string, progress *models.UserGameProgress) error
+	ChangeGameProgress(userID, userGameID string, progress *models.GameProgress) error
 	GetAvailableGamesFor(userID string) ([]*models.Game, error)
-	GetUserGames(userID string) ([]*models.UserGame, error)
-	GetUserGamesGrouped(userID string) (map[models.Status][]*models.UserGame, error)
 	DeleteUserGame(userGameID string) error
 }
 
 // FranchiseModel is the interface to interact with the Franchise provider (DB, service, etc.)
 type FranchiseModel interface {
 	Insert(franchise *models.Franchise) (*models.Franchise, error)
-	All() ([]*models.Franchise, error)
+	All(userID string) ([]*models.Franchise, error)
 }
 
 // Authenticator is the interface to interact with the Authenticator (DB, OIDC provider, etc.)
@@ -56,7 +56,6 @@ type Server struct {
 	Authenticator
 	GameModel
 	UserModel
-	UserGamesModel
 	FranchiseModel
 }
 
@@ -67,7 +66,6 @@ type Options struct {
 	Authenticator
 	GameModel
 	UserModel
-	UserGamesModel
 	FranchiseModel
 }
 
@@ -81,7 +79,6 @@ func New(opts *Options) (*Server, error) {
 		Authenticator:  opts.Authenticator,
 		GameModel:      opts.GameModel,
 		UserModel:      opts.UserModel,
-		UserGamesModel: opts.UserGamesModel,
 		FranchiseModel: opts.FranchiseModel,
 	}, nil
 }

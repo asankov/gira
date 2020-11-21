@@ -6,6 +6,7 @@ require (
 	github.com/erikh/duct v0.2.0
 	github.com/fsouza/go-dockerclient v1.6.6
 	github.com/gira-games/api v1.2.0
+	github.com/gira-games/client v1.2.0
 	github.com/golang/mock v1.4.4
 	github.com/golangcollege/sessions v1.2.0
 	github.com/google/go-cmp v0.5.2

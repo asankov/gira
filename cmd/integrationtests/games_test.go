@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/asankov/gira/pkg/client"
+	"github.com/gira-games/client/pkg/client"
 
 	"github.com/stretchr/testify/require"
 )
@@ -14,13 +14,15 @@ import (
 // testCreateAndGetAll creates a user, logs in, then creates two games
 // and fetches them.
 func testCreateAndGetAll(t *testing.T, cl *client.Client) {
-	user, err := cl.CreateUser(context.Background(), &client.CreateUserRequest{
+	ctx := context.Background()
+
+	user, err := cl.CreateUser(ctx, &client.CreateUserRequest{
 		Email:    "games@test.com",
 		Password: "password",
 	})
 	require.NoError(t, err)
 
-	loginResp, err := cl.LoginUser(context.Background(), &client.LoginUserRequest{
+	loginResp, err := cl.LoginUser(ctx, &client.LoginUserRequest{
 		Email:    user.Email,
 		Password: "password",
 	})
@@ -28,10 +30,10 @@ func testCreateAndGetAll(t *testing.T, cl *client.Client) {
 
 	token := loginResp.Token
 
-	batmanGame := createGame(t, cl, "Batman", token)
-	acGame := createGame(t, cl, "AC", token)
+	batmanGame := createGame(ctx, t, cl, "Batman", token)
+	acGame := createGame(ctx, t, cl, "AC", token)
 
-	res, err := cl.GetGames(context.Background(), &client.GetGamesRequest{Token: token})
+	res, err := cl.GetGames(ctx, &client.GetGamesRequest{Token: token})
 	require.NoError(t, err)
 
 	require.Equal(t, 2, len(res.Games))
@@ -39,8 +41,8 @@ func testCreateAndGetAll(t *testing.T, cl *client.Client) {
 	require.Contains(t, res.Games, acGame)
 }
 
-func createGame(t *testing.T, cl *client.Client, name, token string) *client.Game {
-	res, err := cl.CreateGame(context.Background(), &client.CreateGameRequest{
+func createGame(ctx context.Context, t *testing.T, cl *client.Client, name, token string) *client.Game {
+	res, err := cl.CreateGame(ctx, &client.CreateGameRequest{
 		Token: token,
 		Game: &client.Game{
 			Name: name,

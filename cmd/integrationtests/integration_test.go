@@ -13,12 +13,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/asankov/gira/pkg/client"
-
 	giradb "github.com/gira-games/api/cmd/api/database"
 
 	"github.com/erikh/duct"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/gira-games/client/pkg/client"
 
 	"github.com/stretchr/testify/require"
 
