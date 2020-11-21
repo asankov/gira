@@ -10,7 +10,7 @@ type Game struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Franchise   string `json:"franchise"`
-	FranshiseID string `json:"franchiseId"`
+	FranchiseID string `json:"franchiseId"`
 
 	UserID string
 }

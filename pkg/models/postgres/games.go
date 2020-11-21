@@ -26,10 +26,10 @@ type GameModel struct {
 // If a game with the same name already exists, an ErrNameAlreadyExists is returned
 func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 	var err error
-	if game.FranshiseID == "" {
+	if game.FranchiseID == "" {
 		_, err = m.DB.Exec(`INSERT INTO GAMES (name) VALUES ($1)`, game.Name)
 	} else {
-		_, err = m.DB.Exec(`INSERT INTO GAMES (name, franchise_id) VALUES ($1, $2)`, game.Name, game.FranshiseID)
+		_, err = m.DB.Exec(`INSERT INTO GAMES (name, franchise_id) VALUES ($1, $2)`, game.Name, game.FranchiseID)
 	}
 
 	if err != nil {
@@ -44,7 +44,7 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 	if err := m.DB.QueryRow(`SELECT G.ID, G.NAME, G.FRANCHISE_ID FROM GAMES G WHERE G.NAME = $1`, game.Name).Scan(&g.ID, &g.Name, &fID); err != nil {
 		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
 	}
-	g.FranshiseID = fID.String
+	g.FranchiseID = fID.String
 
 	return &g, nil
 }
@@ -54,7 +54,7 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 func (m *GameModel) Get(id string) (*models.Game, error) {
 	var g models.Game
 
-	if err := m.DB.QueryRow(`SELECT g.id, g.name, g.franchise_id, f.name FROM GAMES g WHERE g.id = $1 JOIN FRANCHISES f ON f.id = g.franchise_id`, id).Scan(&g.ID, &g.Name, &g.FranshiseID, &g.Franchise); err != nil {
+	if err := m.DB.QueryRow(`SELECT g.id, g.name, g.franchise_id, f.name FROM GAMES g WHERE g.id = $1 JOIN FRANCHISES f ON f.id = g.franchise_id`, id).Scan(&g.ID, &g.Name, &g.FranchiseID, &g.Franchise); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNoRecord
 		}
@@ -90,7 +90,7 @@ func (m *GameModel) gamesFromQuery(query string, args ...interface{}) ([]*models
 			return nil, fmt.Errorf("error while reading games from the database: %w", err)
 		}
 		game.Franchise = fName.String
-		game.FranshiseID = fID.String
+		game.FranchiseID = fID.String
 
 		games = append(games, &game)
 	}
