@@ -1,7 +1,7 @@
 {{template "base" .}}
 {{define "title"}}Games{{end}}
 {{define "main"}}
-{{if .UserGames}}
+{{if .Games}}
 <style>
     .progress-input.active {
         width: 50px;
@@ -30,16 +30,16 @@
         <th>Progress</th>
         <th></th>
     </tr>
-    {{range $userGame := .UserGames}}
+    {{range $game := .Games}}
     <tr>
         <td>{{.ID}}</td>
         <td>
             <div>
-                {{.Game.Name}}
+                {{.Name}}
             </div>
-            {{if .Game.FranchiseID}}
+            {{if .FranchiseID}}
             <div class="franchise">
-                Franchise: {{.Game.FranchiseID}}
+                Franchise: {{.FranchiseID}}
             </div>
             {{end}}
         </td>
@@ -49,7 +49,7 @@
                 <span id="status-{{.ID}}" class="status">{{.Status}}</span>
                 <select id="status-dropdown-{{.ID}}" name="status" class="status-dropdown hidden">
                     {{range $status := $.Statuses}}
-                    <option value="{{$status}}" {{if eq $status $userGame.Status }}selected disabled{{end}}>{{$status}}
+                    <option value="{{$status}}" {{if eq $status $game.Status }}selected disabled{{end}}>{{$status}}
                     </option>
                     {{end}}
                 </select>
@@ -92,7 +92,7 @@
 {{else}}
 <p>Currently there are no games.</p>
 {{end}}
-<a href="games/add">
+<a href="games/new">
     <input type="submit" value="+" style="float: right;"></button>
 </a>
 {{end}}

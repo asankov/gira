@@ -20,55 +20,6 @@ func (s *Server) handleHome() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handleGamesAdd() authorizedHandler {
-	return func(w http.ResponseWriter, r *http.Request, token string) {
-
-		games, err := s.Client.GetGames(context.Background(), &client.GetGamesRequest{Token: token, ExcludeAssigned: true})
-		if err != nil {
-			if errors.Is(err, client.ErrNoAuthorization) {
-				w.Header().Add("Location", "/users/login")
-				w.WriteHeader(http.StatusSeeOther)
-				return
-			}
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		s.render(w, r, TemplateData{
-			Games: games.Games,
-		}, addGamePage, token)
-	}
-}
-
-func (s *Server) handleGamesAddPost() authorizedHandler {
-	return func(w http.ResponseWriter, r *http.Request, token string) {
-
-		if err := r.ParseForm(); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		gameID := r.PostForm.Get("game")
-		if gameID == "" {
-			s.Session.Put(r, "error", "Game is required")
-			w.Header().Add("Location", "/games/add")
-			w.WriteHeader(http.StatusSeeOther)
-			return
-		}
-
-		if err := s.Client.LinkGameToUser(context.Background(), &client.LinkGameToUserRequest{GameID: gameID, Token: token}); err != nil {
-			// TODO: if err == no auth
-			s.Log.Errorln(err)
-			// TODO: render error page
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Header().Add("Location", "/games")
-		w.WriteHeader(http.StatusSeeOther)
-	}
-}
-
 func (s *Server) handleGamesChangeStatus() authorizedHandler {
 	return func(w http.ResponseWriter, r *http.Request, token string) {
 
@@ -141,7 +92,7 @@ func (s *Server) handleGamesChangeProgress() authorizedHandler {
 			GameID: gameID,
 			Token:  token,
 			Update: client.UpdateGameProgressChange{
-				Progress: &client.UserGameProgress{
+				Progress: &client.GameProgress{
 					Current: currentProgress,
 					Final:   finalProgress,
 				},
@@ -158,10 +109,10 @@ func (s *Server) handleGamesChangeProgress() authorizedHandler {
 	}
 }
 
-func (s *Server) handleGamesGet() authorizedHandler {
+func (s *Server) handleGamesGetView() authorizedHandler {
 	return func(w http.ResponseWriter, r *http.Request, token string) {
 
-		gamesResponse, err := s.Client.GetUserGames(context.Background(), &client.GetUserGamesRequest{Token: token})
+		gamesResponse, err := s.Client.GetGames(context.Background(), &client.GetGamesRequest{Token: token})
 		if err != nil {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")
@@ -184,20 +135,12 @@ func (s *Server) handleGamesGet() authorizedHandler {
 		}
 
 		data := TemplateData{
-			UserGames: mapToGames(gamesResponse.UserGames),
-			Statuses:  statusesResponse.Statuses,
+			Games:    gamesResponse.Games,
+			Statuses: statusesResponse.Statuses,
 		}
 
 		s.render(w, r, data, listGamesPage, token)
 	}
-}
-
-func mapToGames(userGames map[client.Status][]*client.UserGame) []*client.UserGame {
-	res := []*client.UserGame{}
-	for _, v := range userGames {
-		res = append(res, v...)
-	}
-	return res
 }
 
 func (s *Server) handleGameCreateView() authorizedHandler {
@@ -255,7 +198,7 @@ func (s *Server) handleGameCreate() authorizedHandler {
 
 		s.Session.Put(r, "flash", "Game successfully created.")
 
-		w.Header().Add("Location", "/games/add")
+		w.Header().Add("Location", "/games")
 		w.WriteHeader(http.StatusSeeOther)
 	}
 }

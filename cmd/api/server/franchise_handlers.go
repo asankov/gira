@@ -12,7 +12,7 @@ import (
 
 func (s *Server) handleFranchisesGet() authorizedHandler {
 	return func(w http.ResponseWriter, r *http.Request, user *models.User, token string) {
-		franchises, err := s.FranchiseModel.All()
+		franchises, err := s.FranchiseModel.All(user.ID)
 
 		if err != nil {
 			s.Log.Errorf("Error while fetching franchises from the database: %v", err)
@@ -38,6 +38,7 @@ func (s *Server) handleFranchisesCreate() authorizedHandler {
 			return
 		}
 
+		franchise.UserID = user.ID
 		g, err := s.FranchiseModel.Insert(&franchise)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNameAlreadyExists) {

@@ -34,18 +34,18 @@ func (m *FranchiseModelMock) EXPECT() *FranchiseModelMockMockRecorder {
 }
 
 // All mocks base method
-func (m *FranchiseModelMock) All() ([]*models.Franchise, error) {
+func (m *FranchiseModelMock) All(arg0 string) ([]*models.Franchise, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "All")
+	ret := m.ctrl.Call(m, "All", arg0)
 	ret0, _ := ret[0].([]*models.Franchise)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // All indicates an expected call of All
-func (mr *FranchiseModelMockMockRecorder) All() *gomock.Call {
+func (mr *FranchiseModelMockMockRecorder) All(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*FranchiseModelMock)(nil).All))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*FranchiseModelMock)(nil).All), arg0)
 }
 
 // Insert mocks base method

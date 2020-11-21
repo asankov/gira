@@ -13,12 +13,17 @@ import (
 func (s *Server) routes() http.Handler {
 	r := mux.NewRouter()
 
+	// / handles the home page
 	r.HandleFunc("/", s.handleHome()).Methods(http.MethodGet)
-	r.Handle("/games", s.requireLogin(s.handleGamesGet())).Methods(http.MethodGet)
-	r.Handle("/games/add", s.requireLogin(s.handleGamesAdd())).Methods(http.MethodGet)
-	r.Handle("/games/add", s.requireLogin(s.handleGamesAddPost())).Methods(http.MethodPost)
+
+	// GET /games renders the All Games view for the authenticated user
+	r.Handle("/games", s.requireLogin(s.handleGamesGetView())).Methods(http.MethodGet)
+
+	// GET /games/new renders the New Game view for the authenticated user
 	r.Handle("/games/new", s.requireLogin(s.handleGameCreateView())).Methods(http.MethodGet)
-	r.Handle("/games", s.requireLogin(s.handleGameCreate())).Methods(http.MethodPost)
+	// POST /games/new handles the creation of a new game
+	r.Handle("/games/new", s.requireLogin(s.handleGameCreate())).Methods(http.MethodPost)
+
 	r.Handle("/games/status", s.requireLogin(s.handleGamesChangeStatus())).Methods(http.MethodPost)
 	r.Handle("/games/progress", s.requireLogin(s.handleGamesChangeProgress())).Methods(http.MethodPost)
 	r.Handle("/games/delete", s.requireLogin(s.handleGamesDelete())).Methods(http.MethodPost)
