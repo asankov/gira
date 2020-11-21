@@ -38,7 +38,7 @@ func (m *UserGamesModel) GetUserGames(userID string) ([]*models.UserGame, error)
 		FROM USER_GAMES ug
 			JOIN GAMES g ON ug.game_id = g.id
 			LEFT JOIN FRANCHISES f ON f.id = g.franchise_id
-		WHERE user_id = $1`, userID)
+		WHERE ug.user_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
