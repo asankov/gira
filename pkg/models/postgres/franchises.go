@@ -3,9 +3,9 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/asankov/gira/pkg/models"
+	"github.com/lib/pq"
 )
 
 type FranchiseModel struct {
@@ -17,14 +17,19 @@ func (m *FranchiseModel) Insert(franchise *models.Franchise) (*models.Franchise,
 
 	var f models.Franchise
 	if err := row.Scan(&f.ID, &f.Name); err != nil {
-		// TODO: proper error handling
-		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "franchises_name_key"`) {
-			return nil, ErrNameAlreadyExists
-		}
-		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
+		return nil, handleInsertFranchiseError(err)
 	}
 
 	return &f, nil
+}
+
+func handleInsertFranchiseError(err error) error {
+	if err, ok := err.(*pq.Error); ok {
+		if err.Constraint == "franchises_name_key" {
+			return ErrNameAlreadyExists
+		}
+	}
+	return fmt.Errorf("error while inserting record into the database: %w", err)
 }
 
 func (m *FranchiseModel) All(userID string) ([]*models.Franchise, error) {

@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/asankov/gira/pkg/models"
+	"github.com/lib/pq"
 )
 
 var (
@@ -38,15 +38,20 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 	var g models.Game
 	var fID sql.NullString
 	if err := row.Scan(&g.ID, &g.Name, &fID); err != nil {
-		// TODO: proper error handling
-		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "games_name_key"`) {
-			return nil, ErrNameAlreadyExists
-		}
-		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
+		return nil, handleInsertGameError(err)
 	}
 	g.FranchiseID = fID.String
 
 	return &g, nil
+}
+
+func handleInsertGameError(err error) error {
+	if err, ok := err.(*pq.Error); ok {
+		if err.Constraint == "games_uc_name_user_id" {
+			return ErrNameAlreadyExists
+		}
+	}
+	return fmt.Errorf("error while inserting record into the database: %w", err)
 }
 
 // Get fetches a Game by ID and returns that or an error if such occurred.

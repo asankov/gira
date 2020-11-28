@@ -33,8 +33,8 @@ CREATE TABLE USER_TOKENS (
   token VARCHAR(400)
 );
 
+-- TODO: drop this
 ALTER TABLE games ADD CONSTRAINT games_uc_name_user_id UNIQUE (name, user_id);
-ALTER TABLE games ADD CONSTRAINT games_uc_name_user_id_franchise UNIQUE (name, user_id, franchise_id);
 
 ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email);
 ALTER TABLE users ADD CONSTRAINT users_uc_username UNIQUE (username);

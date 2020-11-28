@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/asankov/gira/pkg/models"
 )
 
 var (
@@ -90,16 +92,14 @@ func (c *Client) CreateFranchise(ctx context.Context, req *CreateFranchiseReques
 		if res.StatusCode == http.StatusUnauthorized {
 			return nil, ErrNoAuthorization
 		}
-		// TODO:
 
-		// if res.StatusCode == http.StatusBadRequest {
-		// 	var jsonErr models.ErrorResponse
-		// 	if err := json.NewDecoder(res.Body).Decode(&jsonErr); err != nil {
-		// 		return nil, ErrCreatingFranchise
-		// 	}
-		// 	return nil, errors.New(jsonErr.Error)
-		// }
-		// return nil, ErrCreatingFranchise
+		if res.StatusCode == http.StatusBadRequest {
+			var jsonErr models.ErrorResponse
+			if err := json.NewDecoder(res.Body).Decode(&jsonErr); err == nil {
+				return nil, errors.New(jsonErr.Error)
+			}
+		}
+		return nil, ErrCreatingFranchise
 	}
 
 	var franchise Franchise
