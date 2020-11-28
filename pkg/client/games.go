@@ -7,6 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/asankov/gira/pkg/models"
 )
 
 var (
@@ -107,13 +109,12 @@ func (c *Client) CreateGame(ctx context.Context, request *CreateGameRequest) (*C
 		if res.StatusCode == http.StatusUnauthorized {
 			return nil, ErrNoAuthorization
 		}
-		// TODO
-		// if res.StatusCode == http.StatusBadRequest {
-		// 	// var jsonErr models.ErrorResponse
-		// 	// if err := json.NewDecoder(res.Body).Decode(&jsonErr); err == nil {
-		// 	// 	return nil, errors.New(jsonErr.Error)
-		// 	// }
-		// }
+		if res.StatusCode == http.StatusBadRequest {
+			var jsonErr models.ErrorResponse
+			if err := json.NewDecoder(res.Body).Decode(&jsonErr); err == nil {
+				return nil, errors.New(jsonErr.Error)
+			}
+		}
 		return nil, ErrCreatingGame
 	}
 

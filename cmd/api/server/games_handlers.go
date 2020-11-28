@@ -38,7 +38,7 @@ func (s *Server) handleGamesCreate() authorizedHandler {
 		g, err := s.GameModel.Insert(&game)
 		if err != nil {
 			if errors.Is(err, postgres.ErrNameAlreadyExists) {
-				s.respondError(w, r, err.Error(), http.StatusBadRequest)
+				s.respondError(w, r, "Game with the same name already exists", http.StatusBadRequest)
 				return
 			}
 			s.Log.Errorf("Error while inserting game into database: %v", err)

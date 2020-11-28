@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/asankov/gira/pkg/models"
+	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -36,19 +36,20 @@ func (m *UserModel) Insert(user *models.User) (*models.User, error) {
 
 	usr := models.User{}
 	if err := row.Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
-		return nil, handleInsertError(err)
+		return nil, handleInsertUserError(err)
 	}
 
 	return &usr, nil
 }
 
-func handleInsertError(err error) error {
-	// TODO: proper error handling
-	if strings.Contains(err.Error(), `duplicate key value violates unique constraint "users_uc_email"`) {
-		return ErrEmailAlreadyExists
-	}
-	if strings.Contains(err.Error(), `duplicate key value violates unique constraint "users_uc_username"`) {
-		return ErrUsernameAlreadyExists
+func handleInsertUserError(err error) error {
+	if err, ok := err.(*pq.Error); ok {
+		if err.Constraint == "users_uc_email" {
+			return ErrEmailAlreadyExists
+		}
+		if err.Constraint == "users_uc_username" {
+			return ErrUsernameAlreadyExists
+		}
 	}
 	return fmt.Errorf("error while inserting user into the database: %w", err)
 }
