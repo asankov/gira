@@ -13,10 +13,6 @@ type GameProgress struct {
 	Final   int `json:"final,omitempty"`
 }
 
-type GetUserGamesRequest struct {
-	Token string
-}
-
 type LinkGameToUserRequest struct {
 	Token  string
 	GameID string

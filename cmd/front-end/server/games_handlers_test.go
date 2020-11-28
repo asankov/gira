@@ -190,207 +190,6 @@ func TestHandleCreateView(t *testing.T) {
 	}
 }
 
-func TestGamesAdd(t *testing.T) {
-	testCases := []struct {
-		name  string
-		setup func(*fixtures.APIClientMock, *fixtures.RendererMock)
-	}{
-		{
-			name: "User is fetched succesfully from the API",
-			setup: func(a *fixtures.APIClientMock, r *fixtures.RendererMock) {
-				a.EXPECT().
-					GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token, ExcludeAssigned: true}).
-					Return(&client.GetGamesResponse{Games: games}, nil)
-				a.EXPECT().
-					GetUser(gomock.AssignableToTypeOf(ctxType), &client.GetUserRequest{Token: token}).
-					Return(&client.GetUserResponse{
-						ID:       user.ID,
-						Username: user.Username,
-						Email:    user.Email,
-					}, nil)
-				r.EXPECT().
-					Render(gomock.Any(), gomock.Any(), gomock.Eq(server.TemplateData{Games: games, User: user}), gomock.Any()).
-					Return(nil)
-			},
-		},
-		{
-			name: "User is not fetched succesfully from the API",
-			setup: func(a *fixtures.APIClientMock, r *fixtures.RendererMock) {
-				a.EXPECT().
-					GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token, ExcludeAssigned: true}).
-					Return(&client.GetGamesResponse{Games: games}, nil)
-				a.EXPECT().
-					GetUser(gomock.AssignableToTypeOf(ctxType), &client.GetUserRequest{Token: token}).
-					Return(nil, errors.New("error while fetching user"))
-				r.EXPECT().
-					Render(gomock.Any(), gomock.Any(), gomock.Eq(server.TemplateData{Games: games}), gomock.Any()).
-					Return(nil)
-			},
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			apiClientMock := fixtures.NewAPIClientMock(ctrl)
-			rendererMock := fixtures.NewRendererMock(ctrl)
-
-			testCase.setup(apiClientMock, rendererMock)
-
-			srv := newServer(apiClientMock, rendererMock)
-
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "/games/add", nil)
-			r.AddCookie(&http.Cookie{
-				Name:  "token",
-				Value: token,
-			})
-
-			srv.ServeHTTP(w, r)
-
-			assert.StatusOK(t, w)
-		})
-	}
-}
-
-func TestGamesAddClientError(t *testing.T) {
-	testCases := []struct {
-		name              string
-		setup             func(*fixtures.APIClientMock)
-		expectedCode      int
-		additionalAsserts func(*testing.T, *httptest.ResponseRecorder)
-	}{
-		{
-			name: "NoAuthorization Error",
-			setup: func(a *fixtures.APIClientMock) {
-				a.EXPECT().
-					GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token, ExcludeAssigned: true}).
-					Return(nil, client.ErrNoAuthorization)
-			},
-
-			expectedCode: http.StatusSeeOther,
-			additionalAsserts: func(t *testing.T, w *httptest.ResponseRecorder) {
-				assert.Redirect(t, w, "/users/login")
-			},
-		},
-		{
-			name: "Other error",
-			setup: func(a *fixtures.APIClientMock) {
-				a.EXPECT().
-					GetGames(gomock.AssignableToTypeOf(ctxType), gomock.Eq(&client.GetGamesRequest{Token: token, ExcludeAssigned: true})).
-					Return(nil, errors.New("some other error"))
-			},
-			expectedCode:      http.StatusInternalServerError,
-			additionalAsserts: func(*testing.T, *httptest.ResponseRecorder) {},
-		},
-	}
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-
-			apiClientMock := fixtures.NewAPIClientMock(ctrl)
-
-			testCase.setup(apiClientMock)
-
-			srv := newServer(apiClientMock, nil)
-
-			w := httptest.NewRecorder()
-			r := httptest.NewRequest(http.MethodGet, "/games/add", nil)
-			r.AddCookie(&http.Cookie{
-				Name:  "token",
-				Value: token,
-			})
-
-			srv.ServeHTTP(w, r)
-
-			assert.StatusCode(t, w, testCase.expectedCode)
-			testCase.additionalAsserts(t, w)
-		})
-	}
-}
-
-func TestGamesAddPost(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	apiClientMock := fixtures.NewAPIClientMock(ctrl)
-
-	srv := newServer(apiClientMock, nil)
-
-	apiClientMock.EXPECT().
-		LinkGameToUser(gomock.AssignableToTypeOf(ctxType), &client.LinkGameToUserRequest{
-			Token:  token,
-			GameID: game.ID,
-		}).
-		Return(nil)
-
-	w := httptest.NewRecorder()
-
-	form := url.Values{}
-	form.Add("game", game.ID)
-	r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{
-		Name:  "token",
-		Value: token,
-	})
-	srv.ServeHTTP(w, r)
-
-	assert.Redirect(t, w, "/games")
-}
-
-func TestGamesAddPostFormError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	srv := newServer(nil, nil)
-
-	w := httptest.NewRecorder()
-	form := url.Values{}
-	r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{
-		Name:  "token",
-		Value: token,
-	})
-
-	srv.ServeHTTP(w, r)
-
-	assert.Redirect(t, w, "/games/add")
-}
-
-func TestGamesAddPostClientError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	apiClientMock := fixtures.NewAPIClientMock(ctrl)
-
-	srv := newServer(apiClientMock, nil)
-
-	apiClientMock.EXPECT().
-		LinkGameToUser(gomock.AssignableToTypeOf(ctxType), &client.LinkGameToUserRequest{
-			Token:  token,
-			GameID: game.ID,
-		}).
-		Return(errors.New("error while linking game"))
-
-	w := httptest.NewRecorder()
-
-	form := url.Values{}
-	form.Add("game", game.ID)
-	r := httptest.NewRequest(http.MethodPost, "/games/add", strings.NewReader(form.Encode()))
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.AddCookie(&http.Cookie{
-		Name:  "token",
-		Value: token,
-	})
-	srv.ServeHTTP(w, r)
-
-	assert.StatusCode(t, w, http.StatusInternalServerError)
-}
-
 func TestGamesChangeStatus(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -533,7 +332,7 @@ func TestGamesChangeProgress(t *testing.T) {
 			GameID: game.ID,
 			Token:  token,
 			Update: client.UpdateGameProgressChange{
-				Progress: &client.UserGameProgress{
+				Progress: &client.GameProgress{
 					Current: 10,
 					Final:   100,
 				},
@@ -644,7 +443,7 @@ func TestGamesCreate(t *testing.T) {
 
 	form := url.Values{}
 	form.Add("name", game.Name)
-	r := httptest.NewRequest(http.MethodPost, "/games", strings.NewReader(form.Encode()))
+	r := httptest.NewRequest(http.MethodPost, "/games/new", strings.NewReader(form.Encode()))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{
 		Name:  "token",
@@ -652,7 +451,7 @@ func TestGamesCreate(t *testing.T) {
 	})
 	srv.ServeHTTP(w, r)
 
-	assert.Redirect(t, w, "/games/add")
+	assert.Redirect(t, w, "/games")
 }
 
 func TestGamesCreatePostError(t *testing.T) {
@@ -665,7 +464,7 @@ func TestGamesCreatePostError(t *testing.T) {
 			request: func() *http.Request {
 				form := url.Values{}
 				body := strings.NewReader(form.Encode())
-				r := httptest.NewRequest(http.MethodPost, "/games", body)
+				r := httptest.NewRequest(http.MethodPost, "/games/new", body)
 				r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 				return r
@@ -674,7 +473,7 @@ func TestGamesCreatePostError(t *testing.T) {
 		{
 			name: "Nil form",
 			request: func() *http.Request {
-				r := httptest.NewRequest(http.MethodPost, "/games", nil)
+				r := httptest.NewRequest(http.MethodPost, "/games/new", nil)
 				r.Body = nil
 				return r
 			},
@@ -717,7 +516,7 @@ func TestGamesCreateServiceError(t *testing.T) {
 
 	form := url.Values{}
 	form.Add("name", game.Name)
-	r := httptest.NewRequest(http.MethodPost, "/games", strings.NewReader(form.Encode()))
+	r := httptest.NewRequest(http.MethodPost, "/games/new", strings.NewReader(form.Encode()))
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.AddCookie(&http.Cookie{
 		Name:  "token",
@@ -744,26 +543,16 @@ func TestGamesGet(t *testing.T) {
 			Email:    user.Email,
 		}, nil)
 	apiClientMock.EXPECT().
-		GetUserGames(gomock.AssignableToTypeOf(ctxType), &client.GetUserGamesRequest{Token: token}).
-		Return(&client.GetUserGamesResponse{
-			UserGames: map[client.Status][]*client.UserGame{
-				"Done": {
-					&client.UserGame{
-						ID: "1",
-						Game: &client.Game{
-							ID:   "1",
-							Name: "1",
-						},
-					},
+		GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token}).
+		Return(&client.GetGamesResponse{
+			Games: []*client.Game{
+				&client.Game{
+					ID:   "1",
+					Name: "1",
 				},
-				"TODO": {
-					&client.UserGame{
-						ID: "2",
-						Game: &client.Game{
-							ID:   "2",
-							Name: "2",
-						},
-					},
+				&client.Game{
+					ID:   "2",
+					Name: "2",
 				},
 			},
 		}, nil)
@@ -802,7 +591,7 @@ func TestGamesGetClientError(t *testing.T) {
 			name: "Auth error",
 			setup: func(a *fixtures.APIClientMock) {
 				a.EXPECT().
-					GetUserGames(gomock.AssignableToTypeOf(ctxType), &client.GetUserGamesRequest{Token: token}).
+					GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token}).
 					Return(nil, client.ErrNoAuthorization)
 			},
 
@@ -814,7 +603,7 @@ func TestGamesGetClientError(t *testing.T) {
 			name: "Other error",
 			setup: func(a *fixtures.APIClientMock) {
 				a.EXPECT().
-					GetUserGames(gomock.AssignableToTypeOf(ctxType), &client.GetUserGamesRequest{Token: token}).
+					GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token}).
 					Return(nil, errors.New("unknown error"))
 			},
 			assert: func(t *testing.T, w *httptest.ResponseRecorder) {
