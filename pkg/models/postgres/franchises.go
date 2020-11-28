@@ -13,15 +13,14 @@ type FranchiseModel struct {
 }
 
 func (m *FranchiseModel) Insert(franchise *models.Franchise) (*models.Franchise, error) {
-	if _, err := m.DB.Exec(`INSERT INTO FRANCHISES (name, user_id) VALUES ($1, $2)`, franchise.Name, franchise.UserID); err != nil {
+	row := m.DB.QueryRow(`INSERT INTO FRANCHISES (name, user_id) VALUES ($1, $2) RETURNING name, user_id`, franchise.Name, franchise.UserID)
+
+	var f models.Franchise
+	if err := row.Scan(&f.ID, &f.Name); err != nil {
+		// TODO: proper error handling
 		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "franchises_name_key"`) {
 			return nil, ErrNameAlreadyExists
 		}
-		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
-	}
-
-	var f models.Franchise
-	if err := m.DB.QueryRow(`SELECT F.ID, F.NAME FROM FRANCHISES F WHERE F.NAME = $1`, franchise.Name).Scan(&f.ID, &f.Name); err != nil {
 		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
 	}
 

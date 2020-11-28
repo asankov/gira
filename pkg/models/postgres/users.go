@@ -32,19 +32,18 @@ func (m *UserModel) Insert(user *models.User) (*models.User, error) {
 		return nil, fmt.Errorf("error while hashing password: %w", err)
 	}
 
-	if _, err := m.DB.Exec("INSERT INTO USERS (username, email, hashed_password) VALUES ($1, $2, $3)", user.Username, user.Email, hash); err != nil {
-		return nil, handleInsertError(err)
-	}
+	row := m.DB.QueryRow("INSERT INTO USERS (username, email, hashed_password) VALUES ($1, $2, $3) RETURNING id, username, email", user.Username, user.Email, hash)
 
 	usr := models.User{}
-	if err := m.DB.QueryRow("SELECT id, username, email FROM USERS U WHERE U.USERNAME = $1 AND U.EMAIL = $2", user.Username, user.Email).Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
-		return nil, fmt.Errorf("error while fetching user from the database: %w", err)
+	if err := row.Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
+		return nil, handleInsertError(err)
 	}
 
 	return &usr, nil
 }
 
 func handleInsertError(err error) error {
+	// TODO: proper error handling
 	if strings.Contains(err.Error(), `duplicate key value violates unique constraint "users_uc_email"`) {
 		return ErrEmailAlreadyExists
 	}
