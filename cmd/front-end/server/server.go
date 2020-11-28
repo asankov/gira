@@ -24,13 +24,24 @@ var (
 type TemplateData struct {
 	Game       *client.Game
 	User       *client.User
-	Games      []*client.Game
+	Games      []TemplateGame
 	Statuses   []client.Status
 	Franchises []*client.Franchise
 
 	SelectedFranchiseID string
 	Error               string
 	Flash               string
+}
+
+// TemplateGame is the struct that holds all the game info that is passed to the template renderer to render
+type TemplateGame struct {
+	ID            string
+	Name          string
+	FranchiseID   string
+	FranchiseName string
+
+	Status   client.Status
+	Progress *client.GameProgress
 }
 
 // Renderer is the interface that will be used to interact with the part of the program

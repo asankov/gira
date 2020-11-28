@@ -117,6 +117,7 @@ func (s *Server) handleGamesGetView() authorizedHandler {
 			if errors.Is(err, client.ErrNoAuthorization) {
 				w.Header().Add("Location", "/users/login")
 				w.WriteHeader(http.StatusSeeOther)
+
 				return
 			}
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -134,8 +135,39 @@ func (s *Server) handleGamesGetView() authorizedHandler {
 			return
 		}
 
+		franchisesMap := map[string]*client.Franchise{}
+		franchisesResponse, err := s.Client.GetFranchises(context.Background(), &client.GetFranchisesRequest{Token: token})
+		if err != nil {
+			if errors.Is(err, client.ErrNoAuthorization) {
+				w.Header().Add("Location", "/users/login")
+				w.WriteHeader(http.StatusSeeOther)
+				return
+			}
+
+			s.Log.Warnf("Error while fetching franchises: %v", err)
+		} else {
+			for _, fr := range franchisesResponse.Franchises {
+				franchisesMap[fr.ID] = fr
+			}
+		}
+
+		games := []TemplateGame{}
+		for _, game := range gamesResponse.Games {
+			var frName string
+			if fr, ok := franchisesMap[game.FranchiseID]; ok {
+				frName = fr.Name
+			}
+			games = append(games, TemplateGame{
+				ID:            game.ID,
+				Name:          game.Name,
+				FranchiseID:   game.FranchiseID,
+				FranchiseName: frName,
+				Status:        game.Status,
+				Progress:      game.Progress,
+			})
+		}
 		data := TemplateData{
-			Games:    gamesResponse.Games,
+			Games:    games,
 			Statuses: statusesResponse.Statuses,
 		}
 

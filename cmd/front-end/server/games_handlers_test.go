@@ -555,12 +555,21 @@ func TestGamesGet(t *testing.T) {
 				},
 			},
 		}, nil)
-	apiClientMock.EXPECT().GetStatuses(gomock.AssignableToTypeOf(ctxType), &client.GetStatusesRequest{Token: token}).Return(&client.GetStatusesResponse{
-		Statuses: []client.Status{
-			client.Status("TODO"),
-			client.Status("Done"),
-		},
-	}, nil)
+	apiClientMock.EXPECT().
+		GetStatuses(gomock.AssignableToTypeOf(ctxType), &client.GetStatusesRequest{Token: token}).
+		Return(&client.GetStatusesResponse{
+			Statuses: []client.Status{
+				client.Status("TODO"),
+				client.Status("Done"),
+			},
+		}, nil)
+	apiClientMock.EXPECT().
+		GetFranchises(gomock.AssignableToTypeOf(ctxType), &client.GetFranchisesRequest{Token: token}).
+		Return(&client.GetFranchisesResponse{
+			Franchises: []*client.Franchise{
+				{ID: "1", Name: "Batman"},
+			},
+		}, nil)
 
 	rendererMock.EXPECT().
 		Render(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).
