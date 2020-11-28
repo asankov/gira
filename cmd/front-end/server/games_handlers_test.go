@@ -24,7 +24,6 @@ import (
 
 var (
 	token = "my-test-token"
-	games = []*client.Game{game}
 	game  = &client.Game{
 		ID:   "1",
 		Name: "Game1",
@@ -546,11 +545,11 @@ func TestGamesGet(t *testing.T) {
 		GetGames(gomock.AssignableToTypeOf(ctxType), &client.GetGamesRequest{Token: token}).
 		Return(&client.GetGamesResponse{
 			Games: []*client.Game{
-				&client.Game{
+				{
 					ID:   "1",
 					Name: "1",
 				},
-				&client.Game{
+				{
 					ID:   "2",
 					Name: "2",
 				},

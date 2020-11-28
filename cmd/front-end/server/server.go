@@ -12,7 +12,6 @@ import (
 
 var (
 	homePage       = "home.page.tmpl"
-	addGamePage    = "add.page.tmpl"
 	listGamesPage  = "list.page.tmpl"
 	createGamePage = "create.page.tmpl"
 	signupUserPage = "signup.page.tmpl"

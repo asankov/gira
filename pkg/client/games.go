@@ -30,8 +30,8 @@ type Game struct {
 	Name        string `json:"name"`
 	FranchiseID string `json:"franchiseId"`
 
-	Status      Status        `json:"status,omitempty"`
-	Progress    *GameProgress `json:"progress,omitempty"`
+	Status   Status        `json:"status,omitempty"`
+	Progress *GameProgress `json:"progress,omitempty"`
 }
 
 // GetGamesRequest is used when the consumer wants to get all games
