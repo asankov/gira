@@ -25,25 +25,23 @@ type GameModel struct {
 // It returns the ID of the created game, or error if such occurred.
 // If a game with the same name already exists, an ErrNameAlreadyExists is returned
 func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
-	var err error
+	var (
+		row *sql.Row
+	)
+
 	if game.FranchiseID == "" {
-		_, err = m.DB.Exec(`INSERT INTO GAMES (name, user_id) VALUES ($1, $2)`, game.Name, game.UserID)
+		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id) VALUES ($1, $2) RETURNING id, name, franchise_id`, game.Name, game.UserID)
 	} else {
-		_, err = m.DB.Exec(`INSERT INTO GAMES (name, user_id, franchise_id) VALUES ($1, $2, $3)`, game.Name, game.UserID, game.FranchiseID)
+		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id, franchise_id) VALUES ($1, $2, $3) RETURNING id, name, franchise_id`, game.Name, game.UserID, game.FranchiseID)
 	}
 
-	// TODO: proper error handling
-	if err != nil {
+	var g models.Game
+	var fID sql.NullString
+	if err := row.Scan(&g.ID, &g.Name, &fID); err != nil {
+		// TODO: proper error handling
 		if strings.Contains(err.Error(), `duplicate key value violates unique constraint "games_name_key"`) {
 			return nil, ErrNameAlreadyExists
 		}
-		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
-	}
-
-	// TODO: use returning
-	var g models.Game
-	var fID sql.NullString
-	if err := m.DB.QueryRow(`SELECT G.ID, G.NAME, G.FRANCHISE_ID FROM GAMES G WHERE G.NAME = $1 AND G.USER_ID = $2`, game.Name, game.UserID).Scan(&g.ID, &g.Name, &fID); err != nil {
 		return nil, fmt.Errorf("error while inserting record into the database: %w", err)
 	}
 	g.FranchiseID = fID.String
