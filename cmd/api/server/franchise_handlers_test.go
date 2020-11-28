@@ -51,7 +51,7 @@ func TestFranchisesGet(t *testing.T) {
 		GetUserByToken(token).
 		Return(user, nil)
 	franchiseModel.EXPECT().
-		All().
+		All(user.ID).
 		Return(franchises, nil)
 
 	w := httptest.NewRecorder()
