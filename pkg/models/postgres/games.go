@@ -30,19 +30,21 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 	)
 
 	if game.FranchiseID == "" {
-		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id) VALUES ($1, $2) RETURNING id, name, franchise_id`, game.Name, game.UserID)
+		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id) VALUES ($1, $2) RETURNING id, name, franchise_id, current_progress, final_progress, status`, game.Name, game.UserID)
 	} else {
-		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id, franchise_id) VALUES ($1, $2, $3) RETURNING id, name, franchise_id`, game.Name, game.UserID, game.FranchiseID)
+		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id, franchise_id) VALUES ($1, $2, $3) RETURNING id, name, franchise_id, current_progress, final_progress, status`, game.Name, game.UserID, game.FranchiseID)
 	}
 
-	var g models.Game
+	g := &models.Game{
+		Progress: &models.GameProgress{},
+	}
 	var fID sql.NullString
-	if err := row.Scan(&g.ID, &g.Name, &fID); err != nil {
+	if err := row.Scan(&g.ID, &g.Name, &fID, &g.Progress.Current, &g.Progress.Final, &g.Status); err != nil {
 		return nil, handleInsertGameError(err)
 	}
 	g.FranchiseID = fID.String
 
-	return &g, nil
+	return g, nil
 }
 
 func handleInsertGameError(err error) error {
