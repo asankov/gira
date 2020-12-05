@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	apiImage        = flag.String("api-image", "ghcr.io/gira-games/api", "the image of the api to be used")
+	apiImage        = flag.String("api-image", "ghcr.io/asankov/gira/api", "the image of the api to be used")
 	apiVersion      = flag.String("api-version", "latest", "the version of the api image to be used")
 	postgresVersion = flag.String("postgres-version", "latest", "the version of the postgres image to be used")
 
