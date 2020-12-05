@@ -110,7 +110,7 @@ func (m *GameModel) AllForUser(userID string) ([]*models.Game, error) {
 }
 
 func (m *GameModel) DeleteGame(userID, gameID string) error {
-	if _, err := m.DB.Exec(`DELETE FROM GAMES U WHERE U.id = $1 AND U.user_id = $2`, userID, gameID); err != nil {
+	if _, err := m.DB.Exec(`DELETE FROM GAMES G WHERE G.id = $1 AND G.user_id = $2`, gameID, userID); err != nil {
 		return err
 	}
 	return nil
