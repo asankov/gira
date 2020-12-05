@@ -13,11 +13,11 @@ import (
 	"testing"
 	"time"
 
-	giradb "github.com/gira-games/api/cmd/api/database"
+	"github.com/asankov/gira/cmd/api/database"
 
+	"github.com/asankov/gira/pkg/client"
 	"github.com/erikh/duct"
 	docker "github.com/fsouza/go-dockerclient"
-	"github.com/gira-games/client/pkg/client"
 
 	"github.com/stretchr/testify/require"
 
@@ -94,7 +94,7 @@ func TestIntegration(t *testing.T) {
 		t.Fatal("error while spinning up services:", err)
 	}
 
-	if err := giradb.Init(&giradb.DBOptions{
+	if err := database.Init(&database.DBOptions{
 		Host:   "localhost",
 		Port:   21665,
 		User:   "gira",
