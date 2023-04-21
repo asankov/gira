@@ -18,7 +18,11 @@ var (
 
 // GameModel wraps an sql.DB connection pool.
 type GameModel struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewGameModel(db *sql.DB) *GameModel {
+	return &GameModel{db: db}
 }
 
 // Insert inserts the passed Game into the database.
@@ -30,9 +34,9 @@ func (m *GameModel) Insert(game *models.Game) (*models.Game, error) {
 	)
 
 	if game.FranchiseID == "" {
-		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id) VALUES ($1, $2) RETURNING id, name, franchise_id, current_progress, final_progress, status`, game.Name, game.UserID)
+		row = m.db.QueryRow(`INSERT INTO GAMES (name, user_id) VALUES ($1, $2) RETURNING id, name, franchise_id, current_progress, final_progress, status`, game.Name, game.UserID)
 	} else {
-		row = m.DB.QueryRow(`INSERT INTO GAMES (name, user_id, franchise_id) VALUES ($1, $2, $3) RETURNING id, name, franchise_id, current_progress, final_progress, status`, game.Name, game.UserID, game.FranchiseID)
+		row = m.db.QueryRow(`INSERT INTO GAMES (name, user_id, franchise_id) VALUES ($1, $2, $3) RETURNING id, name, franchise_id, current_progress, final_progress, status`, game.Name, game.UserID, game.FranchiseID)
 	}
 
 	g := &models.Game{
@@ -61,7 +65,7 @@ func handleInsertGameError(err error) error {
 func (m *GameModel) Get(id string) (*models.Game, error) {
 	var g models.Game
 
-	if err := m.DB.QueryRow(`SELECT g.id, g.name, g.franchise_id, f.name FROM GAMES g WHERE g.id = $1 JOIN FRANCHISES f ON f.id = g.franchise_id`, id).Scan(&g.ID, &g.Name, &g.FranchiseID, &g.Franchise); err != nil {
+	if err := m.db.QueryRow(`SELECT g.id, g.name, g.franchise_id, f.name FROM GAMES g WHERE g.id = $1 JOIN FRANCHISES f ON f.id = g.franchise_id`, id).Scan(&g.ID, &g.Name, &g.FranchiseID, &g.Franchise); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, ErrNoRecord
 		}
@@ -73,7 +77,7 @@ func (m *GameModel) Get(id string) (*models.Game, error) {
 
 // AllForUser fetches all games for the given user from the database and returns them, or an error if such occurred.
 func (m *GameModel) AllForUser(userID string) ([]*models.Game, error) {
-	rows, err := m.DB.Query(`
+	rows, err := m.db.Query(`
 	SELECT 
 		g.id, 
 		g.name, 
@@ -112,21 +116,21 @@ func (m *GameModel) AllForUser(userID string) ([]*models.Game, error) {
 }
 
 func (m *GameModel) DeleteGame(userID, gameID string) error {
-	if _, err := m.DB.Exec(`DELETE FROM GAMES G WHERE G.id = $1 AND G.user_id = $2`, gameID, userID); err != nil {
+	if _, err := m.db.Exec(`DELETE FROM GAMES G WHERE G.id = $1 AND G.user_id = $2`, gameID, userID); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *GameModel) ChangeGameStatus(userID, gameID string, status models.Status) error {
-	if _, err := m.DB.Exec("UPDATE GAMES SET status = $1 WHERE id = $2 AND user_id = $3", status, gameID, userID); err != nil {
+	if _, err := m.db.Exec("UPDATE GAMES SET status = $1 WHERE id = $2 AND user_id = $3", status, gameID, userID); err != nil {
 		return fmt.Errorf("error while updating game status: %w", err)
 	}
 	return nil
 }
 
 func (m *GameModel) ChangeGameProgress(userID, gameID string, progress *models.GameProgress) error {
-	if _, err := m.DB.Exec("UPDATE GAMES SET current_progress =  $1, final_progress = $2 WHERE id = $3 AND user_id = $4", progress.Current, progress.Final, gameID, userID); err != nil {
+	if _, err := m.db.Exec("UPDATE GAMES SET current_progress =  $1, final_progress = $2 WHERE id = $3 AND user_id = $4", progress.Current, progress.Final, gameID, userID); err != nil {
 		return fmt.Errorf("error while updating game progress: %w", err)
 	}
 	return nil
