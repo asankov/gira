@@ -21,7 +21,11 @@ var (
 
 // UserModel wraps a DB connection pool.
 type UserModel struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewUserModel(db *sql.DB) *UserModel {
+	return &UserModel{db: db}
 }
 
 // Insert inserts a new user with the given parameters into the database
@@ -32,7 +36,7 @@ func (m *UserModel) Insert(user *models.User) (*models.User, error) {
 		return nil, fmt.Errorf("error while hashing password: %w", err)
 	}
 
-	row := m.DB.QueryRow("INSERT INTO USERS (username, email, hashed_password) VALUES ($1, $2, $3) RETURNING id, username, email", user.Username, user.Email, hash)
+	row := m.db.QueryRow("INSERT INTO USERS (username, email, hashed_password) VALUES ($1, $2, $3) RETURNING id, username, email", user.Username, user.Email, hash)
 
 	usr := models.User{}
 	if err := row.Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
@@ -58,7 +62,7 @@ func handleInsertUserError(err error) error {
 // and returns the user or an error if such occurred.
 func (m *UserModel) Authenticate(email, password string) (*models.User, error) {
 	usr := models.User{}
-	if err := m.DB.QueryRow("SELECT id, username, email, hashed_password FROM USERS U WHERE U.EMAIL = $1", email).Scan(&usr.ID, &usr.Username, &usr.Email, &usr.HashedPassword); err != nil {
+	if err := m.db.QueryRow("SELECT id, username, email, hashed_password FROM USERS U WHERE U.EMAIL = $1", email).Scan(&usr.ID, &usr.Username, &usr.Email, &usr.HashedPassword); err != nil {
 		return nil, fmt.Errorf("error while fetching user from the database: %w", err)
 	}
 	if err := bcrypt.CompareHashAndPassword(usr.HashedPassword, []byte(password)); err != nil {
@@ -69,7 +73,7 @@ func (m *UserModel) Authenticate(email, password string) (*models.User, error) {
 
 // AssociateTokenWithUser associated the given token with the given userID
 func (m *UserModel) AssociateTokenWithUser(userID, token string) error {
-	if _, err := m.DB.Exec("INSERT INTO user_tokens (user_id, token) VALUES ($1, $2)", userID, token); err != nil {
+	if _, err := m.db.Exec("INSERT INTO user_tokens (user_id, token) VALUES ($1, $2)", userID, token); err != nil {
 		// TODO: better error handling
 		return fmt.Errorf("error while inserting token into database: %w", err)
 	}
@@ -78,7 +82,7 @@ func (m *UserModel) AssociateTokenWithUser(userID, token string) error {
 
 // InvalidateToken deleted the token from the database, making it invalid
 func (m *UserModel) InvalidateToken(userID, token string) error {
-	if _, err := m.DB.Exec("DELETE FROM user_tokens WHERE user_id = $1 AND token = $2", userID, token); err != nil {
+	if _, err := m.db.Exec("DELETE FROM user_tokens WHERE user_id = $1 AND token = $2", userID, token); err != nil {
 		// TODO: better error handling
 		return fmt.Errorf("error while deleting token from the database: %w", err)
 	}
@@ -88,7 +92,7 @@ func (m *UserModel) InvalidateToken(userID, token string) error {
 // GetUserByToken returns the user, associated with the token passed to the method
 func (m *UserModel) GetUserByToken(token string) (*models.User, error) {
 	var usr models.User
-	if err := m.DB.QueryRow("SELECT id, username, email FROM USERS U WHERE id = (SELECT user_id FROM user_tokens WHERE token = $1)", token).Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
+	if err := m.db.QueryRow("SELECT id, username, email FROM USERS U WHERE id = (SELECT user_id FROM user_tokens WHERE token = $1)", token).Scan(&usr.ID, &usr.Username, &usr.Email); err != nil {
 		return nil, fmt.Errorf("error while looking up user: %w", err)
 	}
 	return &usr, nil

@@ -9,11 +9,15 @@ import (
 )
 
 type FranchiseModel struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewFranchiseModel(db *sql.DB) *FranchiseModel {
+	return &FranchiseModel{db: db}
 }
 
 func (m *FranchiseModel) Insert(franchise *models.Franchise) (*models.Franchise, error) {
-	row := m.DB.QueryRow(`INSERT INTO FRANCHISES (name, user_id) VALUES ($1, $2) RETURNING name, user_id`, franchise.Name, franchise.UserID)
+	row := m.db.QueryRow(`INSERT INTO FRANCHISES (name, user_id) VALUES ($1, $2) RETURNING name, user_id`, franchise.Name, franchise.UserID)
 
 	var f models.Franchise
 	if err := row.Scan(&f.ID, &f.Name); err != nil {
@@ -33,7 +37,7 @@ func handleInsertFranchiseError(err error) error {
 }
 
 func (m *FranchiseModel) All(userID string) ([]*models.Franchise, error) {
-	rows, err := m.DB.Query(`SELECT id, name FROM FRANCHISES f WHERE f.user_id = $1`, userID)
+	rows, err := m.db.Query(`SELECT id, name FROM FRANCHISES f WHERE f.user_id = $1`, userID)
 	if err != nil {
 		return nil, fmt.Errorf("error while fetching franchises from the database: %w", err)
 	}

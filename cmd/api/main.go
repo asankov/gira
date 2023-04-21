@@ -51,9 +51,9 @@ func run() error {
 
 	s := &server.Server{
 		Log:            log,
-		GameModel:      &postgres.GameModel{DB: db},
-		UserModel:      &postgres.UserModel{DB: db},
-		FranchiseModel: &postgres.FranchiseModel{DB: db},
+		GameModel:      postgres.NewGameModel(db),
+		UserModel:      postgres.NewUserModel(db),
+		FranchiseModel: postgres.NewFranchiseModel(db),
 		Authenticator:  auth.NewAutheniticator(config.Secret),
 	}
 
