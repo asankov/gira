@@ -21,7 +21,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
     - name: Install mockgen
       run:  |
-        go get github.com/golang/mock/mockgen
+        go install github.com/golang/mock/mockgen@v1.6.0
     - name: Check generated mocks
       run: |
         # add mockgen to PATH
