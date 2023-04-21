@@ -90,6 +90,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Start starts the server listenning on the given port
 func (s *Server) Start(port int) error {
-	s.Log.Infoln(fmt.Sprintf("listening on port %d", port))
+	s.Log.Infof("listening on port %d\n", port)
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), s)
 }
