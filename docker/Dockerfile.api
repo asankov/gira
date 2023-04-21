@@ -8,8 +8,8 @@ WORKDIR /app
 
 RUN go build -o api ./cmd/api
 
-FROM alpine:latest
+FROM gcr.io/distroless/static-debian11:latest
 
 COPY --from=builder /app/api .
 
-CMD ./api
+ENTRYPOINT [ "./api" ]

@@ -8,9 +8,9 @@ WORKDIR /app
 
 RUN go build -o front-end ./cmd/front-end
 
-FROM alpine:latest
+FROM gcr.io/distroless/static-debian11:latest
 
 COPY --from=builder /app/front-end .
 COPY --from=builder /app/ui ./ui
 
-CMD ./front-end
+ENTRYPOINT [ "./front-end" ]
