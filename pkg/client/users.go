@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -161,7 +161,7 @@ func parseError(r *http.Response) *ErrorResponse {
 }
 
 func parseErrorBody(r *http.Response) string {
-	errorBody, err := ioutil.ReadAll(r.Body)
+	errorBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		return "<UNABLE TO READ ERROR BODY>"
 	}
