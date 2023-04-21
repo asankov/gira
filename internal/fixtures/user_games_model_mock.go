@@ -5,35 +5,36 @@
 package fixtures
 
 import (
+	reflect "reflect"
+
 	models "github.com/asankov/gira/pkg/models"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// UserGamesModelMock is a mock of UserGamesModel interface
+// UserGamesModelMock is a mock of UserGamesModel interface.
 type UserGamesModelMock struct {
 	ctrl     *gomock.Controller
 	recorder *UserGamesModelMockMockRecorder
 }
 
-// UserGamesModelMockMockRecorder is the mock recorder for UserGamesModelMock
+// UserGamesModelMockMockRecorder is the mock recorder for UserGamesModelMock.
 type UserGamesModelMockMockRecorder struct {
 	mock *UserGamesModelMock
 }
 
-// NewUserGamesModelMock creates a new mock instance
+// NewUserGamesModelMock creates a new mock instance.
 func NewUserGamesModelMock(ctrl *gomock.Controller) *UserGamesModelMock {
 	mock := &UserGamesModelMock{ctrl: ctrl}
 	mock.recorder = &UserGamesModelMockMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *UserGamesModelMock) EXPECT() *UserGamesModelMockMockRecorder {
 	return m.recorder
 }
 
-// ChangeGameProgress mocks base method
+// ChangeGameProgress mocks base method.
 func (m *UserGamesModelMock) ChangeGameProgress(arg0, arg1 string, arg2 *models.GameProgress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeGameProgress", arg0, arg1, arg2)
@@ -41,13 +42,13 @@ func (m *UserGamesModelMock) ChangeGameProgress(arg0, arg1 string, arg2 *models.
 	return ret0
 }
 
-// ChangeGameProgress indicates an expected call of ChangeGameProgress
+// ChangeGameProgress indicates an expected call of ChangeGameProgress.
 func (mr *UserGamesModelMockMockRecorder) ChangeGameProgress(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeGameProgress", reflect.TypeOf((*UserGamesModelMock)(nil).ChangeGameProgress), arg0, arg1, arg2)
 }
 
-// ChangeGameStatus mocks base method
+// ChangeGameStatus mocks base method.
 func (m *UserGamesModelMock) ChangeGameStatus(arg0, arg1 string, arg2 models.Status) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeGameStatus", arg0, arg1, arg2)
@@ -55,13 +56,13 @@ func (m *UserGamesModelMock) ChangeGameStatus(arg0, arg1 string, arg2 models.Sta
 	return ret0
 }
 
-// ChangeGameStatus indicates an expected call of ChangeGameStatus
+// ChangeGameStatus indicates an expected call of ChangeGameStatus.
 func (mr *UserGamesModelMockMockRecorder) ChangeGameStatus(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeGameStatus", reflect.TypeOf((*UserGamesModelMock)(nil).ChangeGameStatus), arg0, arg1, arg2)
 }
 
-// DeleteUserGame mocks base method
+// DeleteUserGame mocks base method.
 func (m *UserGamesModelMock) DeleteUserGame(arg0 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUserGame", arg0)
@@ -69,13 +70,13 @@ func (m *UserGamesModelMock) DeleteUserGame(arg0 string) error {
 	return ret0
 }
 
-// DeleteUserGame indicates an expected call of DeleteUserGame
+// DeleteUserGame indicates an expected call of DeleteUserGame.
 func (mr *UserGamesModelMockMockRecorder) DeleteUserGame(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserGame", reflect.TypeOf((*UserGamesModelMock)(nil).DeleteUserGame), arg0)
 }
 
-// GetAvailableGamesFor mocks base method
+// GetAvailableGamesFor mocks base method.
 func (m *UserGamesModelMock) GetAvailableGamesFor(arg0 string) ([]*models.Game, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAvailableGamesFor", arg0)
@@ -84,13 +85,13 @@ func (m *UserGamesModelMock) GetAvailableGamesFor(arg0 string) ([]*models.Game, 
 	return ret0, ret1
 }
 
-// GetAvailableGamesFor indicates an expected call of GetAvailableGamesFor
+// GetAvailableGamesFor indicates an expected call of GetAvailableGamesFor.
 func (mr *UserGamesModelMockMockRecorder) GetAvailableGamesFor(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableGamesFor", reflect.TypeOf((*UserGamesModelMock)(nil).GetAvailableGamesFor), arg0)
 }
 
-// LinkGameToUser mocks base method
+// LinkGameToUser mocks base method.
 func (m *UserGamesModelMock) LinkGameToUser(arg0, arg1 string, arg2 *models.GameProgress) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LinkGameToUser", arg0, arg1, arg2)
@@ -98,7 +99,7 @@ func (m *UserGamesModelMock) LinkGameToUser(arg0, arg1 string, arg2 *models.Game
 	return ret0
 }
 
-// LinkGameToUser indicates an expected call of LinkGameToUser
+// LinkGameToUser indicates an expected call of LinkGameToUser.
 func (mr *UserGamesModelMockMockRecorder) LinkGameToUser(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkGameToUser", reflect.TypeOf((*UserGamesModelMock)(nil).LinkGameToUser), arg0, arg1, arg2)

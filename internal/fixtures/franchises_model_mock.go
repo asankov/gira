@@ -5,35 +5,36 @@
 package fixtures
 
 import (
+	reflect "reflect"
+
 	models "github.com/asankov/gira/pkg/models"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// FranchiseModelMock is a mock of FranchiseModel interface
+// FranchiseModelMock is a mock of FranchiseModel interface.
 type FranchiseModelMock struct {
 	ctrl     *gomock.Controller
 	recorder *FranchiseModelMockMockRecorder
 }
 
-// FranchiseModelMockMockRecorder is the mock recorder for FranchiseModelMock
+// FranchiseModelMockMockRecorder is the mock recorder for FranchiseModelMock.
 type FranchiseModelMockMockRecorder struct {
 	mock *FranchiseModelMock
 }
 
-// NewFranchiseModelMock creates a new mock instance
+// NewFranchiseModelMock creates a new mock instance.
 func NewFranchiseModelMock(ctrl *gomock.Controller) *FranchiseModelMock {
 	mock := &FranchiseModelMock{ctrl: ctrl}
 	mock.recorder = &FranchiseModelMockMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *FranchiseModelMock) EXPECT() *FranchiseModelMockMockRecorder {
 	return m.recorder
 }
 
-// All mocks base method
+// All mocks base method.
 func (m *FranchiseModelMock) All(arg0 string) ([]*models.Franchise, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "All", arg0)
@@ -42,13 +43,13 @@ func (m *FranchiseModelMock) All(arg0 string) ([]*models.Franchise, error) {
 	return ret0, ret1
 }
 
-// All indicates an expected call of All
+// All indicates an expected call of All.
 func (mr *FranchiseModelMockMockRecorder) All(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "All", reflect.TypeOf((*FranchiseModelMock)(nil).All), arg0)
 }
 
-// Insert mocks base method
+// Insert mocks base method.
 func (m *FranchiseModelMock) Insert(arg0 *models.Franchise) (*models.Franchise, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Insert", arg0)
@@ -57,7 +58,7 @@ func (m *FranchiseModelMock) Insert(arg0 *models.Franchise) (*models.Franchise, 
 	return ret0, ret1
 }
 
-// Insert indicates an expected call of Insert
+// Insert indicates an expected call of Insert.
 func (mr *FranchiseModelMockMockRecorder) Insert(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Insert", reflect.TypeOf((*FranchiseModelMock)(nil).Insert), arg0)
