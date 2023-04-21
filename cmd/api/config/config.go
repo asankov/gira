@@ -8,7 +8,7 @@ type Config struct {
 	Port     int       `required:"true" split_words:"true"`
 	Secret   string    `required:"true" split_words:"true"`
 	UseSSL   bool      `required:"true" split_words:"true"`
-	LogLevel string    `required:"true" split_words:"true"`
+	LogLevel string    `default:"info" split_words:"true"`
 	DB       *DBConfig `required:"true" split_words:"true"`
 }
 

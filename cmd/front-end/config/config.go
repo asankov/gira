@@ -4,7 +4,7 @@ import "github.com/kelseyhightower/envconfig"
 
 type Config struct {
 	Port          int    `required:"true" split_words:"true"`
-	LogLevel      string `required:"true" split_words:"true"`
+	LogLevel      string `default:"info" split_words:"true"`
 	APIAddress    string `required:"true" split_words:"true"`
 	SessionSecret string `required:"true" split_words:"true"`
 	EnforceHTTPS  bool   `required:"true" split_words:"true"`
