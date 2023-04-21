@@ -2,13 +2,13 @@ package main
 
 import (
 	"crypto/tls"
-	"flag"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/asankov/gira/pkg/client"
 
+	"github.com/asankov/gira/cmd/front-end/config"
 	"github.com/asankov/gira/cmd/front-end/templates"
 	"github.com/sirupsen/logrus"
 
@@ -24,25 +24,21 @@ func main() {
 }
 
 func run() error {
-	var (
-		logL          = flag.String("log_level", "info", "the level of logging")
-		port          = flag.Int("port", 4001, "port on which the application is exposed")
-		backEndAddr   = flag.String("api_addr", "http://localhost:4000", "the address to the API service")
-		sessionSecret = flag.String("session_secret", "s6Ndh+pPbnzHb7*297k1q5W0Tzbpa@ge", "32-byte secret that is to be used for the session store")
-		enforceHTTPS  = flag.Bool("enforce-https", false, "whether or not to serve front-end via HTTPS")
-	)
-	flag.Parse()
+	config, err := config.NewFromEnv()
+	if err != nil {
+		return fmt.Errorf("error while loading config: %w", err)
+	}
 
-	session := sessions.New([]byte(*sessionSecret))
+	session := sessions.New([]byte(config.SessionSecret))
 	session.Lifetime = 12 * time.Hour
 
-	cl, err := client.New(*backEndAddr)
+	cl, err := client.New(config.APIAddress)
 	if err != nil {
 		return fmt.Errorf("error while creating back-end client: %w", err)
 	}
 
 	log := logrus.New()
-	logLevel, err := logrus.ParseLevel(*logL)
+	logLevel, err := logrus.ParseLevel(config.LogLevel)
 	if err != nil {
 		return err
 	}
@@ -56,7 +52,7 @@ func run() error {
 		Renderer: templates.NewRenderer(),
 	}
 
-	addr := fmt.Sprintf(":%d", *port)
+	addr := fmt.Sprintf(":%d", config.Port)
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: s,
@@ -66,8 +62,9 @@ func run() error {
 		},
 	}
 
-	if *enforceHTTPS {
+	if config.EnforceHTTPS {
 		s.Log.Infoln(fmt.Sprintf("Front-end listening on %s via HTTPS", addr))
+		// TODO: these should be configurable
 		err = srv.ListenAndServeTLS("tls/cert.pem", "tls/key.pem")
 	} else {
 		s.Log.Infoln(fmt.Sprintf("Front-end listening on %s", addr))
